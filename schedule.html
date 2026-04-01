@@ -441,7 +441,7 @@ function renderConfirmedList(list, allMatches) {
           const params = new URLSearchParams({
             t1p1:t1[0]||'', t1p2:t1[1]||'',
             t2p1:t2[0]||'', t2p2:t2[1]||'',
-            event:s.name||'', date:s.date||'',
+            event:s.event||'', date:s.date||'',
             schedule_id:s.id||''
           });
           const s1 = result ? parseInt(result.score1)||0 : 0;
@@ -928,7 +928,7 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
       const params = new URLSearchParams({
         t1p1: t1[0], t1p2: t1[1],
         t2p1: t2[0], t2p2: t2[1],
-        date: new Date().toISOString().split('T')[0]
+        date: document.getElementById('sched-date').value || new Date().toISOString().split('T')[0]
       });
       html += `<div class="match-row">
         <div class="team">

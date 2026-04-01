@@ -180,7 +180,7 @@ let players=[],events=[],matches=[];
 let editingId=null; // null = 신규, string = 수정 중 match id
 
 async function init(){
-  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  // 날짜는 URL 파라미터로 오거나 사용자가 직접 입력
   await Promise.all([loadPlayers(),loadEvents()]);
   await loadMatches();
   applyUrlParams(); // URL 파라미터로 폼 자동 채우기
