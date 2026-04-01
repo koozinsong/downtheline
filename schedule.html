@@ -176,6 +176,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .conf-round-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);min-width:60px;}
 .conf-result-link{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);text-decoration:none;margin-left:auto;white-space:nowrap;transition:color .2s;}
 .conf-result-link:hover{color:var(--gdl);}
+.conf-action-btn{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);text-decoration:none;white-space:nowrap;border:1px solid var(--gd);padding:.3rem .7rem;transition:all .2s;text-align:center;}
+.conf-action-btn:hover{background:var(--gd);color:var(--w);}
 @media(max-width:600px){
   .player-grid,.options-row,.cond-grid,.stats-grid,.summary-row,.format-grid{grid-template-columns:1fr 1fr;}
 }
@@ -207,7 +209,25 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     </div>
   </div>
 
-  <!-- NEW SCHEDULE TOGGLE -->
+  <!-- NEW SCHEDULE TOGGLE BUTTON -->
+  <div style="padding:0 1.5rem 1rem;">
+    <button id="new-sched-btn" onclick="toggleNewSchedule()" style="
+      width:100%;
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:.72rem;
+      font-weight:700;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      color:var(--g3);
+      background:none;
+      border:1.5px dashed rgba(78,122,90,.35);
+      padding:.7rem 1rem;
+      cursor:pointer;
+      transition:all .25s;
+    " onmouseover="this.style.borderColor='var(--g3)';this.style.background='rgba(78,122,90,.06)'" onmouseout="this.style.borderColor='rgba(78,122,90,.35)';this.style.background='none'">+ 새 일정 생성</button>
+  </div>
+
+  <!-- NEW SCHEDULE FORM -->
   <div id="new-sched-section" style="display:none;">
 
   <!-- SETUP -->
@@ -337,9 +357,9 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     <button class="gen-btn" onclick="generate()">🎾 일정 생성하기</button>
   </div>
 
-  <!-- RESULT -->
-  </div>
-</div> <!-- end new-sched-section -->
+    <!-- RESULT -->
+  </div> <!-- end setup-card -->
+  </div> <!-- end new-sched-section -->
 
   <!-- 생성된 일정 결과 -->
   <div class="result" id="result-area">
@@ -348,12 +368,33 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
       <div class="empty-text">일정을 생성해주세요</div>
     </div>
   </div>
-</div>
+</div> <!-- end wrap -->
 
 <script>
 // ── Initial players ──
 const API = 'https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
 let _lastScheduleData = null;
+
+const CACHE_TTL = 3 * 60 * 1000; // 3분
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem('dtl_' + key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return data;
+  } catch(e) { return null; }
+}
+function cacheSet(key, data) {
+  try { localStorage.setItem('dtl_' + key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+let _skipCache = false;
+async function cachedFetch(action) {
+  const cached = _skipCache ? null : cacheGet(action);
+  const fetched = fetch(`${API}?action=${action}`).then(r => r.json()).then(d => { cacheSet(action, d); return d; });
+  if (cached) { fetched.catch(() => {}); return cached; }
+  return fetched;
+}
 
 const defaultFemales = ['여1', '여2', '여3'];
 const defaultMales   = ['남1', '남2', '남3', '남4'];
@@ -364,9 +405,9 @@ async function loadConfirmedSchedules() {
   el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:var(--sm);">불러오는 중...</div>';
   try {
     const [schedRes, matchRes, eventRes] = await Promise.all([
-      fetch(`${API}?action=getSchedules`).then(r=>r.json()),
-      fetch(`${API}?action=getMatches`).then(r=>r.json()),
-      fetch(`${API}?action=getEvents`).then(r=>r.json())
+      cachedFetch('getSchedules'),
+      cachedFetch('getMatches'),
+      cachedFetch('getEvents')
     ]);
 
     // 이벤트 드롭다운 채우기
@@ -383,21 +424,22 @@ async function loadConfirmedSchedules() {
       };
     }
 
-    // 오늘 날짜 기본값
-    const dateEl = document.getElementById('sched-date');
-    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+    // 날짜는 비워두고 사용자가 직접 입력하거나 이벤트 선택 시 자동 채움
 
     renderConfirmedList(schedRes||[], matchRes||[]);
 
-    // 확정 일정 있으면 생성 폼 숨기기
+    // 확정 일정 있으면 폼 숨기되, 버튼은 항상 표시
     if (schedRes && schedRes.length > 0) {
       document.getElementById('new-sched-section').style.display = 'none';
+      document.getElementById('new-sched-btn').textContent = '+ 새 일정 생성';
     } else {
       document.getElementById('new-sched-section').style.display = 'block';
+      document.getElementById('new-sched-btn').textContent = '− 닫기';
     }
   } catch(e) {
     el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">오류: ${e.message}</div>`;
     document.getElementById('new-sched-section').style.display = 'block';
+    document.getElementById('new-sched-btn').textContent = '− 닫기';
   }
 }
 
@@ -449,10 +491,11 @@ function renderConfirmedList(list, allMatches) {
           const scoreHtml = result
             ? `<span class="match-score ${s1>s2?'win':''}">${s1}</span>
                <span class="match-score-sep">:</span>
-               <span class="match-score ${s2>s1?'win':''}">${s2}</span>
-               <a href="results.html?edit=${result.id}" class="conf-result-link" style="font-size:.6rem;margin-left:.3rem;">수정</a>`
-            : `<span class="match-score-empty">— : —</span>
-               <a href="results.html?${params.toString()}" class="conf-result-link">입력</a>`;
+               <span class="match-score ${s2>s1?'win':''}">${s2}</span>`
+            : `<span class="match-score-empty">— : —</span>`;
+          const actionHtml = result
+            ? `<a href="results.html?edit=${result.id}" class="conf-action-btn" style="border-color:var(--g3);color:var(--g3);">수정</a>`
+            : `<a href="results.html?${params.toString()}" class="conf-action-btn">입력</a>`;
 
           return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
@@ -460,7 +503,8 @@ function renderConfirmedList(list, allMatches) {
             <div class="conf-team">${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
             <div class="conf-score-block">${scoreHtml}</div>
             <div class="conf-team">${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
-            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);margin-left:auto;">⭐${result.mvp}</span>` : ''}
+            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);">⭐${result.mvp}</span>` : ''}
+            ${actionHtml}
           </div>`;
         }).join('')
       ).join('');
@@ -546,15 +590,52 @@ function toggleConf(id) {
 }
 
 async function clearMatches(schedId) {
-  if (!confirm('이 일정의 모든 경기 기록을 삭제할까요?\n(일정은 유지됩니다)')) return;
+  if (!confirm('이 일정의 경기 스코어를 모두 초기화할까요?\n(일정은 유지됩니다)')) return;
   try {
-    await fetch(API, { method:'POST', body: JSON.stringify({ action:'clearAllMatches' }) });
+    const [allMatches, allScheds] = await Promise.all([
+      fetch(`${API}?action=getMatches`).then(r=>r.json()),
+      fetch(`${API}?action=getSchedules`).then(r=>r.json())
+    ]);
+    const s = allScheds.find(x => x.id === schedId);
+    if (!s) { alert('일정을 찾을 수 없습니다.'); return; }
+    let sched = [];
+    try { sched = JSON.parse(s.schedule_json || '[]'); } catch(e) {}
+
+    // schedule_id 매칭 또는 선수 조합 매칭
+    const toDelete = [];
+    const key = arr => [...arr].sort().join(',');
+    allMatches.forEach(m => {
+      if (String(m.schedule_id) === String(schedId)) { toDelete.push(m.id); return; }
+      const mt1 = key([m.team1_p1, m.team1_p2]), mt2 = key([m.team2_p1, m.team2_p2]);
+      const evMatch = s.event && m.event ? m.event === s.event : true;
+      const dtMatch = s.date && m.date ? String(m.date).substring(0,10) === String(s.date).substring(0,10) : true;
+      if (!evMatch && !dtMatch) return;
+      for (const r of sched) {
+        for (const sm of (r.matches||[])) {
+          const st1 = key(sm.t1||[]), st2 = key(sm.t2||[]);
+          if ((mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1)) {
+            if (!toDelete.includes(m.id)) toDelete.push(m.id);
+            return;
+          }
+        }
+      }
+    });
+
+    if (!toDelete.length) { alert('삭제할 기록이 없습니다.'); return; }
+    await Promise.all(toDelete.map(id =>
+      fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteMatch', id }) })
+    ));
+    _skipCache = true;
     await loadConfirmedSchedules();
+    alert(`${toDelete.length}건의 스코어가 초기화됐습니다.`);
   } catch(e) { alert('초기화 실패: ' + e.message); }
 }
+
+async function delSchedule(id) {
   if (!confirm('이 일정을 삭제할까요?')) return;
   try {
     await fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteSchedule', id }) });
+    _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) {}
 }
@@ -571,10 +652,9 @@ function toggleNewSchedule() {
 async function confirmSchedule() {
   if (!_lastScheduleData) return;
   const { schedule, females, males, formats, numRounds } = _lastScheduleData;
+  const date  = document.getElementById('sched-date').value || '';
   const name  = document.getElementById('sched-name').value.trim() ||
-    `시합 일정 ${new Date().toLocaleDateString('ko-KR')}`;
-  const date  = document.getElementById('sched-date').value ||
-    new Date().toISOString().split('T')[0];
+    (date ? `시합 일정 ${date}` : `시합 일정`);
   const event = document.getElementById('sched-event').value || '';
 
   const btn = document.querySelector('.confirm-btn');
@@ -602,6 +682,7 @@ async function confirmSchedule() {
 
     const res = await r.json();
     if (res.success) {
+      _skipCache = true;
       btn.textContent = '✓ 확정됨';
       btn.style.background = '#4caf50';
       await loadConfirmedSchedules();
@@ -928,7 +1009,7 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
       const params = new URLSearchParams({
         t1p1: t1[0], t1p2: t1[1],
         t2p1: t2[0], t2p2: t2[1],
-        date: document.getElementById('sched-date').value || new Date().toISOString().split('T')[0]
+        date: document.getElementById('sched-date').value || ''
       });
       html += `<div class="match-row">
         <div class="team">
@@ -1031,10 +1112,29 @@ function copySchedule() {
   });
 }
 
-// Init
-initPlayers();
+// Init — API에서 실제 선수 이름 불러오기
+async function initFromAPI() {
+  try {
+    const players = await cachedFetch('getPlayers');
+    if (players && players.length) {
+      const females = players.filter(p => p.gender === 'female').map(p => p.name);
+      const males = players.filter(p => p.gender === 'male').map(p => p.name);
+      if (females.length) {
+        document.getElementById('female-list').innerHTML = '';
+        females.forEach(n => addPlayer('female', n));
+      }
+      if (males.length) {
+        document.getElementById('male-list').innerHTML = '';
+        males.forEach(n => addPlayer('male', n));
+      }
+    }
+  } catch(e) {}
+  checkAvailability();
+}
+initPlayers(); // 기본값 먼저 표시
 document.getElementById('fmt-mixed').classList.add('active');
 validateFormats();
+initFromAPI(); // API에서 실제 이름으로 교체
 loadConfirmedSchedules();
 </script>
 </body>

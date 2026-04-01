@@ -146,9 +146,9 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
       <div class="form-group full">
         <label class="form-label">스코어</label>
         <div class="score-row">
-          <input class="score-input" type="number" id="f-s1" min="0" max="7" placeholder="0" oninput="preview()">
+          <input class="score-input" type="number" id="f-s1" min="0" max="6" placeholder="0" oninput="preview()">
           <div class="score-vs">:</div>
-          <input class="score-input" type="number" id="f-s2" min="0" max="7" placeholder="0" oninput="preview()">
+          <input class="score-input" type="number" id="f-s2" min="0" max="6" placeholder="0" oninput="preview()">
           <span class="score-hint" id="score-hint"></span>
         </div>
       </div>
@@ -171,11 +171,53 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     </div>
     <div id="matches-list"><div class="state-msg"><span class="spin"></span> 불러오는 중...</div></div>
   </div>
+
+  <div class="card">
+    <div class="card-title">이벤트 관리</div>
+    <div id="events-list" style="margin-bottom:1rem;"></div>
+    <div id="event-form-wrap" style="display:none;border-top:1px solid var(--ll);padding-top:1rem;">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">이벤트명</label>
+          <input class="form-input" type="text" id="ev-name" placeholder="예: 정기 매치">
+        </div>
+        <div class="form-group">
+          <label class="form-label">날짜</label>
+          <input class="form-input" type="date" id="ev-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">장소</label>
+          <input class="form-input" type="text" id="ev-venue" placeholder="예: 세곡 테니스코트">
+        </div>
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-select" id="ev-status">
+            <option value="upcoming">예정</option>
+            <option value="ongoing">진행중</option>
+            <option value="completed">완료</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-submit" style="margin-top:1rem;" onclick="submitEvent()">이벤트 추가</button>
+    </div>
+    <button id="ev-toggle-btn" onclick="toggleEventForm()" style="
+      width:100%;margin-top:.8rem;
+      font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;
+      letter-spacing:2px;text-transform:uppercase;color:var(--g3);
+      background:none;border:1px dashed rgba(78,122,90,.3);
+      padding:.45rem 1rem;cursor:pointer;transition:all .2s;
+    ">+ 새 이벤트 추가</button>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
+const CACHE_TTL=3*60*1000;
+function cacheGet(k){try{const r=localStorage.getItem('dtl_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
+function cacheSet(k,d){try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
+async function cachedFetch(action){const c=cacheGet(action);const f=fetch(`${API}?action=${action}`).then(r=>r.json()).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
+
 let players=[],events=[],matches=[];
 let editingId=null; // null = 신규, string = 수정 중 match id
 
@@ -196,10 +238,27 @@ function applyUrlParams(){
   }
   if(p.get('event')) setSelectVal('f-event', p.get('event'));
   if(p.get('date'))  document.getElementById('f-date').value=p.get('date');
-  if(p.get('t1p1'))  setSelectVal('f-t1p1', p.get('t1p1'));
-  if(p.get('t1p2'))  setSelectVal('f-t1p2', p.get('t1p2'));
-  if(p.get('t2p1'))  setSelectVal('f-t2p1', p.get('t2p1'));
-  if(p.get('t2p2'))  setSelectVal('f-t2p2', p.get('t2p2'));
+  const playerFields=['f-t1p1','f-t1p2','f-t2p1','f-t2p2'];
+  const playerKeys=['t1p1','t1p2','t2p1','t2p2'];
+  playerKeys.forEach((key,i)=>{
+    const val=p.get(key);
+    if(!val) return;
+    const id=playerFields[i];
+    setSelectVal(id, val);
+    // select에 매칭이 안 되면 고정값으로 교체
+    const sel=document.getElementById(id);
+    if(sel.value!==val){
+      const fixed=document.createElement('input');
+      fixed.type='text';
+      fixed.className='form-input';
+      fixed.value=val;
+      fixed.readOnly=true;
+      fixed.id=id;
+      fixed.style.fontWeight='600';
+      fixed.style.color='var(--ink)';
+      sel.parentElement.replaceChild(fixed, sel);
+    }
+  });
   if(p.get('schedule_id')) window._scheduleId = p.get('schedule_id');
   if(p.get('t1p1')||p.get('t1p2')||p.get('t2p1')||p.get('t2p2')) preview();
 }
@@ -249,8 +308,7 @@ function cancelEdit(){
 
 async function loadPlayers(){
   try{
-    const r=await fetch(`${API}?action=getPlayers`);
-    players=await r.json();
+    players=await cachedFetch('getPlayers');
     ['f-t1p1','f-t1p2','f-t2p1','f-t2p2','f-mvp'].forEach(id=>{
       const el=document.getElementById(id);
       const isM=id==='f-mvp';
@@ -262,8 +320,7 @@ async function loadPlayers(){
 
 async function loadEvents(){
   try{
-    const r=await fetch(`${API}?action=getEvents`);
-    events=await r.json();
+    events=await cachedFetch('getEvents');
     const el=document.getElementById('f-event');
     el.innerHTML='<option value="">이벤트 선택</option>';
     events.forEach(ev=>{ el.innerHTML+=`<option value="${ev.name}">${ev.name} (${ev.date})</option>`; });
@@ -274,8 +331,7 @@ async function loadEvents(){
 
 async function loadMatches(){
   try{
-    const r=await fetch(`${API}?action=getMatches`);
-    matches=await r.json();
+    matches=await cachedFetch('getMatches');
     renderMatches(matches);
   }catch(e){
     document.getElementById('matches-list').innerHTML=`<div class="state-msg"><div class="state-icon">⚠️</div><div class="state-text">불러오기 실패</div></div>`;
@@ -350,8 +406,12 @@ async function submitResult(){
   if(!data.team1_p1||!data.team1_p2||!data.team2_p1||!data.team2_p2){toast('선수를 모두 선택해주세요','err');return;}
   if(data.score1===''||data.score2===''){toast('스코어를 입력해주세요','err');return;}
   const s1=parseInt(data.score1), s2=parseInt(data.score2);
-  if(s1>7||s2>7){toast('스코어는 최대 7점까지 입력 가능합니다','err');return;}
+  if(s1>6||s2>6){toast('스코어는 최대 6점까지 입력 가능합니다','err');return;}
   if(s1===s2){toast('동점은 입력할 수 없습니다','err');return;}
+  if(s1<0||s2<0){toast('스코어는 0 이상이어야 합니다','err');return;}
+  const selectedPlayers=[data.team1_p1,data.team1_p2,data.team2_p1,data.team2_p2];
+  if(new Set(selectedPlayers).size!==4){toast('같은 선수가 중복 선택되었습니다','err');return;}
+  if(data.mvp&&!selectedPlayers.includes(data.mvp)){toast('MVP는 경기 참가 선수 중에서 선택해주세요','err');return;}
 
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
@@ -359,6 +419,14 @@ async function submitResult(){
     const r=await fetch(API,{method:'POST',body:JSON.stringify(data)});
     const res=await r.json();
     if(res.success){
+      localStorage.removeItem('dtl_getMatches');
+      localStorage.removeItem('dtl_getRankings');
+      localStorage.removeItem('dtl_getSchedules');
+      if(window._scheduleId){
+        toast('저장됐습니다 ✓ 일정으로 이동합니다','ok');
+        setTimeout(()=>{ window.location.href='schedule.html'; },1000);
+        return;
+      }
       toast(editingId?'수정됐습니다 ✓':'결과가 저장됐습니다 ✓','ok');
       cancelEdit();
       await loadMatches();
@@ -374,7 +442,7 @@ async function delMatch(id){
   try{
     const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'deleteMatch',id})});
     const res=await r.json();
-    if(res.success){toast('삭제됐습니다','ok');await loadMatches();}
+    if(res.success){localStorage.removeItem('dtl_getMatches');localStorage.removeItem('dtl_getRankings');toast('삭제됐습니다','ok');await loadMatches();}
   }catch(e){toast('삭제 실패','err');}
 }
 
@@ -393,7 +461,61 @@ function toast(msg,type){
   setTimeout(()=>t.className='toast',2500);
 }
 
-init();
+// ── 이벤트 관리 ──
+function toggleEventForm(){
+  const wrap=document.getElementById('event-form-wrap');
+  const btn=document.getElementById('ev-toggle-btn');
+  const show=wrap.style.display==='none';
+  wrap.style.display=show?'block':'none';
+  btn.textContent=show?'− 닫기':'+ 새 이벤트 추가';
+}
+
+function renderEventsList(){
+  const el=document.getElementById('events-list');
+  if(!events.length){el.innerHTML='<div style="font-size:.82rem;color:var(--sm2);padding:.5rem 0;">등록된 이벤트가 없습니다</div>';return;}
+  const statusLabel={upcoming:'예정',ongoing:'진행중',completed:'완료'};
+  el.innerHTML=events.map(ev=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(26,31,28,.05);">
+      <div>
+        <div style="font-weight:500;font-size:.88rem;">${ev.name}</div>
+        <div style="font-size:.72rem;color:var(--sm2);">${ev.date||''} · ${ev.venue||''} · ${statusLabel[ev.status]||ev.status||''}</div>
+      </div>
+      <button class="del-btn" onclick="delEvent('${ev.id}')">삭제</button>
+    </div>
+  `).join('');
+}
+
+async function submitEvent(){
+  const name=document.getElementById('ev-name').value.trim();
+  const date=document.getElementById('ev-date').value;
+  const venue=document.getElementById('ev-venue').value.trim();
+  const status=document.getElementById('ev-status').value;
+  if(!name){toast('이벤트명을 입력해주세요','err');return;}
+  try{
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'saveEvent',name,date,venue,status})});
+    const res=await r.json();
+    if(res.success){
+      toast('이벤트가 추가됐습니다','ok');
+      document.getElementById('ev-name').value='';
+      document.getElementById('ev-date').value='';
+      document.getElementById('ev-venue').value='';
+      await loadEvents();
+      renderEventsList();
+    }else toast('저장 실패: '+(res.error||''),'err');
+  }catch(e){toast('오류가 발생했습니다','err');}
+}
+
+async function delEvent(id){
+  if(!confirm('이 이벤트를 삭제할까요?'))return;
+  try{
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'deleteEvent',id})});
+    const res=await r.json();
+    if(res.success){toast('삭제됐습니다','ok');await loadEvents();renderEventsList();}
+    else toast('삭제 실패','err');
+  }catch(e){toast('삭제 실패','err');}
+}
+
+init().then(()=>renderEventsList());
 </script>
 </body>
 </html>

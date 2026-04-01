@@ -116,12 +116,15 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
+const CACHE_TTL=3*60*1000;
+function cacheGet(k){try{const r=localStorage.getItem('dtl_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
+function cacheSet(k,d){try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
+async function cachedFetch(action){const c=cacheGet(action);const f=fetch(`${API}?action=${action}`).then(r=>r.json()).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
 
 async function load(){
   document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><span class="spin"></span></div>`;
   try{
-    const r=await fetch(`${API}?action=getRankings`);
-    const data=await r.json();
+    const data=await cachedFetch('getRankings');
     render(data);
   }catch(e){
     document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><div class="no-data-icon">⚠️</div><div class="no-data-text">불러오기 실패</div></div>`;
