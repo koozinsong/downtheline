@@ -341,15 +341,15 @@ let _lastScheduleData = null; // 마지막 생성된 일정 저장용
 
 // ── 확정 일정 불러오기 ──
 async function loadConfirmedSchedules() {
-  document.getElementById('confirmed-list').innerHTML =
-    '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">불러오는 중...</div>';
+  const el = document.getElementById('confirmed-list');
+  el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:var(--sm);">불러오는 중...</div>';
   try {
     const r = await fetch(`${API}?action=getSchedules`);
     const list = await r.json();
+    console.log('schedules:', list);
     renderConfirmedList(list);
   } catch(e) {
-    document.getElementById('confirmed-list').innerHTML =
-      '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">불러오기 실패</div>';
+    el.innerHTML = `<div style="padding:.8rem 0;font-size:.82rem;color:red;">오류: ${e.message}</div>`;
   }
 }
 
@@ -357,45 +357,54 @@ function renderConfirmedList(list) {
   const el = document.getElementById('confirmed-list');
 
   if (!list || !list.length) {
-    el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">아직 확정된 일정이 없습니다.</div>';
+    el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:var(--sm);">아직 확정된 일정이 없습니다.</div>';
     return;
   }
 
-  el.innerHTML = list.map(s => {
-    const sched = JSON.parse(s.schedule_json || '[]');
-    const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
-    const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
-    const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
+  try {
+    el.innerHTML = list.map(s => {
+      let sched = [];
+      try { sched = JSON.parse(s.schedule_json || '[]'); } catch(e) { sched = []; }
+      const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
+      const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
+      const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
 
-    const matchRows = sched.map(r =>
-      (r.matches||[]).map((m, ci) => {
-        const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
-        const params = new URLSearchParams({ t1p1:t1[0]||'', t1p2:t1[1]||'', t2p1:t2[0]||'', t2p2:t2[1]||'', event:s.name||'', date:s.date||'' });
-        return `<div class="conf-match-row">
-          <div class="conf-round-label">R${r.round}</div>
-          <span class="fmt-badge ${fmtCls[fmt]}">${fmtLabel[fmt]}</span>
-          ${t1.map(p => `<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-          <span style="font-size:.65rem;color:var(--sm2);font-weight:600;">vs</span>
-          ${t2.map(p => `<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-          <a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>
-        </div>`;
-      }).join('')
-    ).join('');
+      const matchRows = sched.map(r =>
+        (r.matches||[]).map((m) => {
+          const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
+          const params = new URLSearchParams({
+            t1p1:t1[0]||'', t1p2:t1[1]||'',
+            t2p1:t2[0]||'', t2p2:t2[1]||'',
+            event:s.name||'', date:s.date||''
+          });
+          return `<div class="conf-match-row">
+            <div class="conf-round-label">R${r.round}</div>
+            <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
+            ${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
+            <span style="font-size:.65rem;color:var(--sm);font-weight:600;">vs</span>
+            ${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
+            <a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>
+          </div>`;
+        }).join('')
+      ).join('');
 
-    return `<div class="conf-card">
-      <div class="conf-card-head" onclick="toggleConf('${s.id}')">
-        <div>
-          <div class="conf-card-name">${s.name||'시합 일정'}</div>
-          <div class="conf-card-meta">${s.date||''} · ${sched.length}라운드 · ${totalMatches}경기 · ${s.formats||''}</div>
+      return `<div class="conf-card">
+        <div class="conf-card-head" onclick="toggleConf('${s.id}')">
+          <div>
+            <div class="conf-card-name">${s.name||'시합 일정'}</div>
+            <div class="conf-card-meta">${String(s.date||'').substring(0,10)} · ${sched.length}라운드 · ${totalMatches}경기 · ${s.formats||''}</div>
+          </div>
+          <div class="conf-card-actions">
+            <button class="conf-del-btn" onclick="event.stopPropagation();delSchedule('${s.id}')">삭제</button>
+            <span style="font-size:.75rem;color:var(--sm2);">▾</span>
+          </div>
         </div>
-        <div class="conf-card-actions">
-          <button class="conf-del-btn" onclick="event.stopPropagation();delSchedule('${s.id}')">삭제</button>
-          <span style="font-size:.75rem;color:var(--sm2);">▾</span>
-        </div>
-      </div>
-      <div class="conf-body open" id="conf-body-${s.id}">${matchRows}</div>
-    </div>`;
-  }).join('');
+        <div class="conf-body open" id="conf-body-${s.id}">${matchRows}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">렌더링 오류: ${e.message}</div>`;
+  }
 }
 
 function toggleConf(id) {
