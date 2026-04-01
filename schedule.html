@@ -188,21 +188,21 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   <p class="page-sub">인원과 조건을 입력하면 동일 파트너·상대 최소화 일정을 자동으로 생성합니다.</p>
 
   <!-- CONFIRMED SCHEDULES -->
-  <div id="confirmed-wrap" style="margin-bottom:2rem;display:none;">
+  <div id="confirmed-wrap" style="margin-bottom:2rem;">
     <div class="setup-card" style="padding:0;overflow:hidden;">
       <div style="background:var(--g);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gdl);">Confirmed Schedules</div>
           <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem;">확정된 시합 일정</div>
         </div>
-        <button onclick="toggleNewSchedule()" id="new-sched-btn" style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--gd);color:var(--ink);border:none;padding:.45rem 1rem;cursor:pointer;">+ 새 일정 생성</button>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);">확정된 시합 일정</span>
       </div>
       <div id="confirmed-list" style="padding:1rem 1.5rem;"></div>
     </div>
   </div>
 
   <!-- NEW SCHEDULE TOGGLE -->
-  <div id="new-sched-section" style="display:none;">
+  <div id="new-sched-section">
 
   <!-- SETUP -->
   <div class="setup-card">
@@ -341,39 +341,25 @@ let _lastScheduleData = null; // 마지막 생성된 일정 저장용
 
 // ── 확정 일정 불러오기 ──
 async function loadConfirmedSchedules() {
-  // 로딩 중 표시
-  const wrap = document.getElementById('confirmed-wrap');
-  wrap.style.display = 'block';
-  document.getElementById('confirmed-list').innerHTML = '<div style="padding:1rem;font-size:.82rem;color:rgba(255,255,255,.4);">불러오는 중...</div>';
-
+  document.getElementById('confirmed-list').innerHTML =
+    '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">불러오는 중...</div>';
   try {
     const r = await fetch(`${API}?action=getSchedules`);
     const list = await r.json();
     renderConfirmedList(list);
   } catch(e) {
-    console.log('일정 불러오기 실패', e);
-    // 실패 시 생성 폼 표시
-    wrap.style.display = 'none';
-    document.getElementById('new-sched-section').style.display = 'block';
+    document.getElementById('confirmed-list').innerHTML =
+      '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">불러오기 실패</div>';
   }
 }
 
 function renderConfirmedList(list) {
-  const wrap = document.getElementById('confirmed-wrap');
-  const el   = document.getElementById('confirmed-list');
-  const newSec = document.getElementById('new-sched-section');
+  const el = document.getElementById('confirmed-list');
 
   if (!list || !list.length) {
-    // 확정 일정 없음 → 생성 폼 표시
-    wrap.style.display = 'none';
-    newSec.style.display = 'block';
+    el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:rgba(255,255,255,.35);">아직 확정된 일정이 없습니다.</div>';
     return;
   }
-
-  // 확정 일정 있음 → 목록 표시, 생성 폼 숨김
-  wrap.style.display = 'block';
-  newSec.style.display = 'none';
-  document.getElementById('new-sched-btn').textContent = '+ 새 일정 생성';
 
   el.innerHTML = list.map(s => {
     const sched = JSON.parse(s.schedule_json || '[]');
