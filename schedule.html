@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>시합 일정 생성기 — Down the Line</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -26,7 +27,9 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .nav-back:hover{color:var(--gdl);}
 .nav-back::before{content:'←';}
 .nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
-.nav-sub{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-left:auto;}
+.nav-links{margin-left:auto;display:flex;gap:.5rem;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);text-decoration:none;transition:all .2s;padding:.4rem .9rem;border:1px solid rgba(255,255,255,.15);}
+.nav-link:hover,.nav-link.active{color:var(--w);background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);}
 
 /* LAYOUT */
 .wrap{max-width:900px;margin:0 auto;padding:3rem 2rem;}
@@ -255,9 +258,13 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 <body>
 
 <nav id="nav">
-  <a class="nav-back" href="index.html">홈으로</a>
-  <div class="nav-title">시합 일정 생성기</div>
-  <div class="nav-sub">Down the Line</div>
+  <a class="nav-back" href="index.html">홈</a>
+  <div class="nav-title">시합 일정</div>
+  <div class="nav-links">
+    <a class="nav-link active" href="schedule.html">시합일정</a>
+    <a class="nav-link" href="results.html">경기결과</a>
+    <a class="nav-link" href="ranking.html">랭킹</a>
+  </div>
 </nav>
 
 <div class="wrap">
@@ -499,11 +506,13 @@ async function loadConfirmedSchedules() {
   const el = document.getElementById('confirmed-list');
   el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:var(--sm);">불러오는 중...</div>';
   try {
-    const [schedRes, matchRes, eventRes] = await Promise.all([
+    const [schedRes, matchRes, eventRes, playerRes] = await Promise.all([
       cachedFetch('getSchedules'),
       cachedFetch('getMatches'),
-      cachedFetch('getEvents')
+      cachedFetch('getEvents'),
+      cachedFetch('getPlayers')
     ]);
+    const _femaleNames = new Set((playerRes||[]).filter(p=>p.gender==='female').map(p=>p.name));
 
     // 이벤트 드롭다운 채우기
     const evtSel = document.getElementById('sched-event');
@@ -521,7 +530,7 @@ async function loadConfirmedSchedules() {
 
     // 날짜는 비워두고 사용자가 직접 입력하거나 이벤트 선택 시 자동 채움
 
-    renderConfirmedList(schedRes||[], matchRes||[]);
+    renderConfirmedList(schedRes||[], matchRes||[], _femaleNames);
 
     // 확정 일정 있으면 폼 숨기되, 버튼은 항상 표시
     if (schedRes && schedRes.length > 0) {
@@ -538,7 +547,9 @@ async function loadConfirmedSchedules() {
   }
 }
 
-function renderConfirmedList(list, allMatches) {
+function renderConfirmedList(list, allMatches, femaleNames) {
+  const _fn = femaleNames || new Set();
+  const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${name}</span>`;
   const el = document.getElementById('confirmed-list');
 
   if (!list || !list.length) {
@@ -595,9 +606,9 @@ function renderConfirmedList(list, allMatches) {
           return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
-            <div class="conf-team">${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
+            <div class="conf-team">${t1.map(p=>pChip(p)).join('')}</div>
             <div class="conf-score-block">${scoreHtml}</div>
-            <div class="conf-team">${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
+            <div class="conf-team">${t2.map(p=>pChip(p)).join('')}</div>
             ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);">⭐${result.mvp}</span>` : ''}
             ${actionHtml}
           </div>`;
