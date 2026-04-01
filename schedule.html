@@ -59,6 +59,13 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .del-btn:hover{border-color:var(--female);color:var(--female);}
 .add-btn{margin-top:.5rem;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g3);background:none;border:1px dashed rgba(78,122,90,.3);padding:.45rem 1rem;cursor:pointer;width:100%;transition:all .2s;}
 .add-btn:hover{border-color:var(--g3);background:rgba(78,122,90,.05);}
+.selected-player{display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;border:1px solid var(--ll);margin-bottom:.4rem;background:var(--w);transition:background .15s;}
+.selected-player:hover{background:var(--iv2);}
+.sp-info{display:flex;align-items:center;gap:.5rem;}
+.sp-num{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;color:var(--sm2);width:18px;}
+.sp-name{font-size:.85rem;font-weight:500;color:var(--ink);}
+.sp-remove{background:none;border:none;color:var(--sm2);font-size:.85rem;cursor:pointer;padding:0 .3rem;transition:color .2s;}
+.sp-remove:hover{color:#c0392b;}
 
 /* Options row */
 .options-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
@@ -297,17 +304,22 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
     <!-- Players -->
     <div class="setup-section">
-      <div class="setup-label">참가자</div>
-      <div class="player-grid">
+      <div class="setup-label">참가자 선택</div>
+      <div id="player-loading" style="font-size:.82rem;color:var(--sm);padding:.5rem 0;">불러오는 중...</div>
+      <div class="player-grid" id="player-grid" style="display:none;">
         <div class="player-col">
           <div class="player-col-head female-head"><span class="player-tag f-tag">여</span> 여자 선수</div>
-          <div class="player-list" id="female-list"></div>
-          <button class="add-btn" onclick="addPlayer('female')">+ 추가</button>
+          <div class="player-list" id="female-selected"></div>
+          <select class="opt-select" id="female-dropdown" onchange="selectPlayer('female')">
+            <option value="">+ 선수 추가</option>
+          </select>
         </div>
         <div class="player-col">
           <div class="player-col-head male-head"><span class="player-tag m-tag">남</span> 남자 선수</div>
-          <div class="player-list" id="male-list"></div>
-          <button class="add-btn" onclick="addPlayer('male')">+ 추가</button>
+          <div class="player-list" id="male-selected"></div>
+          <select class="opt-select" id="male-dropdown" onchange="selectPlayer('male')">
+            <option value="">+ 선수 추가</option>
+          </select>
         </div>
       </div>
     </div>
@@ -446,7 +458,11 @@ async function atGet(table) {
     const url = `${AT}/${encodeURIComponent(table)}${offset ? '?offset='+offset : ''}`;
     const r = await fetch(url, { headers: AT_H });
     const d = await r.json();
-    all.push(...(d.records||[]).map(rec => ({ id:rec.id, ...rec.fields })));
+    all.push(...(d.records||[]).map(rec => {
+      const o = { id:rec.id };
+      Object.entries(rec.fields||{}).forEach(([k,v]) => { o[k.charAt(0).toLowerCase()+k.slice(1)] = v; });
+      return o;
+    }));
     offset = d.offset;
   } while (offset);
   return all;
@@ -771,30 +787,62 @@ async function confirmSchedule() {
 
 
 
-function initPlayers() {
-  defaultFemales.forEach(n => addPlayer('female', n));
-  defaultMales.forEach(n => addPlayer('male', n));
+let _allPlayers = []; // Airtable에서 불러온 전체 선수
+let _selectedFemales = []; // 선택된 여자 선수 이름 배열
+let _selectedMales = [];   // 선택된 남자 선수 이름 배열
+
+function initPlayerDropdowns(players) {
+  _allPlayers = players;
+  // 기본으로 전체 선택
+  _selectedFemales = players.filter(p => p.gender === 'female').map(p => p.name);
+  _selectedMales = players.filter(p => p.gender === 'male').map(p => p.name);
+  document.getElementById('player-loading').style.display = 'none';
+  document.getElementById('player-grid').style.display = '';
+  renderSelectedPlayers();
 }
 
-function addPlayer(gender, name = '') {
-  const list = document.getElementById(gender + '-list');
-  const idx = list.children.length + 1;
-  const div = document.createElement('div');
-  div.className = 'player-row';
-  const placeholder = gender === 'female' ? `여${idx}` : `남${idx}`;
-  div.innerHTML = `
-    <input type="text" value="${name}" placeholder="${placeholder}" maxlength="8">
-    <button class="del-btn" onclick="this.parentElement.remove();checkAvailability()">×</button>`;
-  list.appendChild(div);
+function renderSelectedPlayers() {
+  ['female', 'male'].forEach(gender => {
+    const selected = gender === 'female' ? _selectedFemales : _selectedMales;
+    const listEl = document.getElementById(gender + '-selected');
+    listEl.innerHTML = selected.map((name, i) =>
+      `<div class="selected-player">
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name">${name}</span></div>
+        <button class="sp-remove" onclick="removePlayer('${gender}','${name}')">×</button>
+      </div>`
+    ).join('');
+    updateDropdown(gender);
+  });
   checkAvailability();
 }
 
+function updateDropdown(gender) {
+  const selected = gender === 'female' ? _selectedFemales : _selectedMales;
+  const dropdown = document.getElementById(gender + '-dropdown');
+  const available = _allPlayers.filter(p => p.gender === gender && !selected.includes(p.name));
+  dropdown.innerHTML = '<option value="">+ 선수 추가</option>';
+  available.forEach(p => { dropdown.innerHTML += `<option value="${p.name}">${p.name}</option>`; });
+  dropdown.style.display = available.length ? '' : 'none';
+}
+
+function selectPlayer(gender) {
+  const dropdown = document.getElementById(gender + '-dropdown');
+  const name = dropdown.value;
+  if (!name) return;
+  const selected = gender === 'female' ? _selectedFemales : _selectedMales;
+  if (!selected.includes(name)) selected.push(name);
+  dropdown.value = '';
+  renderSelectedPlayers();
+}
+
+function removePlayer(gender, name) {
+  if (gender === 'female') _selectedFemales = _selectedFemales.filter(n => n !== name);
+  else _selectedMales = _selectedMales.filter(n => n !== name);
+  renderSelectedPlayers();
+}
+
 function getPlayers(gender) {
-  const list = document.getElementById(gender + '-list');
-  return Array.from(list.querySelectorAll('input')).map((el, i) => {
-    const val = el.value.trim();
-    return val || (gender === 'female' ? `여${i+1}` : `남${i+1}`);
-  });
+  return gender === 'female' ? [..._selectedFemales] : [..._selectedMales];
 }
 
 function toggleCond(el) { el.classList.toggle('active'); }
@@ -1171,29 +1219,21 @@ function copySchedule() {
   });
 }
 
-// Init — API에서 실제 선수 이름 불러오기
+// Init
 async function initFromAPI() {
   try {
     const players = await cachedFetch('getPlayers');
     if (players && players.length) {
-      const females = players.filter(p => p.gender === 'female').map(p => p.name);
-      const males = players.filter(p => p.gender === 'male').map(p => p.name);
-      if (females.length) {
-        document.getElementById('female-list').innerHTML = '';
-        females.forEach(n => addPlayer('female', n));
-      }
-      if (males.length) {
-        document.getElementById('male-list').innerHTML = '';
-        males.forEach(n => addPlayer('male', n));
-      }
+      initPlayerDropdowns(players);
+    } else {
+      document.getElementById('player-loading').textContent = '선수 데이터가 없습니다.';
     }
-  } catch(e) {}
-  checkAvailability();
+  } catch(e) {
+    document.getElementById('player-loading').textContent = '선수 불러오기 실패';
+  }
 }
-initPlayers(); // 기본값 먼저 표시
 document.getElementById('fmt-mixed').classList.add('active');
-validateFormats();
-initFromAPI(); // API에서 실제 이름으로 교체
+initFromAPI();
 loadConfirmedSchedules();
 </script>
 </body>

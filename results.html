@@ -260,7 +260,7 @@ const AT_BASE='appDtlXaLReCaDeE6';
 const AT=`https://api.airtable.com/v0/${AT_BASE}`;
 const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
 
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>({id:rec.id,...rec.fields})));offset=d.offset;}while(offset);return all;}
+async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
 async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}

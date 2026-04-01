@@ -149,7 +149,7 @@ const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9
 const AT_BASE='appDtlXaLReCaDeE6';
 const AT=`https://api.airtable.com/v0/${AT_BASE}`;
 const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>({id:rec.id,...rec.fields})));offset=d.offset;}while(offset);return all;}
+async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
 
 function computeRankings(players, matches) {
   const stats={};
