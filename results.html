@@ -23,9 +23,11 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .nav-back:hover{color:var(--gdl);}
 .nav-back::before{content:'←';}
 .nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
-.nav-links{margin-left:auto;display:flex;gap:1.5rem;}
-.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s;}
-.nav-link:hover,.nav-link.active{color:var(--gdl);}
+.nav-links{margin-left:auto;display:flex;gap:.5rem;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);text-decoration:none;transition:all .2s;padding:.4rem .9rem;border:1px solid rgba(255,255,255,.15);}
+.nav-link:hover,.nav-link.active{color:var(--w);background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);}
+.nav-link.back{background:var(--gd);color:var(--ink);border-color:var(--gd);}
+.nav-link.back:hover{background:var(--gdl);}
 .wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
 .page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.5rem;}
 .page-title em{font-style:italic;color:var(--g3);font-weight:300;}
@@ -92,7 +94,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   <a class="nav-back" href="index.html">홈</a>
   <div class="nav-title">경기 결과</div>
   <div class="nav-links">
-    <a class="nav-link" href="schedule.html">← 시합 일정</a>
+    <a class="nav-link back" href="schedule.html">← 시합 일정</a>
     <a class="nav-link active" href="results.html">결과</a>
     <a class="nav-link" href="ranking.html">랭킹</a>
     <a class="nav-link" href="index.html">홈</a>

@@ -353,9 +353,12 @@ function renderConfirmedList(list) {
 
   if (!list || !list.length) {
     wrap.style.display = 'none';
+    document.getElementById('new-sched-section').style.display = 'block';
     return;
   }
   wrap.style.display = 'block';
+  document.getElementById('new-sched-section').style.display = 'none';
+  document.getElementById('new-sched-btn').textContent = '+ 새 일정 생성';
 
   el.innerHTML = list.map(s => {
     const sched = JSON.parse(s.schedule_json || '[]');
@@ -877,17 +880,10 @@ function copySchedule() {
 
 // Init
 initPlayers();
-// 기본값: 혼복 선택
 document.getElementById('fmt-mixed').classList.add('active');
 validateFormats();
-// 확정 일정 불러오기
-loadConfirmedSchedules().then(() => {
-  // 확정 일정 있으면 새 일정 섹션 기본 숨김
-  const list = document.getElementById('confirmed-list');
-  if (list && list.children.length > 0) {
-    document.getElementById('new-sched-section').style.display = 'none';
-  }
-});
+// 확정 일정 불러오기 — 있으면 생성 섹션 숨김
+loadConfirmedSchedules();
 </script>
 </body>
 </html>
