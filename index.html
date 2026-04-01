@@ -52,6 +52,9 @@ a,button,.hov{cursor:none;}
 nav ul{list-style:none;display:flex;}
 nav ul li a{display:flex;align-items:center;height:64px;padding:0 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
 nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
+.nav-divider{width:1px;background:var(--ll);margin:0 .5rem;align-self:stretch;}
+.nav-play{color:var(--gd) !important;opacity:.8;}
+.nav-play:hover{opacity:1;border-bottom-color:var(--gd) !important;}
 .nav-right{display:flex;align-items:center;gap:1.5rem;padding:0 1.8rem;}
 .nav-ig{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm2);text-decoration:none;transition:color .2s;}
 .nav-ig:hover{color:var(--g);}
@@ -308,11 +311,15 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
   </a>
   <div class="nav-mid">
     <ul>
-      <li><a href="#about"   class="hov">클럽 소개</a></li>
-      <li><a href="#courts"  class="hov">활동 코트</a></li>
-      <li><a href="#acts"    class="hov">활동</a></li>
-      <li><a href="#events"  class="hov">이벤트</a></li>
-      <li><a href="#mem"     class="hov">멤버십</a></li>
+      <li><a href="#about"        class="hov">클럽 소개</a></li>
+      <li><a href="#courts"       class="hov">활동 코트</a></li>
+      <li><a href="#acts"         class="hov">활동</a></li>
+      <li><a href="#events"       class="hov">이벤트</a></li>
+      <li><a href="#mem"          class="hov">멤버십</a></li>
+      <li class="nav-divider"></li>
+      <li><a href="schedule.html" class="hov nav-play">시합 일정</a></li>
+      <li><a href="results.html"  class="hov nav-play">경기 결과</a></li>
+      <li><a href="ranking.html"  class="hov nav-play">랭킹</a></li>
     </ul>
   </div>
   <div class="nav-right">
