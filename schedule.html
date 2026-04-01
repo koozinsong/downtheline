@@ -352,7 +352,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 <script>
 // ── Initial players ──
-const API = 'https://script.google.com/macros/s/AKfycbwgOXEtk0hyYaR43U6HL5Lt6F9VXou63ugvilV1YSWhcCtBlqjxwjnLXr0pV0QFcp1yLw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
 let _lastScheduleData = null;
 
 const defaultFemales = ['여1', '여2', '여3'];
@@ -525,6 +525,7 @@ function renderConfirmedList(list, allMatches) {
           </div>
           <div class="conf-card-actions">
             <button class="conf-del-btn" onclick="event.stopPropagation();delSchedule('${s.id}')">삭제</button>
+          <button class="conf-del-btn" style="color:#c0392b;border:1px solid rgba(192,57,43,.3);padding:.3rem .6rem;" onclick="event.stopPropagation();clearMatches('${s.id}')">기록 초기화</button>
             <span style="font-size:.75rem;color:var(--sm2);">▾</span>
           </div>
         </div>
@@ -544,7 +545,13 @@ function toggleConf(id) {
   el.classList.toggle('open');
 }
 
-async function delSchedule(id) {
+async function clearMatches(schedId) {
+  if (!confirm('이 일정의 모든 경기 기록을 삭제할까요?\n(일정은 유지됩니다)')) return;
+  try {
+    await fetch(API, { method:'POST', body: JSON.stringify({ action:'clearAllMatches' }) });
+    await loadConfirmedSchedules();
+  } catch(e) { alert('초기화 실패: ' + e.message); }
+}
   if (!confirm('이 일정을 삭제할까요?')) return;
   try {
     await fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteSchedule', id }) });
