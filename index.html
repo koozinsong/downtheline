@@ -305,6 +305,88 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
 @media(max-width:1024px){.nav-hamburger{display:flex;}}
 
+@media(max-width:600px){
+  /* 히어로 */
+  .hero{min-height:auto;}
+  .hero-court{height:35vh;}
+  .hero-txt{padding:1.5rem 1.2rem 3rem;}
+  .h-title .ht-a,.h-title .ht-b{font-size:3.2rem;}
+  .h-title .ht-ko{font-size:.85rem;letter-spacing:4px;}
+  .h-desc{font-size:.8rem;margin-bottom:1.5rem;}
+  .h-btns{flex-direction:column;gap:.8rem;}
+  .btn-gd{text-align:center;width:100%;padding:.8rem;}
+  .h-stats{position:relative;right:auto;flex-wrap:wrap;}
+  .h-st{flex:1 1 33%;padding:.8rem 1rem;}
+  .h-stn{font-size:1.4rem;}
+  .h-stl{font-size:.5rem;}
+  .h-scroll{display:none;}
+
+  /* 섹션 공통 */
+  .about,.courts,.acts,.events,.mem,.join{padding:3rem 1rem;}
+  .sec-h2{font-size:2.2rem;}
+  .sec-h2sm{font-size:1.6rem;}
+
+  /* 어바웃 */
+  .about-lede{font-size:.88rem;padding-left:1rem;}
+  .about-body{font-size:.8rem;}
+  .about-wm{font-size:40vw;}
+  .pillar{padding:1.2rem;}
+  .pn{font-size:2rem;}
+  .pt{font-size:.78rem;}
+  .pb{font-size:.72rem;}
+
+  /* 코트 */
+  .courts{padding:3rem 1rem;}
+  .courts-h2{font-size:2rem;}
+  .courts-copy{font-size:.8rem;}
+  .cc{padding:1.5rem 1.2rem;}
+  .cc-name{font-size:1.4rem;}
+  .cc-info{font-size:.72rem;}
+
+  /* 활동 */
+  .acts-row{gap:2px;padding:0 1rem;}
+  .act{flex:0 0 200px;aspect-ratio:3/4;}
+  .act-name{font-size:1.2rem;}
+
+  /* 이벤트 */
+  .evt-feat-info{grid-template-columns:1fr;gap:1.5rem;padding:1.5rem 0;}
+  .eff-title{font-size:1.8rem;}
+  .eff-desc{font-size:.8rem;}
+  .eff-meta{grid-template-columns:1fr;}
+  .em-item{padding:1rem;}
+  .eff-car-grid{flex-direction:column;}
+  .eff-table .et-time{font-size:.72rem;padding:.5rem .6rem .5rem 0;}
+  .eff-table .et-act{font-size:.75rem;padding:.5rem 0;}
+  .evt-grid{grid-template-columns:1fr;}
+
+  /* 멤버십 */
+  .mem-cards{grid-template-columns:1fr;}
+  .mc{padding:2rem 1.5rem;border-right:none;border-bottom:1px solid var(--ll);}
+  .mc:last-child{border-bottom:none;}
+  .mc-name{font-size:1.6rem;}
+
+  /* 조인 */
+  .join{flex-direction:column;padding:3rem 1.2rem;text-align:center;}
+  .jl-title{font-size:2rem;}
+  .jl-copy{font-size:.78rem;max-width:none;}
+  .jr{width:100%;flex-direction:column;}
+  .btn-jw,.btn-jo{width:100%;text-align:center;padding:.8rem;}
+
+  /* 푸터 */
+  .ft-grid{grid-template-columns:1fr;padding:2.5rem 1.2rem;gap:2rem;}
+  .ft-brand{font-size:1.6rem;}
+  .ft-bar{padding:1rem 1.2rem;flex-direction:column;text-align:center;}
+
+  /* 티커 */
+  .ticker{padding:.5rem 0;}
+  .ti{font-size:.65rem;padding:0 1.5rem;}
+
+  /* 커서 숨기기 — 모바일엔 불필요 */
+  #cur{display:none;}
+  body{cursor:auto;}
+  a,button,.hov{cursor:auto;}
+}
+
 /* mobile overlay */
 .mob-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:499;background:rgba(247,243,237,.98);backdrop-filter:blur(30px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s;}
 .mob-menu.open{opacity:1;visibility:visible;}

@@ -84,9 +84,38 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 @keyframes sp{to{transform:rotate(360deg);}}
 .last-updated{font-size:.72rem;color:var(--sm2);text-align:right;margin-bottom:1rem;}
 @media(max-width:600px){
-  .summary{grid-template-columns:1fr 1fr;}
-  .podium{grid-template-columns:1fr;}
+  /* 레이아웃 */
+  .wrap{padding:1.5rem 1rem;}
+  .page-title{font-size:2rem;}
+  .page-sub{font-size:.8rem;margin-bottom:2rem;}
+
+  /* 네비게이션 */
+  #nav{padding:0 .8rem;gap:.6rem;height:50px;}
+  .nav-title{font-size:.82rem;letter-spacing:2px;}
+  .nav-links{gap:.3rem;}
+  .nav-link{font-size:.58rem;padding:.3rem .5rem;letter-spacing:1px;}
+  .refresh-btn{font-size:.6rem;padding:.3rem .6rem;margin-left:.5rem;}
+
+  /* 요약 */
+  .summary{grid-template-columns:1fr 1fr;gap:.5rem;}
+  .sum-card{padding:.8rem;}
+  .sum-n{font-size:1.5rem;}
+
+  /* 포디움 */
+  .podium{grid-template-columns:1fr;gap:.5rem;}
   .pod-card.first{order:-1;}
+  .pod-card{padding:1rem;}
+  .pod-rank{font-size:2rem;}
+  .pod-pts{font-size:1.4rem;}
+
+  /* 랭킹 테이블 — 가로 스크롤 */
+  .rank-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .rank-table{min-width:650px;}
+  .rank-table th,.rank-table td{padding:.6rem .5rem;font-size:.75rem;}
+  .rank-num{font-size:1rem;}
+
+  /* 업데이트 */
+  .last-updated{font-size:.65rem;}
 }
 </style>
 </head>

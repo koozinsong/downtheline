@@ -86,7 +86,49 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .toast.show{opacity:1;transform:none;}
 .toast.ok{background:var(--g);color:var(--w);}
 .toast.err{background:#c0392b;color:var(--w);}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr;}.form-group.full{grid-column:span 1;}.mc-body{grid-template-columns:1fr 50px 1fr;}}
+@media(max-width:600px){
+  .wrap{padding:1.5rem 1rem;}
+  .page-title{font-size:2rem;}
+  .page-sub{font-size:.8rem;margin-bottom:2rem;}
+  .card{padding:1.2rem;}
+
+  /* 네비게이션 */
+  #nav{padding:0 .8rem;gap:.6rem;height:50px;}
+  .nav-title{font-size:.82rem;letter-spacing:2px;}
+  .nav-links{gap:.3rem;}
+  .nav-link{font-size:.6rem;padding:.3rem .5rem;letter-spacing:1px;}
+
+  /* 폼 */
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:span 1;}
+  .form-label{font-size:.68rem;}
+  .form-select,.form-input{font-size:.82rem;padding:.55rem .7rem;}
+
+  /* 스코어 */
+  .score-row{gap:.6rem;}
+  .score-input{width:60px;font-size:1.3rem;padding:.4rem;}
+
+  /* 프리뷰 */
+  .preview-box{grid-template-columns:1fr auto 1fr;gap:.5rem;padding:.7rem;}
+
+  /* 매치 카드 */
+  .mc-body{grid-template-columns:1fr 50px 1fr;gap:.4rem;padding:.7rem .8rem;}
+  .mc-head{padding:.5rem .8rem;}
+  .mc-event{font-size:.55rem;}
+  .mc-score{font-size:1.4rem;}
+  .mc-foot{padding:.4rem .8rem;flex-wrap:wrap;gap:.4rem;}
+  .chip{font-size:.68rem;padding:.15rem .45rem;}
+
+  /* 필터 */
+  .archive-filters{gap:.3rem;}
+  .filter-btn{font-size:.6rem;padding:.3rem .6rem;}
+
+  /* 버튼 */
+  .btn-submit{font-size:.75rem;padding:.8rem;}
+
+  /* 수정 배너 */
+  #edit-banner{font-size:.75rem;flex-direction:column;gap:.5rem;}
+}
 </style>
 </head>
 <body>
