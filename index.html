@@ -157,8 +157,8 @@ nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
 .acts-row{display:flex;gap:3px;padding:0 5rem;overflow-x:auto;scrollbar-width:none;}
 .acts-row::-webkit-scrollbar{display:none;}
 .act{flex:0 0 260px;position:relative;aspect-ratio:3/4;overflow:hidden;}
-.act-bg{position:absolute;inset:0;}
-.act-bg svg{width:100%;height:100%;}
+.act-bg{position:absolute;inset:0;overflow:hidden;}
+.act-bg svg,.act-bg img{width:100%;height:100%;object-fit:cover;display:block;}
 .act-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,31,28,.95) 0%,rgba(26,31,28,.2) 60%,transparent 100%);}
 .act-ct{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:1.8rem;}
 .act-tag{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gdl);margin-bottom:.5rem;}
@@ -656,7 +656,7 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
       <div class="act-ct"><div class="act-tag">Skill</div><div class="act-name">레슨 &<br>클리닉</div><div class="act-desc">전문 코치와 함께하는 그룹 레슨. 기초부터 전략까지.</div></div>
     </div>
     <div class="act hov">
-      <div class="act-bg" style="background:#1a2530"><svg viewBox="0 0 260 347" fill="none"><rect x="30" y="30" width="200" height="287" stroke="white" stroke-width="2"/><line x1="30" y1="130" x2="230" y2="130" stroke="white" stroke-width="1.5"/><line x1="30" y1="220" x2="230" y2="220" stroke="white" stroke-width="1.5"/><line x1="130" y1="30" x2="130" y2="317" stroke="white" stroke-width="1.5"/><rect x="85" y="130" width="90" height="90" stroke="white" stroke-width="1"/></svg></div>
+      <div class="act-bg" style="background:#1a2530"><img src="images/after-social.jpg" alt="애프터 소셜" style="filter:grayscale(100%);"></div>
       <div class="act-ov"></div><div class="act-num">04</div>
       <div class="act-ct"><div class="act-tag">Social</div><div class="act-name">애프터<br>소셜</div><div class="act-desc">운동 후 함께하는 식사와 음료. 코트 밖에서 더 깊어지는 관계.</div></div>
     </div>
