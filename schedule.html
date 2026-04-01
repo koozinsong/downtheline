@@ -433,28 +433,45 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 </div> <!-- end wrap -->
 
 <script>
-// ── Initial players ──
-const API = 'https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
+// ── Airtable API ──
+const AT_TOKEN = 'patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
+const AT_BASE = 'appDtlXaLReCaDeE6';
+const AT = `https://api.airtable.com/v0/${AT_BASE}`;
+const AT_H = { 'Authorization': `Bearer ${AT_TOKEN}`, 'Content-Type': 'application/json' };
 let _lastScheduleData = null;
 
-const CACHE_TTL = 3 * 60 * 1000; // 3분
-function cacheGet(key) {
-  try {
-    const raw = localStorage.getItem('dtl_' + key);
-    if (!raw) return null;
-    const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) return null;
-    return data;
-  } catch(e) { return null; }
+async function atGet(table) {
+  let all = [], offset = null;
+  do {
+    const url = `${AT}/${encodeURIComponent(table)}${offset ? '?offset='+offset : ''}`;
+    const r = await fetch(url, { headers: AT_H });
+    const d = await r.json();
+    all.push(...(d.records||[]).map(rec => ({ id:rec.id, ...rec.fields })));
+    offset = d.offset;
+  } while (offset);
+  return all;
 }
-function cacheSet(key, data) {
-  try { localStorage.setItem('dtl_' + key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+async function atCreate(table, fields) {
+  const r = await fetch(`${AT}/${encodeURIComponent(table)}`, { method:'POST', headers:AT_H, body:JSON.stringify({fields}) });
+  const d = await r.json();
+  return d.error ? { success:false, error:d.error.message } : { success:true, id:d.id };
 }
+async function atDelete(table, id) {
+  await fetch(`${AT}/${encodeURIComponent(table)}/${id}`, { method:'DELETE', headers:AT_H });
+  return { success:true };
+}
+
+const CACHE_TTL = 60 * 1000; // 1분
+function cacheGet(k) { try { const r=localStorage.getItem('dtl_'+k); if(!r)return null; const{data,ts}=JSON.parse(r); return Date.now()-ts>CACHE_TTL?null:data; } catch(e){return null;} }
+function cacheSet(k, d) { try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){} }
 let _skipCache = false;
+const _tbl = { getPlayers:'Players', getEvents:'Events', getMatches:'Matches', getSchedules:'Schedules' };
 async function cachedFetch(action) {
   const cached = _skipCache ? null : cacheGet(action);
-  const fetched = fetch(`${API}?action=${action}`).then(r => r.json()).then(d => { cacheSet(action, d); return d; });
-  if (cached) { fetched.catch(() => {}); return cached; }
+  const table = _tbl[action];
+  if (!table) return cached || [];
+  const fetched = atGet(table).then(d => { cacheSet(action, d); return d; });
+  if (cached) { fetched.catch(()=>{}); return cached; }
   return fetched;
 }
 
@@ -655,8 +672,7 @@ async function clearMatches(schedId) {
   if (!confirm('이 일정의 경기 스코어를 모두 초기화할까요?\n(일정은 유지됩니다)')) return;
   try {
     const [allMatches, allScheds] = await Promise.all([
-      fetch(`${API}?action=getMatches`).then(r=>r.json()),
-      fetch(`${API}?action=getSchedules`).then(r=>r.json())
+      atGet('Matches'), atGet('Schedules')
     ]);
     const s = allScheds.find(x => x.id === schedId);
     if (!s) { alert('일정을 찾을 수 없습니다.'); return; }
@@ -684,9 +700,7 @@ async function clearMatches(schedId) {
     });
 
     if (!toDelete.length) { alert('삭제할 기록이 없습니다.'); return; }
-    await Promise.all(toDelete.map(id =>
-      fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteMatch', id }) })
-    ));
+    await Promise.all(toDelete.map(id => atDelete('Matches', id)));
     _skipCache = true;
     await loadConfirmedSchedules();
     alert(`${toDelete.length}건의 스코어가 초기화됐습니다.`);
@@ -696,7 +710,7 @@ async function clearMatches(schedId) {
 async function delSchedule(id) {
   if (!confirm('이 일정을 삭제할까요?')) return;
   try {
-    await fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteSchedule', id }) });
+    await atDelete('Schedules', id);
     _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) {}
@@ -724,25 +738,12 @@ async function confirmSchedule() {
   btn.disabled = true;
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
-
-    const r = await fetch(API, {
-      method: 'POST',
-      signal: controller.signal,
-      body: JSON.stringify({
-        action: 'saveSchedule',
-        name,
-        date,
-        event,
-        rounds: numRounds,
-        formats,
-        schedule
-      })
+    const res = await atCreate('Schedules', {
+      name, date: date || null, event,
+      rounds: numRounds,
+      formats: formats.join(','),
+      schedule_json: JSON.stringify(schedule)
     });
-    clearTimeout(timeout);
-
-    const res = await r.json();
     if (res.success) {
       _skipCache = true;
       btn.textContent = '✓ 확정됨';
@@ -761,11 +762,7 @@ async function confirmSchedule() {
       btn.disabled = false;
     }
   } catch(e) {
-    if (e.name === 'AbortError') {
-      alert('시간 초과 — Apps Script가 재배포됐는지 확인해주세요.');
-    } else {
-      alert('오류: ' + e.message);
-    }
+    alert('오류: ' + e.message);
     btn.textContent = '✓ 확정하기';
     btn.style.background = '';
     btn.disabled = false;

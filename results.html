@@ -254,11 +254,22 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 <div class="toast" id="toast"></div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbycyRHv1jokHKpMGjktsG2AW8DYbDmM0stYlF46YYUtjBhmxJ8_maQuDoDmv93u5Iu1CA/exec';
-const CACHE_TTL=3*60*1000;
+// ── Airtable API ──
+const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
+const AT_BASE='appDtlXaLReCaDeE6';
+const AT=`https://api.airtable.com/v0/${AT_BASE}`;
+const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
+
+async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>({id:rec.id,...rec.fields})));offset=d.offset;}while(offset);return all;}
+async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
+async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
+async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
+
+const CACHE_TTL=60*1000;
 function cacheGet(k){try{const r=localStorage.getItem('dtl_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
 function cacheSet(k,d){try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
-async function cachedFetch(action){const c=cacheGet(action);const f=fetch(`${API}?action=${action}`).then(r=>r.json()).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
+const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSchedules:'Schedules'};
+async function cachedFetch(action){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
 
 let players=[],events=[],matches=[];
 let editingId=null; // null = 신규, string = 수정 중 match id
@@ -458,8 +469,8 @@ async function submitResult(){
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
   try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify(data)});
-    const res=await r.json();
+    const fields={event:data.event,date:data.date||null,team1_p1:data.team1_p1,team1_p2:data.team1_p2,team2_p1:data.team2_p1,team2_p2:data.team2_p2,score1:parseInt(data.score1),score2:parseInt(data.score2),mvp:data.mvp||'',notes:data.notes||'',schedule_id:data.schedule_id||''};
+    const res=editingId?await atUpdate('Matches',editingId,fields):await atCreate('Matches',fields);
     if(res.success){
       localStorage.removeItem('dtl_getMatches');
       localStorage.removeItem('dtl_getRankings');
@@ -482,8 +493,7 @@ async function delMatch(id){
   if(!confirm('이 경기 결과를 삭제할까요?')) return;
   if(editingId===id) cancelEdit();
   try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'deleteMatch',id})});
-    const res=await r.json();
+    const res=await atDelete('Matches',id);
     if(res.success){localStorage.removeItem('dtl_getMatches');localStorage.removeItem('dtl_getRankings');toast('삭제됐습니다','ok');await loadMatches();}
   }catch(e){toast('삭제 실패','err');}
 }
@@ -534,8 +544,7 @@ async function submitEvent(){
   const status=document.getElementById('ev-status').value;
   if(!name){toast('이벤트명을 입력해주세요','err');return;}
   try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'saveEvent',name,date,venue,status})});
-    const res=await r.json();
+    const res=await atCreate('Events',{name,date:date||null,venue,status});
     if(res.success){
       toast('이벤트가 추가됐습니다','ok');
       document.getElementById('ev-name').value='';
@@ -550,8 +559,7 @@ async function submitEvent(){
 async function delEvent(id){
   if(!confirm('이 이벤트를 삭제할까요?'))return;
   try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'deleteEvent',id})});
-    const res=await r.json();
+    const res=await atDelete('Events',id);
     if(res.success){toast('삭제됐습니다','ok');await loadEvents();renderEventsList();}
     else toast('삭제 실패','err');
   }catch(e){toast('삭제 실패','err');}
