@@ -352,7 +352,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 <script>
 // ── Initial players ──
-const API = 'https://script.google.com/macros/s/AKfycbw5fWXv5CVz3L1PYX0aZpy81TrBys2lYufvQjq6NE9u3EJi1sbeN-t3bbmW97W8JQw5Cw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbx0SAL27ZIqUSVK1RFPvZtEEOgmdPfPGMGgQ3Mpol0ltf7gmgd2eYq5Obo2B5dZ-AbmFA/exec';
 let _lastScheduleData = null;
 
 const defaultFemales = ['여1', '여2', '여3'];
@@ -441,22 +441,24 @@ function renderConfirmedList(list, allMatches) {
           const params = new URLSearchParams({
             t1p1:t1[0]||'', t1p2:t1[1]||'',
             t2p1:t2[0]||'', t2p2:t2[1]||'',
-            event:s.name||'', date:s.date||''
+            event:s.name||'', date:s.date||'',
+            schedule_id:s.id||''
           });
+          const s1 = result ? parseInt(result.score1)||0 : 0;
+          const s2 = result ? parseInt(result.score2)||0 : 0;
           const scoreHtml = result
-            ? `<span class="match-score win">${result.score1}</span>
+            ? `<span class="match-score ${s1>s2?'win':''}">${s1}</span>
                <span class="match-score-sep">:</span>
-               <span class="match-score ${parseInt(result.score2)>parseInt(result.score1)?'win':''}">${result.score2}</span>`
-            : `<span class="match-score-empty">— : —</span>`;
+               <span class="match-score ${s2>s1?'win':''}">${s2}</span>
+               <a href="results.html?edit=${result.id}" class="conf-result-link" style="font-size:.6rem;margin-left:.3rem;">수정</a>`
+            : `<span class="match-score-empty">— : —</span>
+               <a href="results.html?${params.toString()}" class="conf-result-link">입력</a>`;
 
           return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
             <div class="conf-team">${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
-            <div class="conf-score-block">
-              ${scoreHtml}
-              ${result ? '' : `<a href="results.html?${params.toString()}" class="conf-result-link">입력</a>`}
-            </div>
+            <div class="conf-score-block">${scoreHtml}</div>
             <div class="conf-team">${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
             ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);margin-left:auto;">⭐${result.mvp}</span>` : ''}
           </div>`;

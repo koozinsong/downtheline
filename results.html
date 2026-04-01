@@ -146,9 +146,9 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
       <div class="form-group full">
         <label class="form-label">스코어</label>
         <div class="score-row">
-          <input class="score-input" type="number" id="f-s1" min="0" max="99" placeholder="0" oninput="preview()">
+          <input class="score-input" type="number" id="f-s1" min="0" max="7" placeholder="0" oninput="preview()">
           <div class="score-vs">:</div>
-          <input class="score-input" type="number" id="f-s2" min="0" max="99" placeholder="0" oninput="preview()">
+          <input class="score-input" type="number" id="f-s2" min="0" max="7" placeholder="0" oninput="preview()">
           <span class="score-hint" id="score-hint"></span>
         </div>
       </div>
@@ -175,7 +175,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 <div class="toast" id="toast"></div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbw5fWXv5CVz3L1PYX0aZpy81TrBys2lYufvQjq6NE9u3EJi1sbeN-t3bbmW97W8JQw5Cw/exec';
+const API='https://script.google.com/macros/s/AKfycbx0SAL27ZIqUSVK1RFPvZtEEOgmdPfPGMGgQ3Mpol0ltf7gmgd2eYq5Obo2B5dZ-AbmFA/exec';
 let players=[],events=[],matches=[];
 let editingId=null; // null = 신규, string = 수정 중 match id
 
@@ -190,18 +190,17 @@ async function init(){
 function applyUrlParams(){
   const p=new URLSearchParams(window.location.search);
   if(p.get('edit')){
-    // 수정 모드 — 해당 경기 데이터 불러오기
     const m=matches.find(x=>x.id===p.get('edit'));
     if(m) loadMatchIntoForm(m);
     return;
   }
-  // 신규 — 파라미터로 팀 미리 채우기
   if(p.get('event')) setSelectVal('f-event', p.get('event'));
   if(p.get('date'))  document.getElementById('f-date').value=p.get('date');
   if(p.get('t1p1'))  setSelectVal('f-t1p1', p.get('t1p1'));
   if(p.get('t1p2'))  setSelectVal('f-t1p2', p.get('t1p2'));
   if(p.get('t2p1'))  setSelectVal('f-t2p1', p.get('t2p1'));
   if(p.get('t2p2'))  setSelectVal('f-t2p2', p.get('t2p2'));
+  if(p.get('schedule_id')) window._scheduleId = p.get('schedule_id');
   if(p.get('t1p1')||p.get('t1p2')||p.get('t2p1')||p.get('t2p2')) preview();
 }
 
@@ -345,10 +344,14 @@ async function submitResult(){
     team1_p1:v('f-t1p1'), team1_p2:v('f-t1p2'),
     team2_p1:v('f-t2p1'), team2_p2:v('f-t2p2'),
     score1:v('f-s1'), score2:v('f-s2'),
-    mvp:v('f-mvp'), notes:v('f-notes')
+    mvp:v('f-mvp'), notes:v('f-notes'),
+    schedule_id: window._scheduleId || ''
   };
   if(!data.team1_p1||!data.team1_p2||!data.team2_p1||!data.team2_p2){toast('선수를 모두 선택해주세요','err');return;}
   if(data.score1===''||data.score2===''){toast('스코어를 입력해주세요','err');return;}
+  const s1=parseInt(data.score1), s2=parseInt(data.score2);
+  if(s1>7||s2>7){toast('스코어는 최대 7점까지 입력 가능합니다','err');return;}
+  if(s1===s2){toast('동점은 입력할 수 없습니다','err');return;}
 
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
