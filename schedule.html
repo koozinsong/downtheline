@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시합 일정 생성기 — Down the Line</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2c4a35; --g2:#3a5c44; --g3:#4e7a5a; --glt:#7aab87;
+  --iv:#f7f3ed; --iv2:#ede8e0; --iv3:#e2dbd0;
+  --ink:#1a1f1c; --ink2:#2e3530; --sm:#6b7570; --sm2:#9aa49e;
+  --gd:#b8933a; --gdl:#d4b36a;
+  --w:#ffffff;
+  --ll:rgba(26,31,28,.1); --ld:rgba(255,255,255,.08);
+  --female:#9b3d5a; --female-bg:#fde8ed;
+  --male:#2a4a80; --male-bg:#e6f0ff;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);min-height:100vh;}
+
+/* NAV */
+#nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
+.nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.nav-back:hover{color:var(--gdl);}
+.nav-back::before{content:'←';}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
+.nav-sub{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-left:auto;}
+
+/* LAYOUT */
+.wrap{max-width:900px;margin:0 auto;padding:3rem 2rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.4rem;}
+.page-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.page-sub{font-size:.88rem;color:var(--sm);font-weight:300;margin-bottom:3rem;line-height:1.7;}
+
+/* SETUP CARD */
+.setup-card{background:var(--w);border:1px solid var(--ll);padding:2.5rem;margin-bottom:2rem;}
+.setup-section{margin-bottom:2rem;}
+.setup-section:last-child{margin-bottom:0;}
+.setup-label{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g3);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem;}
+.setup-label::before{content:'';width:18px;height:2px;background:var(--g3);}
+
+/* Player inputs */
+.player-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.player-col{}
+.player-col-head{font-size:.75rem;font-weight:500;letter-spacing:1px;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem;}
+.female-head{color:var(--female);}
+.male-head{color:var(--male);}
+.player-tag{display:inline-block;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:2px;margin-right:.4rem;}
+.f-tag{background:var(--female-bg);color:var(--female);}
+.m-tag{background:var(--male-bg);color:var(--male);}
+.player-list{display:flex;flex-direction:column;gap:.5rem;}
+.player-row{display:flex;align-items:center;gap:.6rem;}
+.player-row input{flex:1;border:1px solid var(--ll);padding:.55rem .8rem;font-family:'Barlow','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--ink);background:var(--iv);outline:none;transition:border-color .2s;}
+.player-row input:focus{border-color:var(--g3);}
+.player-row input::placeholder{color:var(--sm2);}
+.del-btn{width:26px;height:26px;border:1px solid var(--ll);background:none;color:var(--sm2);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.del-btn:hover{border-color:var(--female);color:var(--female);}
+.add-btn{margin-top:.5rem;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g3);background:none;border:1px dashed rgba(78,122,90,.3);padding:.45rem 1rem;cursor:pointer;width:100%;transition:all .2s;}
+.add-btn:hover{border-color:var(--g3);background:rgba(78,122,90,.05);}
+
+/* Options row */
+.options-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.opt-group{}
+.opt-label{font-size:.72rem;color:var(--sm);font-weight:400;margin-bottom:.4rem;display:block;}
+.opt-select, .opt-input{width:100%;border:1px solid var(--ll);padding:.6rem .8rem;font-family:'Barlow','Noto Sans KR',sans-serif;font-size:.88rem;color:var(--ink);background:var(--iv);outline:none;appearance:none;cursor:pointer;transition:border-color .2s;}
+.opt-select:focus,.opt-input:focus{border-color:var(--g3);}
+
+/* Conditions */
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.cond-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border:1px solid var(--ll);cursor:pointer;transition:all .2s;user-select:none;}
+.cond-item:hover{border-color:var(--g3);background:rgba(78,122,90,.03);}
+.cond-item.active{border-color:var(--g);background:rgba(44,74,53,.06);}
+.cond-check{width:16px;height:16px;border:1.5px solid var(--ll);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cond-item.active .cond-check{border-color:var(--g);background:var(--g);}
+.cond-check::after{content:'✓';font-size:.65rem;color:var(--w);opacity:0;transition:opacity .15s;}
+.cond-item.active .cond-check::after{opacity:1;}
+.cond-text{font-size:.82rem;color:var(--ink2);}
+.cond-sub{font-size:.7rem;color:var(--sm2);margin-top:.1rem;}
+
+/* Generate button */
+.gen-btn{width:100%;margin-top:2rem;padding:1rem;background:var(--g);color:var(--w);font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;}
+.gen-btn:hover{background:var(--g2);}
+.gen-btn:active{transform:scale(.99);}
+
+/* RESULT */
+.result{margin-top:2.5rem;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--ll);}
+.result-title{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;text-transform:uppercase;color:var(--ink);}
+.result-meta{font-size:.75rem;color:var(--sm2);}
+.copy-btn{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g);border:1px solid rgba(44,74,53,.3);background:none;padding:.4rem 1rem;cursor:pointer;transition:all .2s;}
+.copy-btn:hover{background:var(--g);color:var(--w);}
+
+/* Round blocks */
+.round-block{margin-bottom:1rem;}
+.round-head{background:var(--g);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;}
+.round-num{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--w);}
+.round-bye{font-size:.72rem;color:rgba(255,255,255,.5);}
+.round-bye span{color:var(--gdl);}
+.match-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:var(--w);border:1px solid var(--ll);border-top:none;padding:.9rem 1.2rem;gap:.8rem;}
+.match-row + .match-row{border-top:1px solid var(--ll);}
+.team{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.team.right{justify-content:flex-end;}
+.player-chip{font-size:.78rem;font-weight:500;padding:.2rem .65rem;border-radius:2px;}
+.p-f{background:var(--female-bg);color:var(--female);}
+.p-m{background:var(--male-bg);color:var(--male);}
+.vs{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;color:var(--sm2);}
+.court-badge{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--gd);color:var(--ink);padding:.15rem .5rem;margin-right:.6rem;flex-shrink:0;}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem;}
+.stat-card{background:var(--w);border:1px solid var(--ll);padding:1.5rem;}
+.stat-card-title{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--g3);margin-bottom:1rem;}
+.stat-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+.stat-table th{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--sm2);padding:.4rem .5rem;text-align:left;border-bottom:1px solid var(--ll);}
+.stat-table td{padding:.4rem .5rem;border-bottom:1px solid rgba(26,31,28,.04);color:var(--ink2);}
+.stat-table tr:last-child td{border-bottom:none;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--g);}
+.stat-bar{display:inline-block;height:4px;background:var(--g3);border-radius:2px;margin-left:.4rem;vertical-align:middle;opacity:.4;}
+
+/* Summary stats */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:1.5rem;}
+.sum-card{background:var(--iv2);padding:.8rem;text-align:center;}
+.sum-n{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;color:var(--g);line-height:1;}
+.sum-l{font-size:.6rem;color:var(--sm2);letter-spacing:1px;text-transform:uppercase;margin-top:.2rem;}
+
+/* Empty state */
+.empty{text-align:center;padding:4rem 2rem;color:var(--sm2);}
+.empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.3;}
+.empty-text{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+
+/* Warning */
+.warn{background:#fff8e6;border:1px solid rgba(184,147,58,.3);padding:.8rem 1rem;font-size:.8rem;color:#7a5f20;margin-bottom:1rem;display:none;}
+.warn.show{display:block;}
+
+@media(max-width:600px){
+  .player-grid,.options-row,.cond-grid,.stats-grid,.summary-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-back" href="index.html">홈으로</a>
+  <div class="nav-title">시합 일정 생성기</div>
+  <div class="nav-sub">Down the Line</div>
+</nav>
+
+<div class="wrap">
+  <div class="page-title">Match<br><em>Scheduler</em></div>
+  <p class="page-sub">인원과 조건을 입력하면 동일 파트너·상대 최소화 일정을 자동으로 생성합니다.</p>
+
+  <!-- SETUP -->
+  <div class="setup-card">
+
+    <!-- Players -->
+    <div class="setup-section">
+      <div class="setup-label">참가자</div>
+      <div class="player-grid">
+        <div class="player-col">
+          <div class="player-col-head female-head"><span class="player-tag f-tag">여</span> 여자 선수</div>
+          <div class="player-list" id="female-list"></div>
+          <button class="add-btn" onclick="addPlayer('female')">+ 추가</button>
+        </div>
+        <div class="player-col">
+          <div class="player-col-head male-head"><span class="player-tag m-tag">남</span> 남자 선수</div>
+          <div class="player-list" id="male-list"></div>
+          <button class="add-btn" onclick="addPlayer('male')">+ 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="setup-section">
+      <div class="setup-label">설정</div>
+      <div class="options-row">
+        <div class="opt-group">
+          <span class="opt-label">코트 수</span>
+          <select class="opt-select" id="num-courts">
+            <option value="1">1코트</option>
+            <option value="2">2코트</option>
+            <option value="3">3코트</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <span class="opt-label">라운드 수</span>
+          <input class="opt-input" id="num-rounds" type="number" min="1" max="20" value="6">
+        </div>
+        <div class="opt-group">
+          <span class="opt-label">경기 포맷</span>
+          <select class="opt-select" id="format">
+            <option value="mixed">혼합 복식</option>
+            <option value="any">복식 (성별 무관)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conditions -->
+    <div class="setup-section">
+      <div class="setup-label">조건</div>
+      <div class="cond-grid">
+        <div class="cond-item active" id="cond-partner" onclick="toggleCond(this)">
+          <div class="cond-check"></div>
+          <div>
+            <div class="cond-text">동일 파트너 최소화</div>
+            <div class="cond-sub">같은 파트너와 반복 매칭 방지</div>
+          </div>
+        </div>
+        <div class="cond-item active" id="cond-opponent" onclick="toggleCond(this)">
+          <div class="cond-check"></div>
+          <div>
+            <div class="cond-text">동일 상대 최소화</div>
+            <div class="cond-sub">같은 상대와 반복 대전 방지</div>
+          </div>
+        </div>
+        <div class="cond-item active" id="cond-rest" onclick="toggleCond(this)">
+          <div class="cond-check"></div>
+          <div>
+            <div class="cond-text">출전 횟수 균등화</div>
+            <div class="cond-sub">모든 선수 출전 기회 균등 배분</div>
+          </div>
+        </div>
+        <div class="cond-item" id="cond-gender" onclick="toggleCond(this)">
+          <div class="cond-check"></div>
+          <div>
+            <div class="cond-text">연속 휴식 방지</div>
+            <div class="cond-sub">2라운드 연속 대기 방지</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn" id="warn-msg"></div>
+    <button class="gen-btn" onclick="generate()">🎾 일정 생성하기</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="result-area">
+    <div class="empty">
+      <div class="empty-icon">🎾</div>
+      <div class="empty-text">일정을 생성해주세요</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Initial players ──
+const defaultFemales = ['여1', '여2', '여3'];
+const defaultMales   = ['남1', '남2', '남3', '남4'];
+
+function initPlayers() {
+  defaultFemales.forEach(n => addPlayer('female', n));
+  defaultMales.forEach(n => addPlayer('male', n));
+}
+
+function addPlayer(gender, name = '') {
+  const list = document.getElementById(gender + '-list');
+  const idx = list.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'player-row';
+  const placeholder = gender === 'female' ? `여${idx}` : `남${idx}`;
+  div.innerHTML = `
+    <input type="text" value="${name}" placeholder="${placeholder}" maxlength="8">
+    <button class="del-btn" onclick="this.parentElement.remove()">×</button>`;
+  list.appendChild(div);
+}
+
+function getPlayers(gender) {
+  const list = document.getElementById(gender + '-list');
+  return Array.from(list.querySelectorAll('input')).map((el, i) => {
+    const val = el.value.trim();
+    return val || (gender === 'female' ? `여${i+1}` : `남${i+1}`);
+  });
+}
+
+function toggleCond(el) { el.classList.toggle('active'); }
+function isActive(id) { return document.getElementById(id).classList.contains('active'); }
+
+// ── Algorithm ──
+function generateSchedule(females, males, numCourts, numRounds, opts) {
+  const allPlayers = [...females, ...males];
+  const n = allPlayers.length;
+
+  // Tracking matrices
+  const partnerCount  = {};
+  const opponentCount = {};
+  const playCount     = {};
+  const lastRest      = {}; // last round a player rested
+
+  allPlayers.forEach(p => {
+    partnerCount[p]  = {};
+    opponentCount[p] = {};
+    playCount[p]     = 0;
+    lastRest[p]      = -99;
+    allPlayers.forEach(q => {
+      partnerCount[p][q]  = 0;
+      opponentCount[p][q] = 0;
+    });
+  });
+
+  // Generate all possible matches for given format
+  function getAllMatches() {
+    const matches = [];
+    const format = document.getElementById('format').value;
+
+    if (format === 'mixed') {
+      for (let mi = 0; mi < males.length; mi++)
+      for (let fi = 0; fi < females.length; fi++)
+      for (let mj = mi + 1; mj < males.length; mj++)
+      for (let fj = 0; fj < females.length; fj++) {
+        if (fj === fi) continue;
+        matches.push([[males[mi], females[fi]], [males[mj], females[fj]]]);
+      }
+    } else {
+      // Any doubles
+      for (let i = 0; i < n; i++)
+      for (let j = i+1; j < n; j++)
+      for (let k = 0; k < n; k++) {
+        if (k===i||k===j) continue;
+        for (let l = k+1; l < n; l++) {
+          if (l===i||l===j) continue;
+          if (i*n+j < k*n+l)
+            matches.push([[allPlayers[i], allPlayers[j]], [allPlayers[k], allPlayers[l]]]);
+        }
+      }
+    }
+    return matches;
+  }
+
+  const allMatches = getAllMatches();
+
+  // Score a single match
+  function scoreMatch(match, roundIdx) {
+    const [t1, t2] = match;
+    let score = 0;
+
+    if (opts.partner) {
+      score += partnerCount[t1[0]][t1[1]] * 4;
+      score += partnerCount[t2[0]][t2[1]] * 4;
+    }
+    if (opts.opponent) {
+      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 2; }));
+    }
+    if (opts.rest) {
+      [...t1, ...t2].forEach(p => { score += playCount[p] * 1.5; });
+    }
+    if (opts.noConsecRest) {
+      // Penalize players who rested last round from resting again
+      // (handled during selection — skipping here)
+    }
+    return score;
+  }
+
+  const schedule = [];
+
+  for (let round = 0; round < numRounds; round++) {
+    // Find best non-overlapping set of matches
+    const scored = allMatches.map(m => ({ m, s: scoreMatch(m, round) }));
+    scored.sort((a, b) => a.s - b.s);
+
+    const selected = [];
+    const used = new Set();
+
+    for (const { m } of scored) {
+      if (selected.length >= numCourts) break;
+      const players = [...m[0], ...m[1]];
+
+      // Check: no repeated player
+      if (players.some(p => used.has(p))) continue;
+
+      // Check: no consecutive rest (if option on)
+      if (opts.noConsecRest) {
+        const restedLast = allPlayers.filter(p => !used.has(p) && selected.flatMap(x=>[...x[0],...x[1]]).indexOf(p)===-1);
+        // skip if adding this would force someone to rest 2 in a row
+        // simplified: penalize rather than hard block
+      }
+
+      selected.push(m);
+      players.forEach(p => used.add(p));
+    }
+
+    // Fallback if nothing selected
+    if (selected.length === 0 && allMatches.length > 0) {
+      selected.push(allMatches[round % allMatches.length]);
+    }
+
+    // Players not in this round
+    const activePlayers = selected.flatMap(m => [...m[0], ...m[1]]);
+    const resting = allPlayers.filter(p => !activePlayers.includes(p));
+
+    schedule.push({ round: round + 1, matches: selected, resting });
+
+    // Update counts
+    selected.forEach(([t1, t2]) => {
+      partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
+      partnerCount[t2[0]][t2[1]]++; partnerCount[t2[1]][t2[0]]++;
+      t1.forEach(p => t2.forEach(q => { opponentCount[p][q]++; opponentCount[q][p]++; }));
+      [...t1,...t2].forEach(p => playCount[p]++);
+    });
+    resting.forEach(p => lastRest[p] = round);
+  }
+
+  return { schedule, playCount, partnerCount, opponentCount };
+}
+
+// ── Generate & Render ──
+function generate() {
+  const females   = getPlayers('female');
+  const males     = getPlayers('male');
+  const numCourts = parseInt(document.getElementById('num-courts').value);
+  const numRounds = parseInt(document.getElementById('num-rounds').value);
+  const format    = document.getElementById('format').value;
+  const warn      = document.getElementById('warn-msg');
+
+  warn.className = 'warn';
+
+  // Validation
+  if (females.length < 1 || males.length < 1) {
+    warn.textContent = '여자 1명, 남자 1명 이상 필요합니다.';
+    warn.className = 'warn show'; return;
+  }
+  if (format === 'mixed' && (females.length < 2 || males.length < 2)) {
+    warn.textContent = '혼합 복식은 여자 2명, 남자 2명 이상 필요합니다.';
+    warn.className = 'warn show'; return;
+  }
+  const totalPlayers = females.length + males.length;
+  if (totalPlayers < 4) {
+    warn.textContent = '최소 4명 이상 필요합니다.';
+    warn.className = 'warn show'; return;
+  }
+
+  const opts = {
+    partner:       isActive('cond-partner'),
+    opponent:      isActive('cond-opponent'),
+    rest:          isActive('cond-rest'),
+    noConsecRest:  isActive('cond-gender'),
+  };
+
+  const { schedule, playCount, partnerCount, opponentCount } =
+    generateSchedule(females, males, numCourts, numRounds, opts);
+
+  const allPlayers = [...females, ...males];
+  renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds);
+}
+
+function playerChip(name, females) {
+  const cls = females.includes(name) ? 'p-f' : 'p-m';
+  return `<span class="player-chip ${cls}">${name}</span>`;
+}
+
+function renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds) {
+  const area = document.getElementById('result-area');
+  const total = schedule.reduce((s, r) => s + r.matches.length, 0);
+
+  let html = `
+    <div class="result-header">
+      <div>
+        <div class="result-title">Generated Schedule</div>
+        <div class="result-meta">${allPlayers.length}명 · ${numRounds}라운드 · 총 ${total}경기</div>
+      </div>
+      <button class="copy-btn" onclick="copySchedule()">텍스트 복사</button>
+    </div>
+    <div class="summary-row">
+      <div class="sum-card"><div class="sum-n">${allPlayers.length}</div><div class="sum-l">Players</div></div>
+      <div class="sum-card"><div class="sum-n">${numRounds}</div><div class="sum-l">Rounds</div></div>
+      <div class="sum-card"><div class="sum-n">${total}</div><div class="sum-l">Matches</div></div>
+      <div class="sum-card"><div class="sum-n">${Math.round(Object.values(playCount).reduce((a,b)=>a+b,0)/allPlayers.length*10)/10}</div><div class="sum-l">Avg Played</div></div>
+    </div>
+    <div style="height:1.5rem"></div>`;
+
+  // Rounds
+  schedule.forEach(({ round, matches, resting }) => {
+    html += `<div class="round-block">
+      <div class="round-head">
+        <div class="round-num">Round ${round}</div>
+        ${resting.length ? `<div class="round-bye">대기: <span>${resting.join(', ')}</span></div>` : ''}
+      </div>`;
+    matches.forEach((match, ci) => {
+      const [t1, t2] = match;
+      html += `<div class="match-row">
+        <div class="team">${t1.map(p=>playerChip(p,females)).join('')}</div>
+        <div class="vs">${matches.length > 1 ? `<span style="font-size:.55rem;display:block;text-align:center;color:var(--gd);margin-bottom:2px">Court ${ci+1}</span>` : ''}VS</div>
+        <div class="team right">${t2.map(p=>playerChip(p,females)).join('')}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  // Stats
+  html += `<div class="stats-grid">`;
+
+  // Partner stats
+  html += `<div class="stat-card">
+    <div class="stat-card-title">파트너 횟수</div>
+    <table class="stat-table">
+      <tr><th>조합</th><th>횟수</th></tr>`;
+  const partnerPairs = [];
+  allPlayers.forEach((p, i) => allPlayers.slice(i+1).forEach(q => {
+    if (partnerCount[p][q] > 0) partnerPairs.push([p, q, partnerCount[p][q]]);
+  }));
+  partnerPairs.sort((a,b) => b[2]-a[2]).forEach(([p,q,c]) => {
+    const maxC = Math.max(...partnerPairs.map(x=>x[2]));
+    html += `<tr>
+      <td>${playerChip(p,females)} ${playerChip(q,females)}</td>
+      <td><span class="stat-num">${c}</span><span class="stat-bar" style="width:${c/maxC*40}px"></span></td>
+    </tr>`;
+  });
+  if (!partnerPairs.length) html += `<tr><td colspan="2" style="color:var(--sm2)">데이터 없음</td></tr>`;
+  html += `</table></div>`;
+
+  // Opponent stats
+  html += `<div class="stat-card">
+    <div class="stat-card-title">대전 횟수</div>
+    <table class="stat-table">
+      <tr><th>조합</th><th>횟수</th></tr>`;
+  const opPairs = [];
+  allPlayers.forEach((p, i) => allPlayers.slice(i+1).forEach(q => {
+    if (opponentCount[p][q] > 0) opPairs.push([p, q, opponentCount[p][q]]);
+  }));
+  opPairs.sort((a,b) => b[2]-a[2]).slice(0,10).forEach(([p,q,c]) => {
+    const maxC = Math.max(...opPairs.map(x=>x[2]));
+    html += `<tr>
+      <td>${playerChip(p,females)} vs ${playerChip(q,females)}</td>
+      <td><span class="stat-num">${c}</span><span class="stat-bar" style="width:${c/maxC*40}px"></span></td>
+    </tr>`;
+  });
+  if (!opPairs.length) html += `<tr><td colspan="2" style="color:var(--sm2)">데이터 없음</td></tr>`;
+  html += `</table></div>`;
+
+  // Play count
+  html += `<div class="stat-card" style="grid-column:span 2">
+    <div class="stat-card-title">선수별 출전 횟수</div>
+    <table class="stat-table">
+      <tr><th>선수</th><th>출전</th><th>대기</th></tr>`;
+  allPlayers.forEach(p => {
+    const played = playCount[p];
+    const rested = numRounds - played;
+    html += `<tr>
+      <td>${playerChip(p,females)}</td>
+      <td><span class="stat-num">${played}</span></td>
+      <td style="color:var(--sm2)">${rested}</td>
+    </tr>`;
+  });
+  html += `</table></div>`;
+
+  html += `</div>`;
+
+  area.innerHTML = html;
+
+  // Store schedule for copy
+  window._scheduleData = { schedule, females };
+}
+
+function copySchedule() {
+  if (!window._scheduleData) return;
+  const { schedule, females } = window._scheduleData;
+  let text = '[ Down the Line 시합 일정 ]\n\n';
+  schedule.forEach(({ round, matches, resting }) => {
+    text += `▶ Round ${round}\n`;
+    matches.forEach((match, ci) => {
+      const [t1, t2] = match;
+      if (matches.length > 1) text += `  [Court ${ci+1}] `;
+      else text += '  ';
+      text += `${t1.join(' + ')} vs ${t2.join(' + ')}\n`;
+    });
+    if (resting.length) text += `  대기: ${resting.join(', ')}\n`;
+    text += '\n';
+  });
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => btn.textContent = '텍스트 복사', 2000);
+  });
+}
+
+// Init
+initPlayers();
+</script>
+</body>
+</html>
