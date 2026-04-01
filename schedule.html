@@ -202,7 +202,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   </div>
 
   <!-- NEW SCHEDULE TOGGLE -->
-  <div id="new-sched-section">
+  <div id="new-sched-section" style="display:none;">
 
   <!-- SETUP -->
   <div class="setup-card">
@@ -341,26 +341,38 @@ let _lastScheduleData = null; // 마지막 생성된 일정 저장용
 
 // ── 확정 일정 불러오기 ──
 async function loadConfirmedSchedules() {
+  // 로딩 중 표시
+  const wrap = document.getElementById('confirmed-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('confirmed-list').innerHTML = '<div style="padding:1rem;font-size:.82rem;color:rgba(255,255,255,.4);">불러오는 중...</div>';
+
   try {
     const r = await fetch(`${API}?action=getSchedules`);
     const list = await r.json();
     renderConfirmedList(list);
   } catch(e) {
     console.log('일정 불러오기 실패', e);
+    // 실패 시 생성 폼 표시
+    wrap.style.display = 'none';
+    document.getElementById('new-sched-section').style.display = 'block';
   }
 }
 
 function renderConfirmedList(list) {
   const wrap = document.getElementById('confirmed-wrap');
   const el   = document.getElementById('confirmed-list');
+  const newSec = document.getElementById('new-sched-section');
 
   if (!list || !list.length) {
+    // 확정 일정 없음 → 생성 폼 표시
     wrap.style.display = 'none';
-    document.getElementById('new-sched-section').style.display = 'block';
+    newSec.style.display = 'block';
     return;
   }
+
+  // 확정 일정 있음 → 목록 표시, 생성 폼 숨김
   wrap.style.display = 'block';
-  document.getElementById('new-sched-section').style.display = 'none';
+  newSec.style.display = 'none';
   document.getElementById('new-sched-btn').textContent = '+ 새 일정 생성';
 
   el.innerHTML = list.map(s => {
@@ -416,7 +428,7 @@ async function delSchedule(id) {
 function toggleNewSchedule() {
   const sec = document.getElementById('new-sched-section');
   const btn = document.getElementById('new-sched-btn');
-  const isHidden = sec.style.display === 'none';
+  const isHidden = sec.style.display === 'none' || sec.style.display === '';
   sec.style.display = isHidden ? 'block' : 'none';
   btn.textContent = isHidden ? '− 닫기' : '+ 새 일정 생성';
 }
