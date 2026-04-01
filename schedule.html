@@ -98,8 +98,10 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .round-num{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--w);}
 .round-bye{font-size:.72rem;color:rgba(255,255,255,.5);}
 .round-bye span{color:var(--gdl);}
-.match-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:var(--w);border:1px solid var(--ll);border-top:none;padding:.9rem 1.2rem;gap:.8rem;}
+.match-row{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;background:var(--w);border:1px solid var(--ll);border-top:none;padding:.9rem 1.2rem;gap:.8rem;}
 .match-row + .match-row{border-top:1px solid var(--ll);}
+.result-link{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gd);text-decoration:none;white-space:nowrap;transition:color .2s;}
+.result-link:hover{color:var(--gdl);}
 .team{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 .team.right{justify-content:flex-end;}
 .player-chip{font-size:.78rem;font-weight:500;padding:.2rem .65rem;border-radius:2px;}
@@ -130,12 +132,46 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.3;}
 .empty-text{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
 
-/* Warning */
-.warn{background:#fff8e6;border:1px solid rgba(184,147,58,.3);padding:.8rem 1rem;font-size:.8rem;color:#7a5f20;margin-bottom:1rem;display:none;}
-.warn.show{display:block;}
+/* Format multi-select */
+.format-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.fmt-item{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;border:1px solid var(--ll);cursor:pointer;transition:all .2s;user-select:none;opacity:.5;}
+.fmt-item:hover{border-color:var(--g3);opacity:.8;}
+.fmt-item.active{border-color:var(--g);background:rgba(44,74,53,.06);opacity:1;}
+.fmt-item.disabled{opacity:.25;pointer-events:none;cursor:not-allowed;}
+.fmt-check{width:14px;height:14px;border:1.5px solid var(--ll);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.fmt-item.active .fmt-check{border-color:var(--g);background:var(--g);}
+.fmt-check::after{content:'✓';font-size:.6rem;color:var(--w);opacity:0;transition:opacity .15s;}
+.fmt-item.active .fmt-check::after{opacity:1;}
+.fmt-name{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink);}
+.fmt-desc{font-size:.68rem;color:var(--sm2);margin-top:.1rem;}
+/* Format badge in schedule output */
+.fmt-badge{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.15rem .5rem;margin-right:.4rem;flex-shrink:0;}
+.fb-mixed{background:#e8f5e9;color:#2c4a35;}
+.fb-mens{background:var(--male-bg);color:var(--male);}
+.fb-womens{background:var(--female-bg);color:var(--female);}
+.fb-open{background:var(--iv2);color:var(--sm);}
 
+/* Confirm button */
+.confirm-btn{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--g);color:var(--w);border:none;padding:.4rem 1.2rem;cursor:pointer;transition:background .2s;}
+.confirm-btn:hover{background:var(--g2);}
+/* Confirmed schedule cards */
+.conf-card{border:1px solid var(--ll);margin-bottom:.6rem;background:var(--w);}
+.conf-card-head{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;border-bottom:1px solid var(--ll);cursor:pointer;transition:background .2s;}
+.conf-card-head:hover{background:var(--iv2);}
+.conf-card-name{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink);}
+.conf-card-meta{font-size:.72rem;color:var(--sm2);margin-top:.15rem;}
+.conf-card-actions{display:flex;gap:.5rem;align-items:center;}
+.conf-del-btn{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--sm2);background:none;border:none;cursor:pointer;padding:.3rem .5rem;transition:color .2s;}
+.conf-del-btn:hover{color:#c0392b;}
+.conf-body{display:none;padding:.8rem 1rem;}
+.conf-body.open{display:block;}
+.conf-match-row{display:flex;align-items:center;gap:.6rem;padding:.5rem 0;border-bottom:1px solid rgba(26,31,28,.05);flex-wrap:wrap;}
+.conf-match-row:last-child{border-bottom:none;}
+.conf-round-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);min-width:60px;}
+.conf-result-link{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);text-decoration:none;margin-left:auto;white-space:nowrap;transition:color .2s;}
+.conf-result-link:hover{color:var(--gdl);}
 @media(max-width:600px){
-  .player-grid,.options-row,.cond-grid,.stats-grid,.summary-row{grid-template-columns:1fr;}
+  .player-grid,.options-row,.cond-grid,.stats-grid,.summary-row,.format-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
@@ -150,6 +186,23 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 <div class="wrap">
   <div class="page-title">Match<br><em>Scheduler</em></div>
   <p class="page-sub">인원과 조건을 입력하면 동일 파트너·상대 최소화 일정을 자동으로 생성합니다.</p>
+
+  <!-- CONFIRMED SCHEDULES -->
+  <div id="confirmed-wrap" style="margin-bottom:2rem;display:none;">
+    <div class="setup-card" style="padding:0;overflow:hidden;">
+      <div style="background:var(--g);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gdl);">Confirmed Schedules</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem;">확정된 시합 일정</div>
+        </div>
+        <button onclick="toggleNewSchedule()" id="new-sched-btn" style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--gd);color:var(--ink);border:none;padding:.45rem 1rem;cursor:pointer;">+ 새 일정 생성</button>
+      </div>
+      <div id="confirmed-list" style="padding:1rem 1.5rem;"></div>
+    </div>
+  </div>
+
+  <!-- NEW SCHEDULE TOGGLE -->
+  <div id="new-sched-section">
 
   <!-- SETUP -->
   <div class="setup-card">
@@ -187,13 +240,41 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
           <span class="opt-label">라운드 수</span>
           <input class="opt-input" id="num-rounds" type="number" min="1" max="20" value="6">
         </div>
-        <div class="opt-group">
-          <span class="opt-label">경기 포맷</span>
-          <select class="opt-select" id="format">
-            <option value="mixed">혼합 복식</option>
-            <option value="any">복식 (성별 무관)</option>
-          </select>
+      </div>
+      <!-- Format multi-select -->
+      <div style="margin-top:1rem;">
+        <span class="opt-label" style="display:block;margin-bottom:.7rem;">경기 포맷 (복수 선택 가능)</span>
+        <div class="format-grid" id="format-grid">
+          <div class="fmt-item" id="fmt-mixed" onclick="toggleFmt(this,'mixed')">
+            <div class="fmt-check"></div>
+            <div>
+              <div class="fmt-name">혼복</div>
+              <div class="fmt-desc">남1 + 여1 vs 남1 + 여1</div>
+            </div>
+          </div>
+          <div class="fmt-item" id="fmt-mens" onclick="toggleFmt(this,'mens')">
+            <div class="fmt-check"></div>
+            <div>
+              <div class="fmt-name">남복</div>
+              <div class="fmt-desc">남2 vs 남2</div>
+            </div>
+          </div>
+          <div class="fmt-item" id="fmt-womens" onclick="toggleFmt(this,'womens')">
+            <div class="fmt-check"></div>
+            <div>
+              <div class="fmt-name">여복</div>
+              <div class="fmt-desc">여2 vs 여2</div>
+            </div>
+          </div>
+          <div class="fmt-item" id="fmt-open" onclick="toggleFmt(this,'open')">
+            <div class="fmt-check"></div>
+            <div>
+              <div class="fmt-name">잡복</div>
+              <div class="fmt-desc">성별 무관 4명</div>
+            </div>
+          </div>
         </div>
+        <div id="fmt-warn" style="font-size:.75rem;color:var(--sm2);margin-top:.5rem;display:none;"></div>
       </div>
     </div>
 
@@ -233,6 +314,10 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     </div>
 
     <div class="warn" id="warn-msg"></div>
+    <div style="margin-bottom:1rem;">
+      <span class="opt-label" style="display:block;margin-bottom:.4rem;">일정 이름 (선택)</span>
+      <input class="opt-input" id="sched-name" type="text" placeholder="예: 아난티의 봄 혼복 1R" style="max-width:400px;">
+    </div>
     <button class="gen-btn" onclick="generate()">🎾 일정 생성하기</button>
   </div>
 
@@ -243,12 +328,137 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
       <div class="empty-text">일정을 생성해주세요</div>
     </div>
   </div>
+</div> <!-- end new-sched-section -->
 </div>
 
 <script>
 // ── Initial players ──
-const defaultFemales = ['여1', '여2', '여3'];
-const defaultMales   = ['남1', '남2', '남3', '남4'];
+const API = 'https://script.google.com/macros/s/AKfycbwLeOk_c61xgJM0cfTbzsO0qn1hvTMwEpA8zxJo1Bqv5lPDHTCBwKRQMm20SsH6Z-UnPw/exec';
+let _lastScheduleData = null; // 마지막 생성된 일정 저장용
+
+// ── 확정 일정 불러오기 ──
+async function loadConfirmedSchedules() {
+  try {
+    const r = await fetch(`${API}?action=getSchedules`);
+    const list = await r.json();
+    renderConfirmedList(list);
+  } catch(e) {
+    console.log('일정 불러오기 실패', e);
+  }
+}
+
+function renderConfirmedList(list) {
+  const wrap = document.getElementById('confirmed-wrap');
+  const el   = document.getElementById('confirmed-list');
+
+  if (!list || !list.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+
+  el.innerHTML = list.map(s => {
+    const sched = JSON.parse(s.schedule_json || '[]');
+    const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
+    const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
+    const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
+
+    const matchRows = sched.map(r =>
+      (r.matches||[]).map((m, ci) => {
+        const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
+        const params = new URLSearchParams({ t1p1:t1[0]||'', t1p2:t1[1]||'', t2p1:t2[0]||'', t2p2:t2[1]||'', event:s.name||'', date:s.date||'' });
+        return `<div class="conf-match-row">
+          <div class="conf-round-label">R${r.round}</div>
+          <span class="fmt-badge ${fmtCls[fmt]}">${fmtLabel[fmt]}</span>
+          ${t1.map(p => `<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
+          <span style="font-size:.65rem;color:var(--sm2);font-weight:600;">vs</span>
+          ${t2.map(p => `<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
+          <a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>
+        </div>`;
+      }).join('')
+    ).join('');
+
+    return `<div class="conf-card">
+      <div class="conf-card-head" onclick="toggleConf('${s.id}')">
+        <div>
+          <div class="conf-card-name">${s.name||'시합 일정'}</div>
+          <div class="conf-card-meta">${s.date||''} · ${sched.length}라운드 · ${totalMatches}경기 · ${s.formats||''}</div>
+        </div>
+        <div class="conf-card-actions">
+          <button class="conf-del-btn" onclick="event.stopPropagation();delSchedule('${s.id}')">삭제</button>
+          <span style="font-size:.75rem;color:var(--sm2);">▾</span>
+        </div>
+      </div>
+      <div class="conf-body" id="conf-body-${s.id}">${matchRows}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleConf(id) {
+  const el = document.getElementById('conf-body-' + id);
+  el.classList.toggle('open');
+}
+
+async function delSchedule(id) {
+  if (!confirm('이 일정을 삭제할까요?')) return;
+  try {
+    await fetch(API, { method:'POST', body: JSON.stringify({ action:'deleteSchedule', id }) });
+    await loadConfirmedSchedules();
+  } catch(e) {}
+}
+
+function toggleNewSchedule() {
+  const sec = document.getElementById('new-sched-section');
+  const btn = document.getElementById('new-sched-btn');
+  const isHidden = sec.style.display === 'none';
+  sec.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '− 닫기' : '+ 새 일정 생성';
+}
+
+// ── 확정하기 ──
+async function confirmSchedule() {
+  if (!_lastScheduleData) return;
+  const { schedule, females, males, formats, numRounds } = _lastScheduleData;
+  const name = document.getElementById('sched-name').value.trim() ||
+    `시합 일정 ${new Date().toLocaleDateString('ko-KR')}`;
+
+  const btn = document.querySelector('.confirm-btn');
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'saveSchedule',
+        name,
+        date: new Date().toISOString().split('T')[0],
+        rounds: numRounds,
+        formats,
+        schedule
+      })
+    });
+    const res = await r.json();
+    if (res.success) {
+      btn.textContent = '✓ 확정됨';
+      btn.style.background = '#4caf50';
+      await loadConfirmedSchedules();
+      // 확정 후 새 일정 섹션 숨기기
+      setTimeout(() => {
+        document.getElementById('new-sched-section').style.display = 'none';
+        document.getElementById('new-sched-btn').textContent = '+ 새 일정 생성';
+        btn.textContent = '✓ 확정하기';
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 1500);
+    }
+  } catch(e) {
+    btn.textContent = '✓ 확정하기';
+    btn.disabled = false;
+  }
+}
+
+
 
 function initPlayers() {
   defaultFemales.forEach(n => addPlayer('female', n));
@@ -263,8 +473,9 @@ function addPlayer(gender, name = '') {
   const placeholder = gender === 'female' ? `여${idx}` : `남${idx}`;
   div.innerHTML = `
     <input type="text" value="${name}" placeholder="${placeholder}" maxlength="8">
-    <button class="del-btn" onclick="this.parentElement.remove()">×</button>`;
+    <button class="del-btn" onclick="this.parentElement.remove();checkAvailability()">×</button>`;
   list.appendChild(div);
+  checkAvailability();
 }
 
 function getPlayers(gender) {
@@ -278,43 +489,114 @@ function getPlayers(gender) {
 function toggleCond(el) { el.classList.toggle('active'); }
 function isActive(id) { return document.getElementById(id).classList.contains('active'); }
 
-// ── Algorithm ──
-function generateSchedule(females, males, numCourts, numRounds, opts) {
-  const allPlayers = [...females, ...males];
-  const n = allPlayers.length;
+// ── Format toggle & validation ──
+function toggleFmt(el, fmt) {
+  if (el.classList.contains('disabled')) return;
+  el.classList.toggle('active');
+  // active 상태 하나라도 있어야 함
+  if (getSelectedFormats().length === 0) {
+    el.classList.add('active'); // 마지막 하나는 해제 불가
+  }
+}
 
-  // Tracking matrices
+function getSelectedFormats() {
+  return ['mixed','mens','womens','open'].filter(f =>
+    document.getElementById('fmt-'+f).classList.contains('active')
+  );
+}
+
+// 인원 수 변경 시에만 호출 — toggle 시엔 호출하지 않음
+function checkAvailability() {
+  const females = getPlayers('female');
+  const males   = getPlayers('male');
+  const fLen = females.length, mLen = males.length;
+
+  const rules = {
+    mixed:  fLen >= 2 && mLen >= 2,
+    mens:   mLen >= 4,
+    womens: fLen >= 4,
+    open:   fLen + mLen >= 4
+  };
+  const reasons = {
+    mixed:  '여2+남2 이상',
+    mens:   '남자 4명 이상',
+    womens: '여자 4명 이상',
+    open:   '총 4명 이상'
+  };
+
+  const unavail = [];
+  ['mixed','mens','womens','open'].forEach(f => {
+    const el = document.getElementById('fmt-'+f);
+    if (!rules[f]) {
+      el.classList.add('disabled');
+      el.classList.remove('active');
+      unavail.push(el.querySelector('.fmt-name').textContent + `(${reasons[f]})`);
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+
+  const warn = document.getElementById('fmt-warn');
+  warn.textContent = unavail.length ? '선택 불가: ' + unavail.join(' · ') : '';
+  warn.style.display = unavail.length ? 'block' : 'none';
+}
+
+// 예전 validateFormats 참조 호환
+const validateFormats = checkAvailability;
+
+// ── Algorithm ──
+function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
+  const allPlayers = [...females, ...males];
+
   const partnerCount  = {};
   const opponentCount = {};
   const playCount     = {};
-  const lastRest      = {}; // last round a player rested
 
   allPlayers.forEach(p => {
     partnerCount[p]  = {};
     opponentCount[p] = {};
     playCount[p]     = 0;
-    lastRest[p]      = -99;
     allPlayers.forEach(q => {
       partnerCount[p][q]  = 0;
       opponentCount[p][q] = 0;
     });
   });
 
-  // Generate all possible matches for given format
+  // Generate all possible matches per format
   function getAllMatches() {
     const matches = [];
-    const format = document.getElementById('format').value;
 
-    if (format === 'mixed') {
+    if (formats.includes('mixed')) {
       for (let mi = 0; mi < males.length; mi++)
       for (let fi = 0; fi < females.length; fi++)
-      for (let mj = mi + 1; mj < males.length; mj++)
+      for (let mj = mi+1; mj < males.length; mj++)
       for (let fj = 0; fj < females.length; fj++) {
         if (fj === fi) continue;
-        matches.push([[males[mi], females[fi]], [males[mj], females[fj]]]);
+        matches.push({ t1:[males[mi],females[fi]], t2:[males[mj],females[fj]], fmt:'mixed' });
       }
-    } else {
-      // Any doubles
+    }
+    if (formats.includes('mens')) {
+      for (let i = 0; i < males.length; i++)
+      for (let j = i+1; j < males.length; j++)
+      for (let k = j+1; k < males.length; k++)
+      for (let l = k+1; l < males.length; l++) {
+        matches.push({ t1:[males[i],males[j]], t2:[males[k],males[l]], fmt:'mens' });
+        matches.push({ t1:[males[i],males[k]], t2:[males[j],males[l]], fmt:'mens' });
+        matches.push({ t1:[males[i],males[l]], t2:[males[j],males[k]], fmt:'mens' });
+      }
+    }
+    if (formats.includes('womens')) {
+      for (let i = 0; i < females.length; i++)
+      for (let j = i+1; j < females.length; j++)
+      for (let k = j+1; k < females.length; k++)
+      for (let l = k+1; l < females.length; l++) {
+        matches.push({ t1:[females[i],females[j]], t2:[females[k],females[l]], fmt:'womens' });
+        matches.push({ t1:[females[i],females[k]], t2:[females[j],females[l]], fmt:'womens' });
+        matches.push({ t1:[females[i],females[l]], t2:[females[j],females[k]], fmt:'womens' });
+      }
+    }
+    if (formats.includes('open')) {
+      const n = allPlayers.length;
       for (let i = 0; i < n; i++)
       for (let j = i+1; j < n; j++)
       for (let k = 0; k < n; k++) {
@@ -322,20 +604,29 @@ function generateSchedule(females, males, numCourts, numRounds, opts) {
         for (let l = k+1; l < n; l++) {
           if (l===i||l===j) continue;
           if (i*n+j < k*n+l)
-            matches.push([[allPlayers[i], allPlayers[j]], [allPlayers[k], allPlayers[l]]]);
+            matches.push({ t1:[allPlayers[i],allPlayers[j]], t2:[allPlayers[k],allPlayers[l]], fmt:'open' });
         }
       }
+    }
+    // Deduplicate (open may overlap with others)
+    if (formats.includes('open') && formats.length > 1) {
+      return matches.filter((m,i) => {
+        if (m.fmt !== 'open') return true;
+        // remove open matches that are already covered by other formats
+        const key = (a,b) => [a,b].sort().join('|');
+        const t1k = key(m.t1[0],m.t1[1]), t2k = key(m.t2[0],m.t2[1]);
+        return !matches.slice(0,i).some(x => x.fmt !== 'open' &&
+          key(x.t1[0],x.t1[1])===t1k && key(x.t2[0],x.t2[1])===t2k);
+      });
     }
     return matches;
   }
 
   const allMatches = getAllMatches();
 
-  // Score a single match
-  function scoreMatch(match, roundIdx) {
-    const [t1, t2] = match;
+  function scoreMatch(m) {
+    const { t1, t2 } = m;
     let score = 0;
-
     if (opts.partner) {
       score += partnerCount[t1[0]][t1[1]] * 4;
       score += partnerCount[t2[0]][t2[1]] * 4;
@@ -344,11 +635,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts) {
       t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 2; }));
     }
     if (opts.rest) {
-      [...t1, ...t2].forEach(p => { score += playCount[p] * 1.5; });
-    }
-    if (opts.noConsecRest) {
-      // Penalize players who rested last round from resting again
-      // (handled during selection — skipping here)
+      [...t1,...t2].forEach(p => { score += playCount[p] * 1.5; });
     }
     return score;
   }
@@ -356,50 +643,35 @@ function generateSchedule(females, males, numCourts, numRounds, opts) {
   const schedule = [];
 
   for (let round = 0; round < numRounds; round++) {
-    // Find best non-overlapping set of matches
-    const scored = allMatches.map(m => ({ m, s: scoreMatch(m, round) }));
-    scored.sort((a, b) => a.s - b.s);
+    const scored = allMatches.map(m => ({ m, s: scoreMatch(m) }));
+    scored.sort((a,b) => a.s - b.s);
 
     const selected = [];
     const used = new Set();
 
     for (const { m } of scored) {
       if (selected.length >= numCourts) break;
-      const players = [...m[0], ...m[1]];
-
-      // Check: no repeated player
+      const players = [...m.t1, ...m.t2];
       if (players.some(p => used.has(p))) continue;
-
-      // Check: no consecutive rest (if option on)
-      if (opts.noConsecRest) {
-        const restedLast = allPlayers.filter(p => !used.has(p) && selected.flatMap(x=>[...x[0],...x[1]]).indexOf(p)===-1);
-        // skip if adding this would force someone to rest 2 in a row
-        // simplified: penalize rather than hard block
-      }
-
       selected.push(m);
       players.forEach(p => used.add(p));
     }
 
-    // Fallback if nothing selected
     if (selected.length === 0 && allMatches.length > 0) {
       selected.push(allMatches[round % allMatches.length]);
     }
 
-    // Players not in this round
-    const activePlayers = selected.flatMap(m => [...m[0], ...m[1]]);
+    const activePlayers = selected.flatMap(m => [...m.t1, ...m.t2]);
     const resting = allPlayers.filter(p => !activePlayers.includes(p));
 
-    schedule.push({ round: round + 1, matches: selected, resting });
+    schedule.push({ round: round+1, matches: selected, resting });
 
-    // Update counts
-    selected.forEach(([t1, t2]) => {
+    selected.forEach(({ t1, t2 }) => {
       partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
       partnerCount[t2[0]][t2[1]]++; partnerCount[t2[1]][t2[0]]++;
       t1.forEach(p => t2.forEach(q => { opponentCount[p][q]++; opponentCount[q][p]++; }));
       [...t1,...t2].forEach(p => playCount[p]++);
     });
-    resting.forEach(p => lastRest[p] = round);
   }
 
   return { schedule, playCount, partnerCount, opponentCount };
@@ -411,35 +683,32 @@ function generate() {
   const males     = getPlayers('male');
   const numCourts = parseInt(document.getElementById('num-courts').value);
   const numRounds = parseInt(document.getElementById('num-rounds').value);
-  const format    = document.getElementById('format').value;
+  const formats   = getSelectedFormats();
   const warn      = document.getElementById('warn-msg');
+  warn.className  = 'warn';
 
-  warn.className = 'warn';
-
-  // Validation
-  if (females.length < 1 || males.length < 1) {
-    warn.textContent = '여자 1명, 남자 1명 이상 필요합니다.';
-    warn.className = 'warn show'; return;
-  }
-  if (format === 'mixed' && (females.length < 2 || males.length < 2)) {
-    warn.textContent = '혼합 복식은 여자 2명, 남자 2명 이상 필요합니다.';
-    warn.className = 'warn show'; return;
-  }
   const totalPlayers = females.length + males.length;
   if (totalPlayers < 4) {
     warn.textContent = '최소 4명 이상 필요합니다.';
     warn.className = 'warn show'; return;
   }
+  if (!formats.length) {
+    warn.textContent = '경기 포맷을 하나 이상 선택해주세요.';
+    warn.className = 'warn show'; return;
+  }
 
   const opts = {
-    partner:       isActive('cond-partner'),
-    opponent:      isActive('cond-opponent'),
-    rest:          isActive('cond-rest'),
-    noConsecRest:  isActive('cond-gender'),
+    partner:      isActive('cond-partner'),
+    opponent:     isActive('cond-opponent'),
+    rest:         isActive('cond-rest'),
+    noConsecRest: isActive('cond-gender'),
   };
 
   const { schedule, playCount, partnerCount, opponentCount } =
-    generateSchedule(females, males, numCourts, numRounds, opts);
+    generateSchedule(females, males, numCourts, numRounds, opts, formats);
+
+  // 마지막 생성 데이터 저장 (확정하기용)
+  _lastScheduleData = { schedule, females, males, formats, numRounds };
 
   const allPlayers = [...females, ...males];
   renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds);
@@ -460,7 +729,10 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
         <div class="result-title">Generated Schedule</div>
         <div class="result-meta">${allPlayers.length}명 · ${numRounds}라운드 · 총 ${total}경기</div>
       </div>
-      <button class="copy-btn" onclick="copySchedule()">텍스트 복사</button>
+      <div style="display:flex;gap:.6rem;">
+        <button class="copy-btn" onclick="copySchedule()">텍스트 복사</button>
+        <button class="confirm-btn" onclick="confirmSchedule()">✓ 확정하기</button>
+      </div>
     </div>
     <div class="summary-row">
       <div class="sum-card"><div class="sum-n">${allPlayers.length}</div><div class="sum-l">Players</div></div>
@@ -470,6 +742,9 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
     </div>
     <div style="height:1.5rem"></div>`;
 
+  const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
+  const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
+
   // Rounds
   schedule.forEach(({ round, matches, resting }) => {
     html += `<div class="round-block">
@@ -478,11 +753,20 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
         ${resting.length ? `<div class="round-bye">대기: <span>${resting.join(', ')}</span></div>` : ''}
       </div>`;
     matches.forEach((match, ci) => {
-      const [t1, t2] = match;
+      const { t1, t2, fmt } = match;
+      const params = new URLSearchParams({
+        t1p1: t1[0], t1p2: t1[1],
+        t2p1: t2[0], t2p2: t2[1],
+        date: new Date().toISOString().split('T')[0]
+      });
       html += `<div class="match-row">
-        <div class="team">${t1.map(p=>playerChip(p,females)).join('')}</div>
+        <div class="team">
+          <span class="fmt-badge ${fmtCls[fmt]}">${fmtLabel[fmt]}</span>
+          ${t1.map(p=>playerChip(p,females)).join('')}
+        </div>
         <div class="vs">${matches.length > 1 ? `<span style="font-size:.55rem;display:block;text-align:center;color:var(--gd);margin-bottom:2px">Court ${ci+1}</span>` : ''}VS</div>
         <div class="team right">${t2.map(p=>playerChip(p,females)).join('')}</div>
+        <a href="results.html?${params.toString()}" class="result-link">결과 입력 →</a>
       </div>`;
     });
     html += `</div>`;
@@ -556,14 +840,15 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
 function copySchedule() {
   if (!window._scheduleData) return;
   const { schedule, females } = window._scheduleData;
+  const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
   let text = '[ Down the Line 시합 일정 ]\n\n';
   schedule.forEach(({ round, matches, resting }) => {
     text += `▶ Round ${round}\n`;
     matches.forEach((match, ci) => {
-      const [t1, t2] = match;
+      const { t1, t2, fmt } = match;
       if (matches.length > 1) text += `  [Court ${ci+1}] `;
       else text += '  ';
-      text += `${t1.join(' + ')} vs ${t2.join(' + ')}\n`;
+      text += `[${fmtLabel[fmt]}] ${t1.join(' + ')} vs ${t2.join(' + ')}\n`;
     });
     if (resting.length) text += `  대기: ${resting.join(', ')}\n`;
     text += '\n';
@@ -577,6 +862,17 @@ function copySchedule() {
 
 // Init
 initPlayers();
+// 기본값: 혼복 선택
+document.getElementById('fmt-mixed').classList.add('active');
+validateFormats();
+// 확정 일정 불러오기
+loadConfirmedSchedules().then(() => {
+  // 확정 일정 있으면 새 일정 섹션 기본 숨김
+  const list = document.getElementById('confirmed-list');
+  if (list && list.children.length > 0) {
+    document.getElementById('new-sched-section').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>

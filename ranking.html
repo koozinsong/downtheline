@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클럽 랭킹 — Down the Line</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
+  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
+  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
+  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
+  --ll:rgba(26,31,28,.1);
+  --female:#9b3d5a;--fbg:#fde8ed;
+  --male:#2a4a80;--mbg:#e6f0ff;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);}
+#nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
+.nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.nav-back:hover{color:var(--gdl);}
+.nav-back::before{content:'←';}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
+.nav-links{margin-left:auto;display:flex;gap:1.5rem;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s;}
+.nav-link:hover,.nav-link.active{color:var(--gdl);}
+.wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.5rem;}
+.page-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.page-sub{font-size:.88rem;color:var(--sm);font-weight:300;margin-bottom:3rem;line-height:1.7;}
+.refresh-btn{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g3);background:none;border:1px solid rgba(78,122,90,.3);padding:.4rem 1rem;cursor:pointer;transition:all .2s;margin-left:1rem;}
+.refresh-btn:hover{background:var(--g);color:var(--w);border-color:var(--g);}
+
+/* Summary cards */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:2rem;}
+.sum-card{background:var(--w);border:1px solid var(--ll);padding:1.2rem;text-align:center;}
+.sum-n{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--g);line-height:1;}
+.sum-l{font-size:.6rem;color:var(--sm2);letter-spacing:1.5px;text-transform:uppercase;margin-top:.3rem;}
+
+/* Podium */
+.podium{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:0;margin-bottom:2rem;align-items:flex-end;}
+.pod-card{background:var(--w);border:1px solid var(--ll);padding:1.5rem 1rem;text-align:center;position:relative;}
+.pod-card.first{background:var(--g);border-color:var(--g);padding:2rem 1rem;}
+.pod-rank{font-family:'Barlow Condensed',sans-serif;font-size:3rem;font-weight:900;line-height:1;opacity:.15;}
+.pod-card.first .pod-rank{color:var(--gdl);opacity:.3;}
+.pod-crown{font-size:1.5rem;margin-bottom:.3rem;}
+.pod-name{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink);margin-bottom:.2rem;}
+.pod-card.first .pod-name{color:var(--w);}
+.pod-chip{display:inline-block;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:2px;margin-bottom:.8rem;}
+.pod-pts{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:var(--g);line-height:1;}
+.pod-card.first .pod-pts{color:var(--gdl);}
+.pod-pts-l{font-size:.6rem;color:var(--sm2);letter-spacing:1px;text-transform:uppercase;margin-top:.2rem;}
+.pod-card.first .pod-pts-l{color:rgba(255,255,255,.5);}
+.pod-stat{font-size:.72rem;color:var(--sm2);margin-top:.5rem;}
+.pod-card.first .pod-stat{color:rgba(255,255,255,.5);}
+
+/* Full ranking table */
+.rank-table-wrap{background:var(--w);border:1px solid var(--ll);overflow:hidden;margin-bottom:1.5rem;}
+.rank-table{width:100%;border-collapse:collapse;}
+.rank-table th{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.9rem 1rem;text-align:left;background:var(--g);color:var(--w);}
+.rank-table th.num{text-align:right;}
+.rank-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(26,31,28,.05);font-size:.88rem;color:var(--ink2);}
+.rank-table td.num{text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.rank-table tr:last-child td{border-bottom:none;}
+.rank-table tr:hover td{background:rgba(44,74,53,.03);}
+.rank-num{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:900;color:var(--sm2);width:40px;}
+.rank-1{color:var(--gd);}
+.rank-2{color:var(--ink);}
+.rank-3{color:var(--sm);}
+.rank-name{font-weight:500;display:flex;align-items:center;gap:.5rem;}
+.chip{font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:2px;}
+.chip-f{background:var(--fbg);color:var(--female);}
+.chip-m{background:var(--mbg);color:var(--male);}
+.winrate-bar{display:inline-flex;align-items:center;gap:.5rem;}
+.bar{height:4px;background:var(--g3);border-radius:2px;opacity:.4;display:inline-block;}
+.pts-badge{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--g);}
+.mvp-badge{color:var(--gd);}
+.no-data{text-align:center;padding:4rem;color:var(--sm2);}
+.no-data-icon{font-size:2.5rem;margin-bottom:.8rem;opacity:.3;}
+.no-data-text{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--ll);border-top-color:var(--g3);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.last-updated{font-size:.72rem;color:var(--sm2);text-align:right;margin-bottom:1rem;}
+@media(max-width:600px){
+  .summary{grid-template-columns:1fr 1fr;}
+  .podium{grid-template-columns:1fr;}
+  .pod-card.first{order:-1;}
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a class="nav-back" href="index.html">홈</a>
+  <div class="nav-title">클럽 랭킹</div>
+  <div class="nav-links">
+    <a class="nav-link" href="results.html">결과</a>
+    <a class="nav-link active" href="ranking.html">랭킹</a>
+    <a class="nav-link" href="schedule.html">일정</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div style="display:flex;align-items:flex-end;gap:1rem;margin-bottom:.5rem;">
+    <div class="page-title">Club<br><em>Ranking</em></div>
+    <button class="refresh-btn" onclick="load()">↻ 새로고침</button>
+  </div>
+  <p class="page-sub">결과 입력 시 자동으로 업데이트됩니다. 승리 3점 + MVP 1점.</p>
+
+  <div id="last-updated" class="last-updated"></div>
+  <div id="summary" class="summary"></div>
+  <div id="podium" class="podium"></div>
+  <div id="rank-table-wrap" class="rank-table-wrap"></div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbwLeOk_c61xgJM0cfTbzsO0qn1hvTMwEpA8zxJo1Bqv5lPDHTCBwKRQMm20SsH6Z-UnPw/exec';
+
+async function load(){
+  document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><span class="spin"></span></div>`;
+  try{
+    const r=await fetch(`${API}?action=getRankings`);
+    const data=await r.json();
+    render(data);
+  }catch(e){
+    document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><div class="no-data-icon">⚠️</div><div class="no-data-text">불러오기 실패</div></div>`;
+  }
+}
+
+function genderChip(g){
+  return g==='female'?`<span class="chip chip-f">여</span>`:`<span class="chip chip-m">남</span>`;
+}
+
+function render(data){
+  document.getElementById('last-updated').textContent='업데이트: '+new Date().toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  if(!data||!data.length){
+    document.getElementById('summary').innerHTML='';
+    document.getElementById('podium').innerHTML='';
+    document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><div class="no-data-icon">🎾</div><div class="no-data-text">아직 경기 데이터가 없습니다</div></div>`;
+    return;
+  }
+
+  const totalPlayed=data.reduce((s,p)=>s+parseInt(p.played||0),0)/2; // divided by 2 because each match has 2 teams
+  const totalMvp=data.reduce((s,p)=>s+parseInt(p.mvp||0),0);
+
+  // Summary
+  document.getElementById('summary').innerHTML=`
+    <div class="sum-card"><div class="sum-n">${data.length}</div><div class="sum-l">Players</div></div>
+    <div class="sum-card"><div class="sum-n">${Math.round(totalPlayed)}</div><div class="sum-l">경기 수</div></div>
+    <div class="sum-card"><div class="sum-n">${totalMvp}</div><div class="sum-l">MVP 선정</div></div>
+    <div class="sum-card"><div class="sum-n">${data[0]?data[0].name:'-'}</div><div class="sum-l">현재 1위</div></div>`;
+
+  // Podium (top 3)
+  const top3=data.slice(0,3);
+  const order=[1,0,2]; // 2nd, 1st, 3rd visually
+  const medals=['🥇','🥈','🥉'];
+  const podHtml=order.map(i=>{
+    if(!top3[i])return`<div class="pod-card"></div>`;
+    const p=top3[i];
+    const rank=parseInt(p.rank);
+    return `<div class="pod-card ${rank===1?'first':''}">
+      <div class="pod-rank">${rank}</div>
+      <div class="pod-crown">${medals[rank-1]}</div>
+      <div class="pod-name">${p.name}</div>
+      <div>${genderChip(p.gender)}</div>
+      <div class="pod-pts">${p.points||0}</div>
+      <div class="pod-pts-l">Points</div>
+      <div class="pod-stat">${p.wins||0}승 ${p.losses||0}패 · ${p.winrate||'0%'}</div>
+    </div>`;
+  });
+  document.getElementById('podium').innerHTML=podHtml.join('');
+
+  // Full table
+  const rows=data.map(p=>{
+    const rank=parseInt(p.rank);
+    const rankCls=rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
+    const wr=parseInt(p.winrate)||0;
+    return `<tr>
+      <td><div class="rank-num ${rankCls}">${rank}</div></td>
+      <td><div class="rank-name">${genderChip(p.gender)}${p.name}</div></td>
+      <td class="num">${p.played||0}</td>
+      <td class="num" style="color:var(--g);font-weight:700;">${p.wins||0}</td>
+      <td class="num" style="color:var(--sm2);">${p.losses||0}</td>
+      <td class="num">
+        <div class="winrate-bar">
+          <span>${p.winrate||'0%'}</span>
+          <span class="bar" style="width:${wr*0.5}px"></span>
+        </div>
+      </td>
+      <td class="num"><span class="mvp-badge">${parseInt(p.mvp||0)?'⭐'.repeat(Math.min(parseInt(p.mvp),5))+''+p.mvp:'—'}</span></td>
+      <td class="num"><span class="pts-badge">${p.points||0}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('rank-table-wrap').innerHTML=`
+    <table class="rank-table">
+      <thead><tr>
+        <th style="width:50px;">#</th>
+        <th>선수</th>
+        <th class="num">출전</th>
+        <th class="num">승</th>
+        <th class="num">패</th>
+        <th class="num">승률</th>
+        <th class="num">MVP</th>
+        <th class="num">점수</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+load();
+</script>
+</body>
+</html>
