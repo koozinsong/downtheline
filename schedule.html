@@ -85,7 +85,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .gen-btn:active{transform:scale(.99);}
 
 /* RESULT */
-.result{margin-top:2.5rem;}
+.result{max-width:900px;margin:0 auto;}
 .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--ll);}
 .result-title{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;text-transform:uppercase;color:var(--ink);}
 .result-meta{font-size:.75rem;color:var(--sm2);}
@@ -314,9 +314,19 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     </div>
 
     <div class="warn" id="warn-msg"></div>
-    <div style="margin-bottom:1rem;">
-      <span class="opt-label" style="display:block;margin-bottom:.4rem;">일정 이름 (선택)</span>
-      <input class="opt-input" id="sched-name" type="text" placeholder="예: 아난티의 봄 혼복 1R" style="max-width:400px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+      <div>
+        <span class="opt-label" style="display:block;margin-bottom:.4rem;">일정 이름 (선택)</span>
+        <input class="opt-input" id="sched-name" type="text" placeholder="예: 아난티의 봄 혼복 1R">
+      </div>
+      <div>
+        <span class="opt-label" style="display:block;margin-bottom:.4rem;">경기 날짜</span>
+        <input class="opt-input" id="sched-date" type="date">
+      </div>
+      <div>
+        <span class="opt-label" style="display:block;margin-bottom:.4rem;">이벤트 연결</span>
+        <select class="opt-select" id="sched-event"><option value="">선택 안함</option></select>
+      </div>
     </div>
     <button class="gen-btn" onclick="generate()">🎾 일정 생성하기</button>
   </div>
@@ -347,16 +357,45 @@ async function loadConfirmedSchedules() {
   const el = document.getElementById('confirmed-list');
   el.innerHTML = '<div style="padding:.8rem 0;font-size:.82rem;color:var(--sm);">불러오는 중...</div>';
   try {
-    const r = await fetch(`${API}?action=getSchedules`);
-    const list = await r.json();
-    console.log('schedules:', list);
-    renderConfirmedList(list);
+    const [schedRes, matchRes, eventRes] = await Promise.all([
+      fetch(`${API}?action=getSchedules`).then(r=>r.json()),
+      fetch(`${API}?action=getMatches`).then(r=>r.json()),
+      fetch(`${API}?action=getEvents`).then(r=>r.json())
+    ]);
+
+    // 이벤트 드롭다운 채우기
+    const evtSel = document.getElementById('sched-event');
+    if (evtSel) {
+      evtSel.innerHTML = '<option value="">선택 안함</option>';
+      (eventRes||[]).forEach(ev => {
+        evtSel.innerHTML += `<option value="${ev.name}" data-date="${ev.date}">${ev.name} (${ev.date})</option>`;
+      });
+      evtSel.onchange = function() {
+        const opt = this.options[this.selectedIndex];
+        const d = opt.getAttribute('data-date');
+        if (d) document.getElementById('sched-date').value = d;
+      };
+    }
+
+    // 오늘 날짜 기본값
+    const dateEl = document.getElementById('sched-date');
+    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+
+    renderConfirmedList(schedRes||[], matchRes||[]);
+
+    // 확정 일정 있으면 생성 폼 숨기기
+    if (schedRes && schedRes.length > 0) {
+      document.getElementById('new-sched-section').style.display = 'none';
+    } else {
+      document.getElementById('new-sched-section').style.display = 'block';
+    }
   } catch(e) {
-    el.innerHTML = `<div style="padding:.8rem 0;font-size:.82rem;color:red;">오류: ${e.message}</div>`;
+    el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">오류: ${e.message}</div>`;
+    document.getElementById('new-sched-section').style.display = 'block';
   }
 }
 
-function renderConfirmedList(list) {
+function renderConfirmedList(list, allMatches) {
   const el = document.getElementById('confirmed-list');
 
   if (!list || !list.length) {
@@ -364,45 +403,106 @@ function renderConfirmedList(list) {
     return;
   }
 
+  // 결과 찾기 헬퍼
+  function findResult(t1, t2, matches) {
+    return (matches||[]).find(m => {
+      const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
+      const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
+      const st1 = [...t1].sort().join(',');
+      const st2 = [...t2].sort().join(',');
+      return (mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1);
+    });
+  }
+
   try {
     el.innerHTML = list.map(s => {
       let sched = [];
       try { sched = JSON.parse(s.schedule_json || '[]'); } catch(e) { sched = []; }
       const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
+      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches)).length, 0);
       const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
       const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
 
       const matchRows = sched.map(r =>
-        (r.matches||[]).map((m) => {
+        (r.matches||[]).map(m => {
           const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
+          const result = findResult(t1, t2, allMatches);
           const params = new URLSearchParams({
             t1p1:t1[0]||'', t1p2:t1[1]||'',
             t2p1:t2[0]||'', t2p2:t2[1]||'',
             event:s.name||'', date:s.date||''
           });
-          return `<div class="conf-match-row">
+          const scoreHtml = result
+            ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:var(--g);margin:0 .5rem;">${result.score1} : ${result.score2}</span>`
+            : `<a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>`;
+          return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
             ${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-            <span style="font-size:.65rem;color:var(--sm);font-weight:600;">vs</span>
+            ${scoreHtml}
             ${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-            <a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>
+            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);margin-left:.4rem;">⭐${result.mvp}</span>` : ''}
           </div>`;
         }).join('')
       ).join('');
+
+      // 스코어 요약 테이블
+      const playerStats = {};
+      sched.forEach(r => (r.matches||[]).forEach(m => {
+        const res = findResult(m.t1||[], m.t2||[], allMatches);
+        if (!res) return;
+        const s1 = parseInt(res.score1)||0, s2 = parseInt(res.score2)||0;
+        const w1 = s1 > s2;
+        [...(m.t1||[])].forEach(p => {
+          if (!playerStats[p]) playerStats[p] = {w:0,l:0};
+          w1 ? playerStats[p].w++ : playerStats[p].l++;
+        });
+        [...(m.t2||[])].forEach(p => {
+          if (!playerStats[p]) playerStats[p] = {w:0,l:0};
+          w1 ? playerStats[p].l++ : playerStats[p].w++;
+        });
+      }));
+      const scoreTableRows = Object.entries(playerStats)
+        .sort((a,b) => b[1].w - a[1].w)
+        .map(([name, st], i) => `<tr>
+          <td style="padding:.4rem .6rem;font-weight:600;">${i+1}</td>
+          <td style="padding:.4rem .6rem;">${name}</td>
+          <td style="padding:.4rem .6rem;color:var(--g);font-weight:700;text-align:center;">${st.w}</td>
+          <td style="padding:.4rem .6rem;color:var(--sm2);text-align:center;">${st.l}</td>
+          <td style="padding:.4rem .6rem;text-align:center;font-weight:600;">${st.w+st.l>0?Math.round(st.w/(st.w+st.l)*100)+'%':'-'}</td>
+        </tr>`).join('');
+      const scoreTable = scoreTableRows ? `
+        <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);margin-bottom:.5rem;">이 일정 스코어</div>
+          <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
+            <tr style="background:var(--iv2);">
+              <th style="padding:.4rem .6rem;text-align:left;font-weight:600;">#</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-weight:600;">선수</th>
+              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">승</th>
+              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">패</th>
+              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">승률</th>
+            </tr>
+            ${scoreTableRows}
+          </table>
+        </div>` : '';
+
+      const progress = `${doneMatches}/${totalMatches} 경기 완료`;
 
       return `<div class="conf-card">
         <div class="conf-card-head" onclick="toggleConf('${s.id}')">
           <div>
             <div class="conf-card-name">${s.name||'시합 일정'}</div>
-            <div class="conf-card-meta">${String(s.date||'').substring(0,10)} · ${sched.length}라운드 · ${totalMatches}경기 · ${s.formats||''}</div>
+            <div class="conf-card-meta">${String(s.date||'').substring(0,10)} · ${sched.length}라운드 · ${progress} · ${s.formats||''}</div>
           </div>
           <div class="conf-card-actions">
             <button class="conf-del-btn" onclick="event.stopPropagation();delSchedule('${s.id}')">삭제</button>
             <span style="font-size:.75rem;color:var(--sm2);">▾</span>
           </div>
         </div>
-        <div class="conf-body open" id="conf-body-${s.id}">${matchRows}</div>
+        <div class="conf-body open" id="conf-body-${s.id}">
+          ${matchRows}
+          ${scoreTable}
+        </div>
       </div>`;
     }).join('');
   } catch(e) {
@@ -435,8 +535,11 @@ function toggleNewSchedule() {
 async function confirmSchedule() {
   if (!_lastScheduleData) return;
   const { schedule, females, males, formats, numRounds } = _lastScheduleData;
-  const name = document.getElementById('sched-name').value.trim() ||
+  const name  = document.getElementById('sched-name').value.trim() ||
     `시합 일정 ${new Date().toLocaleDateString('ko-KR')}`;
+  const date  = document.getElementById('sched-date').value ||
+    new Date().toISOString().split('T')[0];
+  const event = document.getElementById('sched-event').value || '';
 
   const btn = document.querySelector('.confirm-btn');
   btn.textContent = '저장 중...';
@@ -452,7 +555,8 @@ async function confirmSchedule() {
       body: JSON.stringify({
         action: 'saveSchedule',
         name,
-        date: new Date().toISOString().split('T')[0],
+        date,
+        event,
         rounds: numRounds,
         formats,
         schedule
