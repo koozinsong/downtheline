@@ -92,9 +92,10 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   <a class="nav-back" href="index.html">홈</a>
   <div class="nav-title">경기 결과</div>
   <div class="nav-links">
+    <a class="nav-link" href="schedule.html">← 시합 일정</a>
     <a class="nav-link active" href="results.html">결과</a>
     <a class="nav-link" href="ranking.html">랭킹</a>
-    <a class="nav-link" href="schedule.html">일정</a>
+    <a class="nav-link" href="index.html">홈</a>
   </div>
 </nav>
 
@@ -104,7 +105,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
   <div class="card">
     <div class="card-title" id="form-title">결과 입력</div>
-    <div id="edit-banner" style="display:none;background:#fff8e6;border:1px solid rgba(184,147,58,.3);padding:.7rem 1rem;margin-bottom:1.2rem;font-size:.82rem;color:#7a5f20;display:flex;align-items:center;justify-content:space-between;">
+    <div id="edit-banner" style="display:none;background:#fff8e6;border:1px solid rgba(184,147,58,.3);padding:.7rem 1rem;margin-bottom:1.2rem;font-size:.82rem;color:#7a5f20;align-items:center;justify-content:space-between;">
       <span>✏️ 수정 모드 — 기존 결과를 수정 중입니다</span>
       <button onclick="cancelEdit()" style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:none;border:none;cursor:pointer;color:#9a7840;">취소</button>
     </div>
@@ -229,8 +230,8 @@ function loadMatchIntoForm(m){
   document.getElementById('f-s2').value=m.score2||'';
   setSelectVal('f-mvp', m.mvp||'');
   document.getElementById('f-notes').value=m.notes||'';
-  // UI 업데이트
-  document.getElementById('edit-banner').style.display='flex';
+  const banner=document.getElementById('edit-banner');
+  banner.style.display='flex';
   document.getElementById('form-title').textContent='결과 수정';
   document.getElementById('submit-btn').textContent='수정 저장하기';
   preview();
@@ -239,7 +240,8 @@ function loadMatchIntoForm(m){
 function cancelEdit(){
   editingId=null;
   resetForm();
-  document.getElementById('edit-banner').style.display='none';
+  const banner=document.getElementById('edit-banner');
+  banner.style.display='none';
   document.getElementById('form-title').textContent='결과 입력';
   document.getElementById('submit-btn').textContent='결과 저장하기';
 }
