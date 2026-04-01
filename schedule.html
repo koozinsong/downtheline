@@ -165,7 +165,13 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .conf-del-btn:hover{color:#c0392b;}
 .conf-body{display:none;padding:.8rem 1rem;}
 .conf-body.open{display:block;}
-.conf-match-row{display:flex;align-items:center;gap:.6rem;padding:.5rem 0;border-bottom:1px solid rgba(26,31,28,.05);flex-wrap:wrap;}
+.conf-team{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;}
+.conf-score-block{display:flex;align-items:center;gap:.4rem;min-width:100px;justify-content:center;}
+.match-score{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;color:var(--sm2);line-height:1;}
+.match-score.win{color:var(--g);}
+.match-score-sep{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;color:var(--sm2);}
+.match-score-empty{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:600;color:var(--sm2);letter-spacing:1px;}
+.conf-match-row{display:grid;grid-template-columns:45px 48px 1fr 110px 1fr auto;align-items:center;gap:.5rem;padding:.6rem 0;border-bottom:1px solid rgba(26,31,28,.05);}
 .conf-match-row:last-child{border-bottom:none;}
 .conf-round-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);min-width:60px;}
 .conf-result-link{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);text-decoration:none;margin-left:auto;white-space:nowrap;transition:color .2s;}
@@ -202,7 +208,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   </div>
 
   <!-- NEW SCHEDULE TOGGLE -->
-  <div id="new-sched-section">
+  <div id="new-sched-section" style="display:none;">
 
   <!-- SETUP -->
   <div class="setup-card">
@@ -433,15 +439,21 @@ function renderConfirmedList(list, allMatches) {
             event:s.name||'', date:s.date||''
           });
           const scoreHtml = result
-            ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:var(--g);margin:0 .5rem;">${result.score1} : ${result.score2}</span>`
-            : `<a href="results.html?${params.toString()}" class="conf-result-link">결과 입력 →</a>`;
+            ? `<span class="match-score win">${result.score1}</span>
+               <span class="match-score-sep">:</span>
+               <span class="match-score ${parseInt(result.score2)>parseInt(result.score1)?'win':''}">${result.score2}</span>`
+            : `<span class="match-score-empty">— : —</span>`;
+
           return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
-            ${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-            ${scoreHtml}
-            ${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}
-            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);margin-left:.4rem;">⭐${result.mvp}</span>` : ''}
+            <div class="conf-team">${t1.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
+            <div class="conf-score-block">
+              ${scoreHtml}
+              ${result ? '' : `<a href="results.html?${params.toString()}" class="conf-result-link">입력</a>`}
+            </div>
+            <div class="conf-team">${t2.map(p=>`<span class="player-chip p-m" style="font-size:.72rem;">${p}</span>`).join('')}</div>
+            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);margin-left:auto;">⭐${result.mvp}</span>` : ''}
           </div>`;
         }).join('')
       ).join('');
