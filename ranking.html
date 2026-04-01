@@ -177,6 +177,7 @@ function render(data){
     const rank=parseInt(p.rank);
     const rankCls=rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
     const wr=parseInt(p.winrate)||0;
+    const gd=parseInt(p.gd||0);
     return `<tr>
       <td><div class="rank-num ${rankCls}">${rank}</div></td>
       <td><div class="rank-name">${genderChip(p.gender)}${p.name}</div></td>
@@ -189,7 +190,9 @@ function render(data){
           <span class="bar" style="width:${wr*0.5}px"></span>
         </div>
       </td>
-      <td class="num"><span class="mvp-badge">${parseInt(p.mvp||0)?'⭐'.repeat(Math.min(parseInt(p.mvp),5))+''+p.mvp:'—'}</span></td>
+      <td class="num" style="color:${gd>0?'var(--g)':gd<0?'#c0392b':'var(--sm2)'};">${gd>0?'+'+gd:gd}</td>
+      <td class="num">${p.gf||0}</td>
+      <td class="num"><span class="mvp-badge">${parseInt(p.mvp||0)?'⭐'.repeat(Math.min(parseInt(p.mvp),5))+' '+p.mvp:'—'}</span></td>
       <td class="num"><span class="pts-badge">${p.points||0}</span></td>
     </tr>`;
   }).join('');
@@ -203,8 +206,10 @@ function render(data){
         <th class="num">승</th>
         <th class="num">패</th>
         <th class="num">승률</th>
+        <th class="num">득실차</th>
+        <th class="num">득점</th>
         <th class="num">MVP</th>
-        <th class="num">점수</th>
+        <th class="num">승점</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;

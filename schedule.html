@@ -409,9 +409,14 @@ function renderConfirmedList(list, allMatches) {
     return;
   }
 
-  // 결과 찾기 헬퍼
-  function findResult(t1, t2, matches) {
+  // 결과 찾기 헬퍼 — 같은 이벤트/날짜의 기록만 매칭
+  function findResult(t1, t2, matches, schedEvent, schedDate) {
     return (matches||[]).find(m => {
+      // 이벤트 또는 날짜가 맞는 것만
+      const eventMatch = schedEvent && m.event ? m.event === schedEvent : true;
+      const dateMatch  = schedDate  && m.date  ? String(m.date).substring(0,10) === String(schedDate).substring(0,10) : true;
+      if (!eventMatch && !dateMatch) return false;
+
       const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
       const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
       const st1 = [...t1].sort().join(',');
@@ -425,14 +430,14 @@ function renderConfirmedList(list, allMatches) {
       let sched = [];
       try { sched = JSON.parse(s.schedule_json || '[]'); } catch(e) { sched = []; }
       const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
-      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches)).length, 0);
+      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date)).length, 0);
       const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복' };
       const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open' };
 
       const matchRows = sched.map(r =>
         (r.matches||[]).map(m => {
           const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
-          const result = findResult(t1, t2, allMatches);
+          const result = findResult(t1, t2, allMatches, s.event, s.date);
           const params = new URLSearchParams({
             t1p1:t1[0]||'', t1p2:t1[1]||'',
             t2p1:t2[0]||'', t2p2:t2[1]||'',
@@ -461,38 +466,48 @@ function renderConfirmedList(list, allMatches) {
       // 스코어 요약 테이블
       const playerStats = {};
       sched.forEach(r => (r.matches||[]).forEach(m => {
-        const res = findResult(m.t1||[], m.t2||[], allMatches);
+        const res = findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date);
         if (!res) return;
         const s1 = parseInt(res.score1)||0, s2 = parseInt(res.score2)||0;
         const w1 = s1 > s2;
         [...(m.t1||[])].forEach(p => {
-          if (!playerStats[p]) playerStats[p] = {w:0,l:0};
+          if (!playerStats[p]) playerStats[p] = {w:0,l:0,gf:0,ga:0,pts:0};
           w1 ? playerStats[p].w++ : playerStats[p].l++;
+          playerStats[p].gf += s1; playerStats[p].ga += s2;
+          playerStats[p].pts = playerStats[p].w * 3;
         });
         [...(m.t2||[])].forEach(p => {
-          if (!playerStats[p]) playerStats[p] = {w:0,l:0};
+          if (!playerStats[p]) playerStats[p] = {w:0,l:0,gf:0,ga:0,pts:0};
           w1 ? playerStats[p].l++ : playerStats[p].w++;
+          playerStats[p].gf += s2; playerStats[p].ga += s1;
+          playerStats[p].pts = playerStats[p].w * 3;
         });
       }));
       const scoreTableRows = Object.entries(playerStats)
-        .sort((a,b) => b[1].w - a[1].w)
+        .sort((a,b) => b[1].pts - a[1].pts || (b[1].gf-b[1].ga) - (a[1].gf-a[1].ga))
         .map(([name, st], i) => `<tr>
           <td style="padding:.4rem .6rem;font-weight:600;">${i+1}</td>
           <td style="padding:.4rem .6rem;">${name}</td>
           <td style="padding:.4rem .6rem;color:var(--g);font-weight:700;text-align:center;">${st.w}</td>
           <td style="padding:.4rem .6rem;color:var(--sm2);text-align:center;">${st.l}</td>
-          <td style="padding:.4rem .6rem;text-align:center;font-weight:600;">${st.w+st.l>0?Math.round(st.w/(st.w+st.l)*100)+'%':'-'}</td>
+          <td style="padding:.4rem .6rem;text-align:center;">${st.gf}</td>
+          <td style="padding:.4rem .6rem;text-align:center;">${st.ga}</td>
+          <td style="padding:.4rem .6rem;text-align:center;font-weight:600;color:${st.gf-st.ga>0?'var(--g)':'var(--sm2)'};">${st.gf-st.ga>0?'+':''}${st.gf-st.ga}</td>
+          <td style="padding:.4rem .6rem;text-align:center;font-weight:700;color:var(--g);">${st.pts}</td>
         </tr>`).join('');
       const scoreTable = scoreTableRows ? `
         <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);margin-bottom:.5rem;">이 일정 스코어</div>
           <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
             <tr style="background:var(--iv2);">
-              <th style="padding:.4rem .6rem;text-align:left;font-weight:600;">#</th>
-              <th style="padding:.4rem .6rem;text-align:left;font-weight:600;">선수</th>
-              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">승</th>
-              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">패</th>
-              <th style="padding:.4rem .6rem;text-align:center;font-weight:600;">승률</th>
+              <th style="padding:.4rem .6rem;text-align:left;">#</th>
+              <th style="padding:.4rem .6rem;text-align:left;">선수</th>
+              <th style="padding:.4rem .6rem;text-align:center;">승</th>
+              <th style="padding:.4rem .6rem;text-align:center;">패</th>
+              <th style="padding:.4rem .6rem;text-align:center;">득점</th>
+              <th style="padding:.4rem .6rem;text-align:center;">실점</th>
+              <th style="padding:.4rem .6rem;text-align:center;">득실차</th>
+              <th style="padding:.4rem .6rem;text-align:center;">승점</th>
             </tr>
             ${scoreTableRows}
           </table>
