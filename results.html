@@ -265,7 +265,7 @@ async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComp
 async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
 
-const CACHE_TTL=60*1000;const CACHE_VER='v2';
+const CACHE_TTL=60*1000;const CACHE_VER='v3';
 function cacheGet(k){try{const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
 function cacheSet(k,d){try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
 const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSchedules:'Schedules'};
@@ -361,7 +361,7 @@ function cancelEdit(){
 
 async function loadPlayers(){
   try{
-    players=await cachedFetch('getPlayers');
+    players=(await cachedFetch('getPlayers')).sort((a,b)=>a.name.localeCompare(b.name));
     ['f-t1p1','f-t1p2','f-t2p1','f-t2p2','f-mvp'].forEach(id=>{
       const el=document.getElementById(id);
       const isM=id==='f-mvp';

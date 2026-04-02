@@ -517,7 +517,7 @@ async function atDelete(table, id) {
 }
 
 const CACHE_TTL = 60 * 1000; // 1분
-const CACHE_VER = 'v2';
+const CACHE_VER = 'v3';
 function cacheGet(k) { try { const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k); if(!r)return null; const{data,ts}=JSON.parse(r); return Date.now()-ts>CACHE_TTL?null:data; } catch(e){return null;} }
 function cacheSet(k, d) { try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){} }
 let _skipCache = false;
@@ -950,10 +950,10 @@ let _selectedFemales = []; // 선택된 여자 선수 이름 배열
 let _selectedMales = [];   // 선택된 남자 선수 이름 배열
 
 function initPlayerDropdowns(players) {
-  _allPlayers = players;
-  // 기본으로 전체 선택
-  _selectedFemales = players.filter(p => p.gender === 'female').map(p => p.name);
-  _selectedMales = players.filter(p => p.gender === 'male').map(p => p.name);
+  _allPlayers = players.sort((a, b) => a.name.localeCompare(b.name));
+  // 기본으로 전체 선택 (이름순)
+  _selectedFemales = _allPlayers.filter(p => p.gender === 'female').map(p => p.name);
+  _selectedMales = _allPlayers.filter(p => p.gender === 'male').map(p => p.name);
   document.getElementById('player-loading').style.display = 'none';
   document.getElementById('player-grid').style.display = '';
   renderSelectedPlayers();
