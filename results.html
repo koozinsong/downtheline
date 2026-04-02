@@ -265,9 +265,9 @@ async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComp
 async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
 
-const CACHE_TTL=60*1000;
-function cacheGet(k){try{const r=localStorage.getItem('dtl_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
-function cacheSet(k,d){try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
+const CACHE_TTL=60*1000;const CACHE_VER='v2';
+function cacheGet(k){try{const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
+function cacheSet(k,d){try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
 const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSchedules:'Schedules'};
 async function cachedFetch(action){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
 
@@ -472,9 +472,9 @@ async function submitResult(){
     const fields={event:data.event,date:data.date||null,team1_p1:data.team1_p1,team1_p2:data.team1_p2,team2_p1:data.team2_p1,team2_p2:data.team2_p2,score1:parseInt(data.score1),score2:parseInt(data.score2),mvp:data.mvp||'',notes:data.notes||'',schedule_id:data.schedule_id||''};
     const res=editingId?await atUpdate('Matches',editingId,fields):await atCreate('Matches',fields);
     if(res.success){
-      localStorage.removeItem('dtl_getMatches');
-      localStorage.removeItem('dtl_getRankings');
-      localStorage.removeItem('dtl_getSchedules');
+      localStorage.removeItem('dtl_v2_getMatches');
+      localStorage.removeItem('dtl_v2_getRankings');
+      localStorage.removeItem('dtl_v2_getSchedules');
       if(window._scheduleId){
         toast('저장됐습니다 ✓ 일정으로 이동합니다','ok');
         setTimeout(()=>{ window.location.href='schedule.html'; },1000);
@@ -494,7 +494,7 @@ async function delMatch(id){
   if(editingId===id) cancelEdit();
   try{
     const res=await atDelete('Matches',id);
-    if(res.success){localStorage.removeItem('dtl_getMatches');localStorage.removeItem('dtl_getRankings');toast('삭제됐습니다','ok');await loadMatches();}
+    if(res.success){localStorage.removeItem('dtl_v2_getMatches');localStorage.removeItem('dtl_v2_getRankings');toast('삭제됐습니다','ok');await loadMatches();}
   }catch(e){toast('삭제 실패','err');}
 }
 

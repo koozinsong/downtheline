@@ -517,8 +517,9 @@ async function atDelete(table, id) {
 }
 
 const CACHE_TTL = 60 * 1000; // 1분
-function cacheGet(k) { try { const r=localStorage.getItem('dtl_'+k); if(!r)return null; const{data,ts}=JSON.parse(r); return Date.now()-ts>CACHE_TTL?null:data; } catch(e){return null;} }
-function cacheSet(k, d) { try{localStorage.setItem('dtl_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){} }
+const CACHE_VER = 'v2';
+function cacheGet(k) { try { const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k); if(!r)return null; const{data,ts}=JSON.parse(r); return Date.now()-ts>CACHE_TTL?null:data; } catch(e){return null;} }
+function cacheSet(k, d) { try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){} }
 let _skipCache = false;
 const _tbl = { getPlayers:'Players', getEvents:'Events', getMatches:'Matches', getSchedules:'Schedules' };
 async function cachedFetch(action) {
