@@ -84,6 +84,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--ll);border-top-color:var(--g3);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;}
 @keyframes sp{to{transform:rotate(360deg);}}
 .last-updated{font-size:.72rem;color:var(--sm2);text-align:right;margin-bottom:1rem;}
+.rank-filter-select{border:1px solid var(--ll);padding:.4rem .8rem;font-family:'Barlow','Noto Sans KR',sans-serif;font-size:.78rem;color:var(--ink);background:var(--w);outline:none;appearance:none;cursor:pointer;transition:border-color .2s;}
+.rank-filter-select:focus{border-color:var(--g3);}
 @media(max-width:600px){
   /* 레이아웃 */
   .wrap{padding:1.5rem 1rem;}
@@ -138,6 +140,25 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   </div>
   <p class="page-sub">결과 입력 시 자동으로 업데이트됩니다. 승리 3점 + MVP 1점.</p>
 
+  <div id="rank-filters" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+    <select class="rank-filter-select" id="filter-event" onchange="applyFilter()">
+      <option value="">전체 이벤트</option>
+    </select>
+    <select class="rank-filter-select" id="filter-gender" onchange="applyFilter()">
+      <option value="">전체</option>
+      <option value="female">여자</option>
+      <option value="male">남자</option>
+    </select>
+    <select class="rank-filter-select" id="filter-sort" onchange="applyFilter()">
+      <option value="points">승점순</option>
+      <option value="wins">승수순</option>
+      <option value="winrate">승률순</option>
+      <option value="gd">득실차순</option>
+      <option value="mvp">MVP순</option>
+      <option value="played">출전순</option>
+    </select>
+  </div>
+
   <div id="last-updated" class="last-updated"></div>
   <div id="summary" class="summary"></div>
   <div id="podium" class="podium"></div>
@@ -152,7 +173,7 @@ const AT=`https://api.airtable.com/v0/${AT_BASE}`;
 const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
 async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
 
-function computeRankings(players, matches) {
+function computeRankings(players, matches, sortBy) {
   const stats={};
   players.forEach(p=>{stats[p.name]={name:p.name,gender:p.gender,played:0,wins:0,losses:0,mvp:0,gf:0,ga:0};});
   matches.forEach(m=>{
@@ -163,20 +184,47 @@ function computeRankings(players, matches) {
     t2.forEach(n=>{if(!stats[n])return;w1?stats[n].losses++:stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
     if(m.mvp&&stats[m.mvp])stats[m.mvp].mvp++;
   });
-  return Object.values(stats).map(s=>({
-    ...s, points:s.wins*3+s.mvp, winrate:s.played>0?Math.round(s.wins/s.played*100)+'%':'0%', gd:s.gf-s.ga
-  })).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf).map((s,i)=>({...s,rank:i+1}));
+  const result = Object.values(stats).map(s=>({
+    ...s, points:s.wins*3+s.mvp, winrate:s.played>0?Math.round(s.wins/s.played*100)+'%':'0%', wr:s.played>0?s.wins/s.played:0, gd:s.gf-s.ga
+  }));
+  const sortFns = {
+    points: (a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf,
+    wins:   (a,b)=>b.wins-a.wins||b.points-a.points,
+    winrate:(a,b)=>b.wr-a.wr||b.wins-a.wins,
+    gd:     (a,b)=>b.gd-a.gd||b.gf-a.gf,
+    mvp:    (a,b)=>b.mvp-a.mvp||b.points-a.points,
+    played: (a,b)=>b.played-a.played||b.points-a.points
+  };
+  result.sort(sortFns[sortBy]||sortFns.points);
+  return result.map((s,i)=>({...s,rank:i+1}));
 }
+
+let _players=[], _matches=[], _events=[];
 
 async function load(){
   document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><span class="spin"></span></div>`;
   try{
-    const [players,matches]=await Promise.all([atGet('Players'),atGet('Matches')]);
-    const data=computeRankings(players,matches);
-    render(data);
+    [_players, _matches, _events]=await Promise.all([atGet('Players'),atGet('Matches'),atGet('Events')]);
+    // 이벤트 필터 드롭다운 채우기
+    const evSel=document.getElementById('filter-event');
+    evSel.innerHTML='<option value="">전체 이벤트</option>';
+    _events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+    applyFilter();
   }catch(e){
     document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><div class="no-data-icon">⚠️</div><div class="no-data-text">불러오기 실패</div></div>`;
   }
+}
+
+function applyFilter(){
+  const eventFilter=document.getElementById('filter-event').value;
+  const genderFilter=document.getElementById('filter-gender').value;
+  const sortBy=document.getElementById('filter-sort').value;
+  let filtered=_matches;
+  if(eventFilter) filtered=_matches.filter(m=>m.event===eventFilter);
+  let players=_players;
+  if(genderFilter) players=_players.filter(p=>p.gender===genderFilter);
+  const data=computeRankings(players, filtered, sortBy);
+  render(data);
 }
 
 function genderChip(g){
