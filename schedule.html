@@ -214,20 +214,23 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   .conf-card-meta{font-size:.65rem;}
   .conf-card-actions{width:100%;justify-content:flex-end;}
 
-  /* 확정 일정 매치 행 — 2줄 레이아웃 */
+  /* 확정 일정 매치 행 — 모바일 세로 레이아웃 */
   .conf-match-row{
-    grid-template-columns:auto auto 1fr auto 1fr auto;
-    gap:.3rem .4rem;
-    padding:.6rem .4rem;
+    grid-template-columns:1fr;
+    gap:.4rem;
+    padding:.7rem .5rem;
     font-size:.75rem;
+    text-align:center;
   }
-  .conf-round-label{font-size:.55rem;min-width:auto;}
+  .conf-round-label{font-size:.55rem;min-width:auto;text-align:left;}
   .fmt-badge{font-size:.5rem;padding:.1rem .35rem;}
-  .player-chip{font-size:.65rem;padding:.15rem .4rem;}
-  .conf-score-block{min-width:70px;}
+  .player-chip{font-size:.7rem;padding:.15rem .5rem;}
+  .conf-team .player-chip{min-width:auto;}
+  .conf-team{justify-content:center;}
+  .conf-score-block{min-width:auto;justify-content:center;}
   .match-score{font-size:1.1rem;}
   .match-score-empty{font-size:.7rem;}
-  .conf-action-btn{font-size:.55rem;padding:.25rem .5rem;}
+  .conf-action-btn{font-size:.58rem;padding:.3rem .8rem;display:inline-block;}
 
   /* 생성 결과 */
   .result-header{flex-direction:column;gap:.8rem;align-items:flex-start;}
