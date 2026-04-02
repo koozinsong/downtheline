@@ -1142,7 +1142,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
 
   function scoreMatch(m) {
     const { t1, t2 } = m;
-    let score = 0;
+    let score = Math.random() * 0.5; // 랜덤 시드로 동일 조건 시 다른 결과
     if (opts.partner) {
       score += partnerCount[t1[0]][t1[1]] * 4;
       score += partnerCount[t2[0]][t2[1]] * 4;
@@ -1308,7 +1308,7 @@ function generateTeamMode() {
   for (let round = 0; round < numRounds; round++) {
     const scored = allMatches.map(m => {
       const players = [...m.t1, ...m.t2];
-      let score = players.reduce((s, p) => s + (playCount[p] || 0) * 2, 0);
+      let score = Math.random() * 0.5 + players.reduce((s, p) => s + (playCount[p] || 0) * 2, 0);
       const k1 = [...m.t1].sort().join(','), k2 = [...m.t2].sort().join(',');
       score += (usedPairs[k1 + '|' + k2] || 0) * 10;
       return { m, score };
