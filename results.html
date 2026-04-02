@@ -469,7 +469,7 @@ async function submitResult(){
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
   try{
-    const fields={event:data.event,date:data.date?data.date+'T00:00:00+09:00':null,team1_p1:data.team1_p1,team1_p2:data.team1_p2,team2_p1:data.team2_p1,team2_p2:data.team2_p2,score1:parseInt(data.score1),score2:parseInt(data.score2),mvp:data.mvp||'',notes:data.notes||'',schedule_id:data.schedule_id||''};
+    const fields={event:data.event,date:data.date||null,team1_p1:data.team1_p1,team1_p2:data.team1_p2,team2_p1:data.team2_p1,team2_p2:data.team2_p2,score1:parseInt(data.score1),score2:parseInt(data.score2),mvp:data.mvp||'',notes:data.notes||'',schedule_id:data.schedule_id||''};
     const res=editingId?await atUpdate('Matches',editingId,fields):await atCreate('Matches',fields);
     if(res.success){
       localStorage.removeItem('dtl_v2_getMatches');
@@ -544,7 +544,7 @@ async function submitEvent(){
   const status=document.getElementById('ev-status').value;
   if(!name){toast('이벤트명을 입력해주세요','err');return;}
   try{
-    const res=await atCreate('Events',{name,date:date?date+'T00:00:00+09:00':null,venue,status});
+    const res=await atCreate('Events',{name,date:date||null,venue,status});
     if(res.success){
       toast('이벤트가 추가됐습니다','ok');
       document.getElementById('ev-name').value='';
