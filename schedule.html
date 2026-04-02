@@ -913,7 +913,7 @@ async function confirmSchedule() {
 
   try {
     const res = await atCreate('Schedules', {
-      name, date: date || null, event,
+      name, date: date ? date+'T00:00:00+09:00' : null, event,
       rounds: numRounds,
       formats: formats.join(','),
       schedule_json: JSON.stringify({ rounds: schedule, teamA: teamA||[], teamB: teamB||[], mode: mode||'individual' })
