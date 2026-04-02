@@ -652,6 +652,7 @@ async function loadConfirmedSchedules() {
 function renderConfirmedList(list, allMatches, femaleNames) {
   const _fn = femaleNames || new Set();
   const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${name}</span>`;
+  const sortFemaleFirst = arr => [...arr].sort((a,b) => (_fn.has(b)?1:0) - (_fn.has(a)?1:0));
   const el = document.getElementById('confirmed-list');
 
   if (!list || !list.length) {
@@ -715,9 +716,9 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
-            <div class="conf-team">${t1.map(p=>pChip(p)).join('')}</div>
+            <div class="conf-team">${sortFemaleFirst(t1).map(p=>pChip(p)).join('')}</div>
             <div class="conf-score-block">${scoreHtml}</div>
-            <div class="conf-team">${t2.map(p=>pChip(p)).join('')}</div>
+            <div class="conf-team">${sortFemaleFirst(t2).map(p=>pChip(p)).join('')}</div>
             ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);">⭐${result.mvp}</span>` : ''}
             ${actionHtml}
           </div>`;
