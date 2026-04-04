@@ -900,8 +900,9 @@ async function saveAllScores(schedId) {
       return atCreate('Matches', fields);
     }));
     const ok = results.filter(r => r.success).length;
+    // 다른 페이지 캐시도 무효화
+    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
     if (ok === toSave.length) {
-      // 전체 저장 성공 → 일정 삭제
       await atDelete('Schedules', schedId);
       alert(`${ok}건 저장 완료 — 경기결과에서 확인하세요.`);
       _skipCache = true;
