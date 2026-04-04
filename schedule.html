@@ -523,6 +523,11 @@ async function atDelete(table, id) {
   await fetch(`${AT}/${encodeURIComponent(table)}/${id}`, { method:'DELETE', headers:AT_H });
   return { success:true };
 }
+async function atUpdate(table, id, fields) {
+  const r = await fetch(`${AT}/${encodeURIComponent(table)}/${id}`, { method:'PATCH', headers:AT_H, body:JSON.stringify({fields}) });
+  const d = await r.json();
+  return d.error ? { success:false, error:d.error.message } : { success:true, id:d.id };
+}
 
 const CACHE_TTL = 60 * 1000; // 1분
 const CACHE_VER = 'v3';
