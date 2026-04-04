@@ -373,7 +373,6 @@ async function updateScore(id){
   const s2El=document.getElementById('rs2_'+id);
   const s1=parseInt(s1El.value),s2=parseInt(s2El.value);
   if(isNaN(s1)||isNaN(s2)||s1<0||s1>7||s2<0||s2>7){toast('스코어 0~7','err');return;}
-  if(s1===s2){toast('동점 불가','err');return;}
   if(s1El.getAttribute('data-orig')===String(s1)&&s2El.getAttribute('data-orig')===String(s2)){toast('변경 없음','err');return;}
   try{
     const res=await atUpdate('Matches',id,{score1:s1,score2:s2});
