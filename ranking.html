@@ -140,23 +140,46 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   </div>
   <p class="page-sub">결과 입력 시 자동으로 업데이트됩니다. 승리 3점 + MVP 1점.</p>
 
-  <div id="rank-filters" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
-    <select class="rank-filter-select" id="filter-event" onchange="applyFilter()">
-      <option value="">전체 이벤트</option>
-    </select>
-    <select class="rank-filter-select" id="filter-gender" onchange="applyFilter()">
-      <option value="">전체</option>
-      <option value="female">여자</option>
-      <option value="male">남자</option>
-    </select>
-    <select class="rank-filter-select" id="filter-sort" onchange="applyFilter()">
-      <option value="points">승점순</option>
-      <option value="wins">승수순</option>
-      <option value="winrate">승률순</option>
-      <option value="gd">득실차순</option>
-      <option value="mvp">MVP순</option>
-      <option value="played">출전순</option>
-    </select>
+  <div id="rank-filters" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:flex-end;">
+    <div>
+      <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">기간</div>
+      <select class="rank-filter-select" id="filter-period" onchange="toggleCustomDate();applyFilter()">
+        <option value="">전체 기간</option>
+        <option value="year">올해</option>
+        <option value="month">이번 달</option>
+        <option value="custom">기간 지정</option>
+      </select>
+    </div>
+    <div id="custom-date-wrap" style="display:none;display:none;gap:.3rem;align-items:center;">
+      <input class="rank-filter-select" type="date" id="filter-from" onchange="applyFilter()" style="width:130px;">
+      <span style="font-size:.7rem;color:var(--sm2);">~</span>
+      <input class="rank-filter-select" type="date" id="filter-to" onchange="applyFilter()" style="width:130px;">
+    </div>
+    <div>
+      <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">이벤트</div>
+      <select class="rank-filter-select" id="filter-event" onchange="applyFilter()">
+        <option value="">전체</option>
+      </select>
+    </div>
+    <div>
+      <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">성별</div>
+      <select class="rank-filter-select" id="filter-gender" onchange="applyFilter()">
+        <option value="">전체</option>
+        <option value="female">여자</option>
+        <option value="male">남자</option>
+      </select>
+    </div>
+    <div>
+      <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">정렬</div>
+      <select class="rank-filter-select" id="filter-sort" onchange="applyFilter()">
+        <option value="points">승점순</option>
+        <option value="wins">승수순</option>
+        <option value="winrate">승률순</option>
+        <option value="gd">득실차순</option>
+        <option value="mvp">MVP순</option>
+        <option value="played">출전순</option>
+      </select>
+    </div>
   </div>
 
   <div id="last-updated" class="last-updated"></div>
@@ -215,12 +238,32 @@ async function load(){
   }
 }
 
+function toggleCustomDate(){
+  const v=document.getElementById('filter-period').value;
+  document.getElementById('custom-date-wrap').style.display=v==='custom'?'flex':'none';
+}
+
+function getDateRange(){
+  const period=document.getElementById('filter-period').value;
+  const now=new Date();
+  if(period==='year') return { from:now.getFullYear()+'-01-01', to:now.getFullYear()+'-12-31' };
+  if(period==='month'){
+    const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
+    return { from:`${y}-${m}-01`, to:`${y}-${m}-31` };
+  }
+  if(period==='custom') return { from:document.getElementById('filter-from').value||'', to:document.getElementById('filter-to').value||'' };
+  return { from:'', to:'' };
+}
+
 function applyFilter(){
   const eventFilter=document.getElementById('filter-event').value;
   const genderFilter=document.getElementById('filter-gender').value;
   const sortBy=document.getElementById('filter-sort').value;
+  const { from, to }=getDateRange();
   let filtered=_matches;
-  if(eventFilter) filtered=_matches.filter(m=>m.event===eventFilter);
+  if(eventFilter) filtered=filtered.filter(m=>m.event===eventFilter);
+  if(from) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)>=from);
+  if(to) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)<=to);
   let players=_players;
   if(genderFilter) players=_players.filter(p=>p.gender===genderFilter);
   const data=computeRankings(players, filtered, sortBy);
