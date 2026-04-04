@@ -189,6 +189,9 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .conf-result-link:hover{color:var(--gdl);}
 .conf-action-btn{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);text-decoration:none;white-space:nowrap;border:1px solid var(--gd);padding:.3rem .7rem;transition:all .2s;text-align:center;}
 .conf-action-btn:hover{background:var(--gd);color:var(--w);}
+.inline-score{width:42px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;border:1px solid var(--ll);padding:.3rem;background:var(--iv);outline:none;color:var(--ink);-moz-appearance:textfield;}
+.inline-score::-webkit-outer-spin-button,.inline-score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.inline-score:focus{border-color:var(--g3);background:var(--w);}
 @media(max-width:600px){
   /* 레이아웃 */
   .wrap{padding:1.5rem 1rem;}
@@ -228,6 +231,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   .conf-team .player-chip{min-width:auto;}
   .conf-team{justify-content:center;}
   .conf-score-block{min-width:auto;justify-content:center;}
+  .inline-score{width:38px;font-size:1.1rem;padding:.25rem;}
   .match-score{font-size:1.1rem;}
   .match-score-empty{font-size:.7rem;}
   .conf-action-btn{font-size:.58rem;padding:.3rem .8rem;display:inline-block;}
@@ -692,35 +696,27 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복', team:'팀전' };
       const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open', team:'fb-mixed' };
 
-      const matchRows = sched.map(r =>
-        (r.matches||[]).map(m => {
+      const matchRows = sched.map((r, ri) =>
+        (r.matches||[]).map((m, mi) => {
           const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
           const result = findResult(t1, t2, allMatches, s.event, s.date);
-          const params = new URLSearchParams({
-            t1p1:t1[0]||'', t1p2:t1[1]||'',
-            t2p1:t2[0]||'', t2p2:t2[1]||'',
-            event:s.event||'', date:s.date||'',
-            schedule_id:s.id||''
-          });
+          const mid = `${s.id}_${ri}_${mi}`;
           const s1 = result ? parseInt(result.score1)||0 : 0;
           const s2 = result ? parseInt(result.score2)||0 : 0;
           const scoreHtml = result
-            ? `<span class="match-score ${s1>s2?'win':''}">${s1}</span>
+            ? `<input class="inline-score" type="number" min="0" max="6" value="${s1}" id="s1_${mid}" data-orig="${s1}">
                <span class="match-score-sep">:</span>
-               <span class="match-score ${s2>s1?'win':''}">${s2}</span>`
-            : `<span class="match-score-empty">— : —</span>`;
-          const actionHtml = result
-            ? `<a href="results.html?edit=${result.id}" class="conf-action-btn" style="border-color:var(--g3);color:var(--g3);">수정</a>`
-            : `<a href="results.html?${params.toString()}" class="conf-action-btn">입력</a>`;
+               <input class="inline-score" type="number" min="0" max="6" value="${s2}" id="s2_${mid}" data-orig="${s2}">`
+            : `<input class="inline-score" type="number" min="0" max="6" placeholder="-" id="s1_${mid}">
+               <span class="match-score-sep">:</span>
+               <input class="inline-score" type="number" min="0" max="6" placeholder="-" id="s2_${mid}">`;
 
-          return `<div class="conf-match-row" style="${result?'background:rgba(44,74,53,.04);':''}">
+          return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${result?result.id:''}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
             <div class="conf-team">${sortFemaleFirst(t1).map(p=>pChip(p)).join('')}</div>
             <div class="conf-score-block">${scoreHtml}</div>
             <div class="conf-team">${sortFemaleFirst(t2).map(p=>pChip(p)).join('')}</div>
-            ${result && result.mvp ? `<span style="font-size:.68rem;color:var(--gd);">⭐${result.mvp}</span>` : ''}
-            ${actionHtml}
           </div>`;
         }).join('')
       ).join('');
@@ -824,6 +820,9 @@ function renderConfirmedList(list, allMatches, femaleNames) {
         <div class="conf-body open" id="conf-body-${s.id}">
           ${teamSummary}
           ${matchRows}
+          <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
+            <button class="confirm-btn" onclick="saveAllScores('${s.id}')" style="width:100%;">결과 확정 저장</button>
+          </div>
           ${isTeamMode && scoreTableRows ? `
           <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:.8rem;">
             <div style="cursor:pointer;display:flex;align-items:center;gap:.5rem;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('span').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
@@ -845,6 +844,77 @@ function renderConfirmedList(list, allMatches, femaleNames) {
 function toggleConf(id) {
   const el = document.getElementById('conf-body-' + id);
   el.classList.toggle('open');
+}
+
+async function saveAllScores(schedId) {
+  const rows = document.querySelectorAll(`.conf-match-row[data-sched-id="${schedId}"]`);
+  if (!rows.length) { alert('매치가 없습니다.'); return; }
+
+  const toSave = [];
+  let hasError = false;
+  rows.forEach(row => {
+    const mid = row.getAttribute('data-mid');
+    const s1El = document.getElementById('s1_' + mid);
+    const s2El = document.getElementById('s2_' + mid);
+    const s1 = s1El ? s1El.value : '';
+    const s2 = s2El ? s2El.value : '';
+    if (s1 === '' && s2 === '') return; // 미입력은 건너뜀
+    if (s1 === '' || s2 === '') { hasError = true; return; }
+    const v1 = parseInt(s1), v2 = parseInt(s2);
+    if (isNaN(v1) || isNaN(v2) || v1 < 0 || v1 > 6 || v2 < 0 || v2 > 6) { hasError = true; return; }
+    if (v1 === v2) { hasError = true; return; }
+    const t1 = JSON.parse(row.getAttribute('data-t1'));
+    const t2 = JSON.parse(row.getAttribute('data-t2'));
+    const resultId = row.getAttribute('data-result-id');
+    const orig1 = s1El.getAttribute('data-orig');
+    const orig2 = s2El.getAttribute('data-orig');
+    // 변경사항이 없으면 건너뜀
+    if (resultId && orig1 === s1 && orig2 === s2) return;
+    toSave.push({
+      resultId: resultId || '',
+      t1, t2, score1: v1, score2: v2,
+      event: row.getAttribute('data-event'),
+      date: row.getAttribute('data-date'),
+      schedule_id: schedId
+    });
+  });
+
+  if (hasError) { alert('스코어를 확인해주세요.\n- 양쪽 모두 입력 (0~6)\n- 동점 불가'); return; }
+  if (!toSave.length) { alert('변경된 스코어가 없습니다.'); return; }
+
+  if (!confirm(`${toSave.length}건의 결과를 저장할까요?`)) return;
+
+  const btn = document.querySelector(`.conf-body[id$="${schedId}"] .confirm-btn`);
+  if (btn) { btn.textContent = '저장 중...'; btn.disabled = true; }
+
+  try {
+    const results = await Promise.all(toSave.map(m => {
+      const fields = {
+        event: m.event, date: m.date || null,
+        team1_p1: m.t1[0], team1_p2: m.t1[1],
+        team2_p1: m.t2[0], team2_p2: m.t2[1],
+        score1: m.score1, score2: m.score2,
+        schedule_id: m.schedule_id
+      };
+      if (m.resultId) return atUpdate('Matches', m.resultId, fields);
+      return atCreate('Matches', fields);
+    }));
+    const ok = results.filter(r => r.success).length;
+    if (ok === toSave.length) {
+      // 전체 저장 성공 → 일정 삭제
+      await atDelete('Schedules', schedId);
+      alert(`${ok}건 저장 완료 — 경기결과에서 확인하세요.`);
+      _skipCache = true;
+      await loadConfirmedSchedules();
+    } else {
+      alert(`${ok}/${toSave.length}건 저장 (일부 실패)`);
+      _skipCache = true;
+      await loadConfirmedSchedules();
+    }
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  }
+  if (btn) { btn.textContent = '결과 확정 저장'; btn.disabled = false; }
 }
 
 async function clearMatches(schedId) {
@@ -1203,6 +1273,11 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
 function generate() {
   const warn = document.getElementById('warn-msg');
   warn.className = 'warn';
+
+  if (!document.getElementById('sched-date').value) {
+    warn.textContent = '시합 날짜를 입력해주세요.';
+    warn.className = 'warn show'; return;
+  }
 
   if (_mode === 'team') {
     return generateTeamMode();

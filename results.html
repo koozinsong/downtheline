@@ -87,6 +87,38 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .toast.show{opacity:1;transform:none;}
 .toast.ok{background:var(--g);color:var(--w);}
 .toast.err{background:#c0392b;color:var(--w);}
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.8rem .6rem;text-align:left;background:var(--g);color:var(--w);}
+.result-table td{padding:.7rem .6rem;border-bottom:1px solid rgba(26,31,28,.06);font-size:.82rem;color:var(--ink2);}
+.result-table tr{cursor:pointer;transition:background .15s;}
+.result-table tr:hover td{background:rgba(78,122,90,.04);}
+.result-table .score-cell{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;text-align:center;min-width:60px;}
+.result-table .win{color:var(--g);}
+.result-table .lose{color:var(--sm2);}
+.result-group{border:1px solid var(--ll);margin-bottom:.5rem;background:var(--w);}
+.result-group-head{display:flex;align-items:center;padding:.8rem 1rem;cursor:pointer;transition:background .15s;gap:.8rem;}
+.result-group-head:hover{background:var(--iv2);}
+.rg-info{flex:1;}
+.rg-title{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;text-transform:uppercase;color:var(--ink);}
+.rg-meta{font-size:.68rem;color:var(--sm2);margin-top:.1rem;}
+.rg-summary{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;color:var(--g3);letter-spacing:1px;}
+.rg-arrow{font-size:.7rem;color:var(--sm2);transition:transform .2s;}
+.result-group-body{display:none;border-top:1px solid var(--ll);padding:.5rem 1rem;}
+.result-group-body.open{display:block;}
+.rg-match{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:.5rem;padding:.6rem 0;border-bottom:1px solid rgba(26,31,28,.04);}
+.rg-match:last-child{border-bottom:none;}
+.rg-teams{display:flex;gap:.3rem;align-items:center;min-width:120px;}
+.rg-teams:nth-child(3){justify-content:flex-start;}
+.rg-score{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;min-width:80px;text-align:center;display:flex;align-items:center;justify-content:center;gap:.3rem;}
+.rg-score .win{color:var(--g);}
+.rg-score .lose{color:var(--sm2);}
+.inline-score-sm{width:32px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;border:1px solid var(--ll);padding:.2rem;background:var(--iv);outline:none;color:var(--ink);-moz-appearance:textfield;}
+.inline-score-sm::-webkit-outer-spin-button,.inline-score-sm::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.inline-score-sm:focus{border-color:var(--g3);background:var(--w);}
+.rg-row{cursor:pointer;}
+.rg-row:hover td{background:rgba(78,122,90,.04);}
+.rg-detail-row td{background:var(--iv2);}
+.rg-detail-body{padding:.6rem 1rem;}
 @media(max-width:600px){
   .wrap{padding:1.5rem 1rem;}
   .page-title{font-size:2rem;}
@@ -127,8 +159,18 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   /* 버튼 */
   .btn-submit{font-size:.75rem;padding:.8rem;}
 
-  /* 수정 배너 */
-  #edit-banner{font-size:.75rem;flex-direction:column;gap:.5rem;}
+  /* 결과 리스트 테이블 — 모바일 */
+  .result-table{min-width:auto;}
+  .result-table th,.result-table td{padding:.5rem .4rem;font-size:.7rem;}
+  .result-table th:nth-child(3),.result-table td:nth-child(3){max-width:100px;}
+
+  /* 상세 매치 행 — 모바일 세로 */
+  .rg-match{grid-template-columns:1fr;gap:.4rem;text-align:center;padding:.7rem 0;}
+  .rg-teams{justify-content:center;min-width:auto;}
+  .rg-score{justify-content:center;}
+  .rg-match>div:last-child{justify-content:center;margin-left:0;}
+  .inline-score-sm{width:30px;font-size:.9rem;}
+  .rg-detail-body{padding:.5rem .5rem;}
 }
 </style>
 </head>
@@ -145,111 +187,39 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 <div class="wrap">
   <div class="page-title">Match<br><em>Results</em></div>
-  <p class="page-sub">경기 결과를 입력하면 클럽 랭킹에 자동으로 반영됩니다.</p>
+  <p class="page-sub">시합 일정에서 확정된 경기 결과를 확인할 수 있습니다.</p>
 
-  <div class="card">
-    <div class="card-title" id="form-title">결과 입력</div>
-    <div id="edit-banner" style="display:none;background:#fff8e6;border:1px solid rgba(184,147,58,.3);padding:.7rem 1rem;margin-bottom:1.2rem;font-size:.82rem;color:#7a5f20;align-items:center;justify-content:space-between;">
-      <span>✏️ 수정 모드 — 기존 결과를 수정 중입니다</span>
-      <button onclick="cancelEdit()" style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:none;border:none;cursor:pointer;color:#9a7840;">취소</button>
-    </div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">이벤트</label>
-        <select class="form-select" id="f-event"><option value="">로딩 중...</option></select>
+  <!-- 필터 -->
+  <div class="card" style="padding:1.2rem 2rem;">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">이벤트</div>
+        <select class="form-select" id="filter-event" onchange="renderMatches()" style="font-size:.78rem;padding:.4rem .6rem;">
+          <option value="">전체</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">경기 날짜</label>
-        <input class="form-input" type="date" id="f-date">
+      <div>
+        <div style="font-size:.6rem;color:var(--sm2);margin-bottom:.2rem;">기간</div>
+        <select class="form-select" id="filter-period" onchange="toggleCustomDate();renderMatches()" style="font-size:.78rem;padding:.4rem .6rem;">
+          <option value="">전체 기간</option>
+          <option value="month">이번 달</option>
+          <option value="custom">기간 지정</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">팀 A · 선수 1</label>
-        <select class="form-select" id="f-t1p1" onchange="preview()"><option value="">선택</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">팀 A · 선수 2</label>
-        <select class="form-select" id="f-t1p2" onchange="preview()"><option value="">선택</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">팀 B · 선수 1</label>
-        <select class="form-select" id="f-t2p1" onchange="preview()"><option value="">선택</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">팀 B · 선수 2</label>
-        <select class="form-select" id="f-t2p2" onchange="preview()"><option value="">선택</option></select>
-      </div>
-      <div class="form-group full" id="preview-wrap" style="display:none;">
-        <div class="preview-box">
-          <div class="preview-team" id="pt1"></div>
-          <div class="preview-vs">VS</div>
-          <div class="preview-team right" id="pt2"></div>
-        </div>
-      </div>
-      <div class="form-group full">
-        <label class="form-label">스코어</label>
-        <div class="score-row">
-          <input class="score-input" type="number" id="f-s1" min="0" max="6" placeholder="0" oninput="preview()">
-          <div class="score-vs">:</div>
-          <input class="score-input" type="number" id="f-s2" min="0" max="6" placeholder="0" oninput="preview()">
-          <span class="score-hint" id="score-hint"></span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">MVP (선택)</label>
-        <select class="form-select" id="f-mvp"><option value="">선택 안함</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">메모</label>
-        <input class="form-input" type="text" id="f-notes" placeholder="특이사항">
+      <div id="custom-date-wrap" style="display:none;display:none;gap:.3rem;align-items:center;">
+        <input class="form-input" type="date" id="filter-from" onchange="renderMatches()" style="font-size:.78rem;padding:.4rem;width:130px;">
+        <span style="font-size:.7rem;color:var(--sm2);">~</span>
+        <input class="form-input" type="date" id="filter-to" onchange="renderMatches()" style="font-size:.78rem;padding:.4rem;width:130px;">
       </div>
     </div>
-    <button class="btn-submit" id="submit-btn" onclick="submitResult()">결과 저장하기</button>
   </div>
 
+  <!-- 경기 결과 리스트 -->
   <div class="card">
-    <div class="card-title">경기 아카이브</div>
-    <div class="archive-filters" id="filters">
-      <button class="filter-btn active" onclick="filterBy('all',this)">전체</button>
-    </div>
+    <div class="card-title">경기 결과</div>
     <div id="matches-list"><div class="state-msg"><span class="spin"></span> 불러오는 중...</div></div>
   </div>
 
-  <div class="card">
-    <div class="card-title">이벤트 관리</div>
-    <div id="events-list" style="margin-bottom:1rem;"></div>
-    <div id="event-form-wrap" style="display:none;border-top:1px solid var(--ll);padding-top:1rem;">
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">이벤트명</label>
-          <input class="form-input" type="text" id="ev-name" placeholder="예: 정기 매치">
-        </div>
-        <div class="form-group">
-          <label class="form-label">날짜</label>
-          <input class="form-input" type="date" id="ev-date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">장소</label>
-          <input class="form-input" type="text" id="ev-venue" placeholder="예: 세곡 테니스코트">
-        </div>
-        <div class="form-group">
-          <label class="form-label">상태</label>
-          <select class="form-select" id="ev-status">
-            <option value="upcoming">예정</option>
-            <option value="ongoing">진행중</option>
-            <option value="completed">완료</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn-submit" style="margin-top:1rem;" onclick="submitEvent()">이벤트 추가</button>
-    </div>
-    <button id="ev-toggle-btn" onclick="toggleEventForm()" style="
-      width:100%;margin-top:.8rem;
-      font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;
-      letter-spacing:2px;text-transform:uppercase;color:var(--g3);
-      background:none;border:1px dashed rgba(78,122,90,.3);
-      padding:.45rem 1rem;cursor:pointer;transition:all .2s;
-    ">+ 새 이벤트 추가</button>
-  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -272,239 +242,162 @@ const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSche
 async function cachedFetch(action){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
 
 let players=[],events=[],matches=[];
-let editingId=null; // null = 신규, string = 수정 중 match id
 
 async function init(){
-  // 날짜는 URL 파라미터로 오거나 사용자가 직접 입력
-  await Promise.all([loadPlayers(),loadEvents()]);
-  await loadMatches();
-  applyUrlParams(); // URL 파라미터로 폼 자동 채우기
-}
-
-// URL 파라미터 파싱 (schedule.html에서 넘어올 때)
-function applyUrlParams(){
-  const p=new URLSearchParams(window.location.search);
-  if(p.get('edit')){
-    const m=matches.find(x=>x.id===p.get('edit'));
-    if(m) loadMatchIntoForm(m);
-    return;
-  }
-  if(p.get('event')) setSelectVal('f-event', p.get('event'));
-  if(p.get('date'))  document.getElementById('f-date').value=p.get('date');
-  const playerFields=['f-t1p1','f-t1p2','f-t2p1','f-t2p2'];
-  const playerKeys=['t1p1','t1p2','t2p1','t2p2'];
-  playerKeys.forEach((key,i)=>{
-    const val=p.get(key);
-    if(!val) return;
-    const id=playerFields[i];
-    setSelectVal(id, val);
-    // select에 매칭이 안 되면 고정값으로 교체
-    const sel=document.getElementById(id);
-    if(sel.value!==val){
-      const fixed=document.createElement('input');
-      fixed.type='text';
-      fixed.className='form-input';
-      fixed.value=val;
-      fixed.readOnly=true;
-      fixed.id=id;
-      fixed.style.fontWeight='600';
-      fixed.style.color='var(--ink)';
-      sel.parentElement.replaceChild(fixed, sel);
-    }
-  });
-  if(p.get('schedule_id')) window._scheduleId = p.get('schedule_id');
-  if(p.get('t1p1')||p.get('t1p2')||p.get('t2p1')||p.get('t2p2')) preview();
-}
-
-function setSelectVal(id, val){
-  const el=document.getElementById(id);
-  for(let i=0;i<el.options.length;i++){
-    if(el.options[i].value===val){ el.selectedIndex=i; break; }
-  }
-}
-
-// 수정 모드로 전환
-function editMatch(id){
-  const m=matches.find(x=>x.id===id);
-  if(!m) return;
-  loadMatchIntoForm(m);
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function loadMatchIntoForm(m){
-  editingId=m.id;
-  setSelectVal('f-event', m.event);
-  document.getElementById('f-date').value=m.date||'';
-  setSelectVal('f-t1p1', m.team1_p1);
-  setSelectVal('f-t1p2', m.team1_p2);
-  setSelectVal('f-t2p1', m.team2_p1);
-  setSelectVal('f-t2p2', m.team2_p2);
-  document.getElementById('f-s1').value=m.score1||'';
-  document.getElementById('f-s2').value=m.score2||'';
-  setSelectVal('f-mvp', m.mvp||'');
-  document.getElementById('f-notes').value=m.notes||'';
-  const banner=document.getElementById('edit-banner');
-  banner.style.display='flex';
-  document.getElementById('form-title').textContent='결과 수정';
-  document.getElementById('submit-btn').textContent='수정 저장하기';
-  preview();
-}
-
-function cancelEdit(){
-  editingId=null;
-  resetForm();
-  const banner=document.getElementById('edit-banner');
-  banner.style.display='none';
-  document.getElementById('form-title').textContent='결과 입력';
-  document.getElementById('submit-btn').textContent='결과 저장하기';
-}
-
-async function loadPlayers(){
   try{
-    players=(await cachedFetch('getPlayers')).sort((a,b)=>a.name.localeCompare(b.name));
-    ['f-t1p1','f-t1p2','f-t2p1','f-t2p2','f-mvp'].forEach(id=>{
-      const el=document.getElementById(id);
-      const isM=id==='f-mvp';
-      el.innerHTML=isM?'<option value="">선택 안함</option>':'<option value="">선택</option>';
-      players.forEach(p=>{ el.innerHTML+=`<option value="${p.name}" data-g="${p.gender}">${p.name}</option>`; });
-    });
-  }catch(e){toast('선수 불러오기 실패','err');}
-}
-
-async function loadEvents(){
-  try{
-    events=await cachedFetch('getEvents');
-    const el=document.getElementById('f-event');
-    el.innerHTML='<option value="">이벤트 선택</option>';
-    events.forEach(ev=>{ el.innerHTML+=`<option value="${ev.name}">${ev.name} (${ev.date})</option>`; });
-    const f=document.getElementById('filters');
-    events.forEach(ev=>{ f.innerHTML+=`<button class="filter-btn" onclick="filterBy('${ev.name}',this)">${ev.name}</button>`; });
-  }catch(e){toast('이벤트 불러오기 실패','err');}
-}
-
-async function loadMatches(){
-  try{
-    matches=await cachedFetch('getMatches');
-    renderMatches(matches);
+    [players, matches, events] = await Promise.all([
+      cachedFetch('getPlayers'),
+      cachedFetch('getMatches'),
+      cachedFetch('getEvents')
+    ]);
+    players.sort((a,b)=>a.name.localeCompare(b.name));
+    // 이벤트 필터 채우기
+    const evSel=document.getElementById('filter-event');
+    events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+    renderMatches();
   }catch(e){
     document.getElementById('matches-list').innerHTML=`<div class="state-msg"><div class="state-icon">⚠️</div><div class="state-text">불러오기 실패</div></div>`;
   }
 }
 
+function toggleCustomDate(){
+  const v=document.getElementById('filter-period').value;
+  document.getElementById('custom-date-wrap').style.display=v==='custom'?'flex':'none';
+}
+
 function chip(name){
   if(!name)return'';
   const p=players.find(pl=>pl.name===name);
-  const c=p&&p.gender==='female'?'chip-f':'chip-m';
-  return `<span class="chip ${c}">${name}</span>`;
+  const cls=p&&p.gender==='female'?'chip-f':'chip-m';
+  return `<span class="chip ${cls}">${name}</span>`;
 }
 
-function renderMatches(list){
+function getFilteredMatches(){
+  let filtered=[...matches];
+  const eventFilter=document.getElementById('filter-event').value;
+  if(eventFilter) filtered=filtered.filter(m=>m.event===eventFilter);
+  const period=document.getElementById('filter-period').value;
+  if(period==='month'){
+    const now=new Date();
+    const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    filtered=filtered.filter(m=>String(m.date||'').startsWith(ym));
+  } else if(period==='custom'){
+    const from=document.getElementById('filter-from').value;
+    const to=document.getElementById('filter-to').value;
+    if(from) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)>=from);
+    if(to) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)<=to);
+  }
+  return filtered;
+}
+
+function groupBySchedule(list){
+  const groups={};
+  list.forEach(m=>{
+    const key=m.schedule_id||m.event||m.id;
+    if(!groups[key]) groups[key]={date:m.date,event:m.event,matches:[],schedule_id:m.schedule_id};
+    groups[key].matches.push(m);
+    if(m.date && (!groups[key].date || m.date > groups[key].date)) groups[key].date=m.date;
+  });
+  return Object.values(groups).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+}
+
+function getAllPlayerNames(matches){
+  const names=new Set();
+  matches.forEach(m=>{[m.team1_p1,m.team1_p2,m.team2_p1,m.team2_p2].forEach(n=>{if(n)names.add(n);});});
+  return [...names];
+}
+
+function renderMatches(){
   const el=document.getElementById('matches-list');
-  if(!list.length){ el.innerHTML=`<div class="state-msg"><div class="state-icon">🎾</div><div class="state-text">아직 결과가 없습니다</div></div>`; return; }
-  const sorted=[...list].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  el.innerHTML=sorted.map(m=>{
-    const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0;
-    const w1=s1>s2,w2=s2>s1;
-    const isEditing=editingId===m.id;
-    return `<div class="match-card" id="mc-${m.id}" style="${isEditing?'border-color:var(--gd);':''}">
-      <div class="mc-head"><div class="mc-event">${m.event||'정기 매치'}</div><div class="mc-date">${m.date||''}</div></div>
-      <div class="mc-body">
-        <div class="mc-team">${chip(m.team1_p1)}${chip(m.team1_p2)}</div>
-        <div class="mc-scores">
-          <div class="mc-score ${w1?'win':w2?'lose':''}">${s1}</div>
-          <div class="mc-colon">vs</div>
-          <div class="mc-score ${w2?'win':w1?'lose':''}">${s2}</div>
-        </div>
-        <div class="mc-team right">${chip(m.team2_p1)}${chip(m.team2_p2)}</div>
+  const list=getFilteredMatches();
+  if(!list.length){
+    el.innerHTML=`<div class="state-msg"><div class="state-icon">🎾</div><div class="state-text">경기 결과가 없습니다</div></div>`;
+    return;
+  }
+  const groups=groupBySchedule(list);
+  el.innerHTML=`<table class="result-table"><thead><tr>
+    <th>날짜</th><th>종류</th><th>참여 선수</th><th style="text-align:center;">결과</th><th></th>
+  </tr></thead><tbody>
+  ${groups.map((g,gi)=>{
+    const date=String(g.date||'').substring(0,10);
+    const pNames=getAllPlayerNames(g.matches);
+    const pSummary=pNames.length>4?pNames.slice(0,4).join(', ')+` 외 ${pNames.length-4}명`:pNames.join(', ');
+    const total=g.matches.length;
+    const gid='rg_'+gi;
+    return `<tr class="rg-row" onclick="document.getElementById('${gid}').style.display=document.getElementById('${gid}').style.display==='none'?'table-row':'none'">
+      <td style="white-space:nowrap;font-size:.78rem;">${date}</td>
+      <td style="font-size:.78rem;">${g.event||'-'}</td>
+      <td style="font-size:.75rem;color:var(--sm);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pSummary}</td>
+      <td style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;color:var(--g3);">${total}경기 ▾</td>
+      <td style="text-align:right;">
+        <button class="del-btn" onclick="event.stopPropagation();delScheduleMatches('${g.schedule_id}',${JSON.stringify(g.matches.map(m=>m.id)).replace(/"/g,'&quot;')})" style="font-size:.55rem;padding:.25rem .5rem;border:1px solid rgba(192,57,43,.2);">삭제</button>
+      </td>
+    </tr>
+    <tr id="${gid}" style="display:none;" class="rg-detail-row"><td colspan="5" style="padding:0;">
+      <div class="rg-detail-body">
+        ${g.matches.map(m=>{
+          const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0;
+          const w1=s1>s2;
+          return `<div class="rg-match">
+            <div class="rg-teams">${chip(m.team1_p1)} ${chip(m.team1_p2)}</div>
+            <div class="rg-score">
+              <input class="inline-score-sm" type="number" min="0" max="6" value="${s1}" id="rs1_${m.id}" data-orig="${s1}">
+              <span>:</span>
+              <input class="inline-score-sm" type="number" min="0" max="6" value="${s2}" id="rs2_${m.id}" data-orig="${s2}">
+            </div>
+            <div class="rg-teams">${chip(m.team2_p1)} ${chip(m.team2_p2)}</div>
+            <div style="margin-left:auto;display:flex;gap:.3rem;">
+              <button class="edit-btn" onclick="event.stopPropagation();updateScore('${m.id}')" style="font-size:.55rem;">저장</button>
+              <button class="del-btn" onclick="event.stopPropagation();delMatch('${m.id}')" style="font-size:.55rem;">삭제</button>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
-      <div class="mc-foot">
-        <div style="color:var(--gd);font-size:.72rem;">${m.mvp?'⭐ MVP: '+m.mvp:''}</div>
-        <div style="display:flex;gap:.5rem;">
-          <button class="edit-btn" onclick="editMatch('${m.id}')">수정</button>
-          <button class="del-btn" onclick="delMatch('${m.id}')">삭제</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    </td></tr>`;
+  }).join('')}
+  </tbody></table>`;
 }
 
-function filterBy(v,btn){
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderMatches(v==='all'?matches:matches.filter(m=>m.event===v));
-}
-
-function preview(){
-  const v=id=>document.getElementById(id).value;
-  const any=[v('f-t1p1'),v('f-t1p2'),v('f-t2p1'),v('f-t2p2')].some(Boolean);
-  document.getElementById('preview-wrap').style.display=any?'block':'none';
-  document.getElementById('pt1').innerHTML=[v('f-t1p1'),v('f-t1p2')].filter(Boolean).map(chip).join('');
-  document.getElementById('pt2').innerHTML=[v('f-t2p1'),v('f-t2p2')].filter(Boolean).map(chip).join('');
-  const s1=parseInt(v('f-s1')),s2=parseInt(v('f-s2'));
-  document.getElementById('score-hint').textContent=(!isNaN(s1)&&!isNaN(s2)&&(s1||s2))?(s1>s2?'팀 A 승':s2>s1?'팀 B 승':'무승부'):'';
-}
-
-async function submitResult(){
-  const v=id=>document.getElementById(id).value;
-  const data={
-    action: editingId ? 'updateMatch' : 'saveMatch',
-    id: editingId || undefined,
-    event:v('f-event'), date:v('f-date'),
-    team1_p1:v('f-t1p1'), team1_p2:v('f-t1p2'),
-    team2_p1:v('f-t2p1'), team2_p2:v('f-t2p2'),
-    score1:v('f-s1'), score2:v('f-s2'),
-    mvp:v('f-mvp'), notes:v('f-notes'),
-    schedule_id: window._scheduleId || ''
-  };
-  if(!data.team1_p1||!data.team1_p2||!data.team2_p1||!data.team2_p2){toast('선수를 모두 선택해주세요','err');return;}
-  if(data.score1===''||data.score2===''){toast('스코어를 입력해주세요','err');return;}
-  const s1=parseInt(data.score1), s2=parseInt(data.score2);
-  if(s1>6||s2>6){toast('스코어는 최대 6점까지 입력 가능합니다','err');return;}
-  if(s1===s2){toast('동점은 입력할 수 없습니다','err');return;}
-  if(s1<0||s2<0){toast('스코어는 0 이상이어야 합니다','err');return;}
-  const selectedPlayers=[data.team1_p1,data.team1_p2,data.team2_p1,data.team2_p2];
-  if(new Set(selectedPlayers).size!==4){toast('같은 선수가 중복 선택되었습니다','err');return;}
-  if(data.mvp&&!selectedPlayers.includes(data.mvp)){toast('MVP는 경기 참가 선수 중에서 선택해주세요','err');return;}
-
-  const btn=document.getElementById('submit-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span> 저장 중...';
+async function delScheduleMatches(schedId, ids){
+  if(!confirm('이 일정의 모든 경기 기록을 삭제할까요?')) return;
   try{
-    const fields={event:data.event,date:data.date||null,team1_p1:data.team1_p1,team1_p2:data.team1_p2,team2_p1:data.team2_p1,team2_p2:data.team2_p2,score1:parseInt(data.score1),score2:parseInt(data.score2),mvp:data.mvp||'',notes:data.notes||'',schedule_id:data.schedule_id||''};
-    const res=editingId?await atUpdate('Matches',editingId,fields):await atCreate('Matches',fields);
+    await Promise.all(ids.map(id=>atDelete('Matches',id)));
+    matches=matches.filter(m=>!ids.includes(m.id));
+    renderMatches();
+    toast(ids.length+'건 삭제됨','ok');
+  }catch(e){toast('삭제 실패','err');}
+}
+
+async function updateScore(id){
+  const s1El=document.getElementById('rs1_'+id);
+  const s2El=document.getElementById('rs2_'+id);
+  const s1=parseInt(s1El.value),s2=parseInt(s2El.value);
+  if(isNaN(s1)||isNaN(s2)||s1<0||s1>6||s2<0||s2>6){toast('스코어 0~6','err');return;}
+  if(s1===s2){toast('동점 불가','err');return;}
+  if(s1El.getAttribute('data-orig')===String(s1)&&s2El.getAttribute('data-orig')===String(s2)){toast('변경 없음','err');return;}
+  try{
+    const res=await atUpdate('Matches',id,{score1:s1,score2:s2});
     if(res.success){
-      localStorage.removeItem('dtl_v2_getMatches');
-      localStorage.removeItem('dtl_v2_getRankings');
-      localStorage.removeItem('dtl_v2_getSchedules');
-      if(window._scheduleId){
-        toast('저장됐습니다 ✓ 일정으로 이동합니다','ok');
-        setTimeout(()=>{ window.location.href='schedule.html'; },1000);
-        return;
-      }
-      toast(editingId?'수정됐습니다 ✓':'결과가 저장됐습니다 ✓','ok');
-      cancelEdit();
-      await loadMatches();
-    } else toast('저장 실패: '+(res.error||''),'err');
-  }catch(e){toast('오류가 발생했습니다','err');}
-  btn.disabled=false;
-  btn.textContent=editingId?'수정 저장하기':'결과 저장하기';
+      const m=matches.find(x=>x.id===id);
+      if(m){m.score1=s1;m.score2=s2;}
+      s1El.setAttribute('data-orig',s1);
+      s2El.setAttribute('data-orig',s2);
+      toast('수정됨 ✓','ok');
+    } else toast('수정 실패','err');
+  }catch(e){toast('수정 실패','err');}
 }
 
 async function delMatch(id){
   if(!confirm('이 경기 결과를 삭제할까요?')) return;
-  if(editingId===id) cancelEdit();
   try{
     const res=await atDelete('Matches',id);
-    if(res.success){localStorage.removeItem('dtl_v2_getMatches');localStorage.removeItem('dtl_v2_getRankings');toast('삭제됐습니다','ok');await loadMatches();}
+    if(res.success){
+      matches=matches.filter(m=>m.id!==id);
+      renderMatches();
+      closeDetail();
+      toast('삭제됐습니다','ok');
+    }
   }catch(e){toast('삭제 실패','err');}
-}
-
-function resetForm(){
-  ['f-t1p1','f-t1p2','f-t2p1','f-t2p2','f-mvp'].forEach(id=>document.getElementById(id).selectedIndex=0);
-  document.getElementById('f-s1').value='';
-  document.getElementById('f-s2').value='';
-  document.getElementById('f-notes').value='';
-  document.getElementById('preview-wrap').style.display='none';
-  document.getElementById('score-hint').textContent='';
 }
 
 function toast(msg,type){
@@ -513,59 +406,7 @@ function toast(msg,type){
   setTimeout(()=>t.className='toast',2500);
 }
 
-// ── 이벤트 관리 ──
-function toggleEventForm(){
-  const wrap=document.getElementById('event-form-wrap');
-  const btn=document.getElementById('ev-toggle-btn');
-  const show=wrap.style.display==='none';
-  wrap.style.display=show?'block':'none';
-  btn.textContent=show?'− 닫기':'+ 새 이벤트 추가';
-}
-
-function renderEventsList(){
-  const el=document.getElementById('events-list');
-  if(!events.length){el.innerHTML='<div style="font-size:.82rem;color:var(--sm2);padding:.5rem 0;">등록된 이벤트가 없습니다</div>';return;}
-  const statusLabel={upcoming:'예정',ongoing:'진행중',completed:'완료'};
-  el.innerHTML=events.map(ev=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(26,31,28,.05);">
-      <div>
-        <div style="font-weight:500;font-size:.88rem;">${ev.name}</div>
-        <div style="font-size:.72rem;color:var(--sm2);">${ev.date||''} · ${ev.venue||''} · ${statusLabel[ev.status]||ev.status||''}</div>
-      </div>
-      <button class="del-btn" onclick="delEvent('${ev.id}')">삭제</button>
-    </div>
-  `).join('');
-}
-
-async function submitEvent(){
-  const name=document.getElementById('ev-name').value.trim();
-  const date=document.getElementById('ev-date').value;
-  const venue=document.getElementById('ev-venue').value.trim();
-  const status=document.getElementById('ev-status').value;
-  if(!name){toast('이벤트명을 입력해주세요','err');return;}
-  try{
-    const res=await atCreate('Events',{name,date:date||null,venue,status});
-    if(res.success){
-      toast('이벤트가 추가됐습니다','ok');
-      document.getElementById('ev-name').value='';
-      document.getElementById('ev-date').value='';
-      document.getElementById('ev-venue').value='';
-      await loadEvents();
-      renderEventsList();
-    }else toast('저장 실패: '+(res.error||''),'err');
-  }catch(e){toast('오류가 발생했습니다','err');}
-}
-
-async function delEvent(id){
-  if(!confirm('이 이벤트를 삭제할까요?'))return;
-  try{
-    const res=await atDelete('Events',id);
-    if(res.success){toast('삭제됐습니다','ok');await loadEvents();renderEventsList();}
-    else toast('삭제 실패','err');
-  }catch(e){toast('삭제 실패','err');}
-}
-
-init().then(()=>renderEventsList());
+init();
 </script>
 </body>
 </html>
