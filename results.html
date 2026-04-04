@@ -341,9 +341,9 @@ function renderMatches(){
           return `<div class="rg-match">
             <div class="rg-teams">${chip(m.team1_p1)} ${chip(m.team1_p2)}</div>
             <div class="rg-score">
-              <input class="inline-score-sm" type="number" min="0" max="6" value="${s1}" id="rs1_${m.id}" data-orig="${s1}">
+              <input class="inline-score-sm" type="number" min="0" max="7" value="${s1}" id="rs1_${m.id}" data-orig="${s1}">
               <span>:</span>
-              <input class="inline-score-sm" type="number" min="0" max="6" value="${s2}" id="rs2_${m.id}" data-orig="${s2}">
+              <input class="inline-score-sm" type="number" min="0" max="7" value="${s2}" id="rs2_${m.id}" data-orig="${s2}">
             </div>
             <div class="rg-teams">${chip(m.team2_p1)} ${chip(m.team2_p2)}</div>
             <div style="margin-left:auto;display:flex;gap:.3rem;">
@@ -372,7 +372,7 @@ async function updateScore(id){
   const s1El=document.getElementById('rs1_'+id);
   const s2El=document.getElementById('rs2_'+id);
   const s1=parseInt(s1El.value),s2=parseInt(s2El.value);
-  if(isNaN(s1)||isNaN(s2)||s1<0||s1>6||s2<0||s2>6){toast('스코어 0~6','err');return;}
+  if(isNaN(s1)||isNaN(s2)||s1<0||s1>7||s2<0||s2>7){toast('스코어 0~7','err');return;}
   if(s1===s2){toast('동점 불가','err');return;}
   if(s1El.getAttribute('data-orig')===String(s1)&&s2El.getAttribute('data-orig')===String(s2)){toast('변경 없음','err');return;}
   try{

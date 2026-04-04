@@ -704,12 +704,12 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           const s1 = result ? parseInt(result.score1)||0 : 0;
           const s2 = result ? parseInt(result.score2)||0 : 0;
           const scoreHtml = result
-            ? `<input class="inline-score" type="number" min="0" max="6" value="${s1}" id="s1_${mid}" data-orig="${s1}">
+            ? `<input class="inline-score" type="number" min="0" max="7" value="${s1}" id="s1_${mid}" data-orig="${s1}">
                <span class="match-score-sep">:</span>
-               <input class="inline-score" type="number" min="0" max="6" value="${s2}" id="s2_${mid}" data-orig="${s2}">`
-            : `<input class="inline-score" type="number" min="0" max="6" placeholder="-" id="s1_${mid}">
+               <input class="inline-score" type="number" min="0" max="7" value="${s2}" id="s2_${mid}" data-orig="${s2}">`
+            : `<input class="inline-score" type="number" min="0" max="7" placeholder="-" id="s1_${mid}">
                <span class="match-score-sep">:</span>
-               <input class="inline-score" type="number" min="0" max="6" placeholder="-" id="s2_${mid}">`;
+               <input class="inline-score" type="number" min="0" max="7" placeholder="-" id="s2_${mid}">`;
 
           return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${result?result.id:''}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" style="${result?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
@@ -717,6 +717,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
             <div class="conf-team">${sortFemaleFirst(t1).map(p=>pChip(p)).join('')}</div>
             <div class="conf-score-block">${scoreHtml}</div>
             <div class="conf-team">${sortFemaleFirst(t2).map(p=>pChip(p)).join('')}</div>
+            <button class="conf-del-btn" onclick="removeMatchFromSchedule('${s.id}',${ri},${mi})" style="font-size:.5rem;color:var(--sm2);">×</button>
           </div>`;
         }).join('')
       ).join('');
@@ -820,7 +821,19 @@ function renderConfirmedList(list, allMatches, femaleNames) {
         <div class="conf-body open" id="conf-body-${s.id}">
           ${teamSummary}
           ${matchRows}
-          <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
+          <div style="margin-top:.8rem;padding-top:.6rem;border-top:1px dashed rgba(78,122,90,.2);text-align:center;">
+            <button class="add-btn" onclick="showAddMatchForm('${s.id}')" style="font-size:.62rem;padding:.35rem .8rem;">+ 매치 추가</button>
+          </div>
+          <div id="add-match-form-${s.id}" style="display:none;margin-top:.5rem;padding:.8rem;background:var(--iv2);border:1px solid var(--ll);">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;margin-bottom:.5rem;">
+              <select class="opt-select" id="am-t1p1-${s.id}" style="font-size:.75rem;padding:.3rem;"><option value="">선수1</option></select>
+              <select class="opt-select" id="am-t1p2-${s.id}" style="font-size:.75rem;padding:.3rem;"><option value="">선수2</option></select>
+              <select class="opt-select" id="am-t2p1-${s.id}" style="font-size:.75rem;padding:.3rem;"><option value="">선수3</option></select>
+              <select class="opt-select" id="am-t2p2-${s.id}" style="font-size:.75rem;padding:.3rem;"><option value="">선수4</option></select>
+            </div>
+            <button class="confirm-btn" onclick="addMatchToSchedule('${s.id}')" style="width:100%;font-size:.62rem;padding:.35rem;">추가</button>
+          </div>
+          <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
             <button class="confirm-btn" onclick="saveAllScores('${s.id}')" style="width:100%;">결과 확정 저장</button>
           </div>
           ${isTeamMode && scoreTableRows ? `
@@ -839,6 +852,64 @@ function renderConfirmedList(list, allMatches, femaleNames) {
   } catch(e) {
     el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">렌더링 오류: ${e.message}</div>`;
   }
+}
+
+function showAddMatchForm(schedId) {
+  const form = document.getElementById('add-match-form-' + schedId);
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'block') {
+    // 선수 드롭다운 채우기
+    ['am-t1p1-','am-t1p2-','am-t2p1-','am-t2p2-'].forEach(prefix => {
+      const sel = document.getElementById(prefix + schedId);
+      sel.innerHTML = '<option value="">선택</option>';
+      _allPlayers.forEach(p => { sel.innerHTML += `<option value="${p.name}">${p.name}</option>`; });
+    });
+  }
+}
+
+async function addMatchToSchedule(schedId) {
+  const g = id => document.getElementById(id + schedId).value;
+  const t1p1=g('am-t1p1-'), t1p2=g('am-t1p2-'), t2p1=g('am-t2p1-'), t2p2=g('am-t2p2-');
+  if (!t1p1||!t1p2||!t2p1||!t2p2) { alert('선수 4명을 모두 선택해주세요.'); return; }
+  if (new Set([t1p1,t1p2,t2p1,t2p2]).size !== 4) { alert('같은 선수가 중복 선택되었습니다.'); return; }
+
+  // schedule_json 업데이트
+  try {
+    const scheds = await atGet('Schedules');
+    const s = scheds.find(x => x.id === schedId);
+    if (!s) { alert('일정을 찾을 수 없습니다.'); return; }
+    let raw;
+    try { raw = JSON.parse(s.schedule_json || '[]'); } catch(e) { raw = []; }
+    const rounds = Array.isArray(raw) ? raw : (raw.rounds || []);
+    const newRound = rounds.length + 1;
+    rounds.push({ round: newRound, matches: [{ t1:[t1p1,t1p2], t2:[t2p1,t2p2], fmt:'mixed' }], resting:[] });
+    const newJson = Array.isArray(raw) ? rounds : { ...raw, rounds };
+    await atUpdate('Schedules', schedId, { schedule_json: JSON.stringify(newJson) });
+    _skipCache = true;
+    await loadConfirmedSchedules();
+  } catch(e) { alert('추가 실패: ' + e.message); }
+}
+
+async function removeMatchFromSchedule(schedId, ri, mi) {
+  if (!confirm('이 매치를 삭제할까요?')) return;
+  try {
+    const scheds = await atGet('Schedules');
+    const s = scheds.find(x => x.id === schedId);
+    if (!s) return;
+    let raw;
+    try { raw = JSON.parse(s.schedule_json || '[]'); } catch(e) { raw = []; }
+    const rounds = Array.isArray(raw) ? raw : (raw.rounds || []);
+    if (rounds[ri] && rounds[ri].matches) {
+      rounds[ri].matches.splice(mi, 1);
+      if (rounds[ri].matches.length === 0) rounds.splice(ri, 1);
+      // 라운드 번호 재정렬
+      rounds.forEach((r, i) => r.round = i + 1);
+    }
+    const newJson = Array.isArray(raw) ? rounds : { ...raw, rounds };
+    await atUpdate('Schedules', schedId, { schedule_json: JSON.stringify(newJson) });
+    _skipCache = true;
+    await loadConfirmedSchedules();
+  } catch(e) { alert('삭제 실패: ' + e.message); }
 }
 
 function toggleConf(id) {
@@ -861,7 +932,7 @@ async function saveAllScores(schedId) {
     if (s1 === '' && s2 === '') return; // 미입력은 건너뜀
     if (s1 === '' || s2 === '') { hasError = true; return; }
     const v1 = parseInt(s1), v2 = parseInt(s2);
-    if (isNaN(v1) || isNaN(v2) || v1 < 0 || v1 > 6 || v2 < 0 || v2 > 6) { hasError = true; return; }
+    if (isNaN(v1) || isNaN(v2) || v1 < 0 || v1 > 7 || v2 < 0 || v2 > 7) { hasError = true; return; }
     if (v1 === v2) { hasError = true; return; }
     const t1 = JSON.parse(row.getAttribute('data-t1'));
     const t2 = JSON.parse(row.getAttribute('data-t2'));
@@ -879,7 +950,7 @@ async function saveAllScores(schedId) {
     });
   });
 
-  if (hasError) { alert('스코어를 확인해주세요.\n- 양쪽 모두 입력 (0~6)\n- 동점 불가'); return; }
+  if (hasError) { alert('스코어를 확인해주세요.\n- 양쪽 모두 입력 (0~7)\n- 동점 불가'); return; }
   if (!toSave.length) { alert('변경된 스코어가 없습니다.'); return; }
 
   if (!confirm(`${toSave.length}건의 결과를 저장할까요?`)) return;
