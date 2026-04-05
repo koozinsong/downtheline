@@ -192,6 +192,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .inline-score{width:42px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;border:1px solid var(--ll);padding:.3rem;background:var(--iv);outline:none;color:var(--ink);-moz-appearance:textfield;}
 .inline-score::-webkit-outer-spin-button,.inline-score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .inline-score:focus{border-color:var(--g3);background:var(--w);}
+.save-indicator{font-size:.6rem;color:var(--g);text-align:center;margin-top:.2rem;animation:fadein .3s;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
 .conf-match-actions{display:flex;gap:.4rem;align-items:center;}
 .conf-match-actions .edit-btn,.conf-match-actions .del-btn{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--ll);cursor:pointer;padding:.3rem .6rem;transition:all .2s;}
 .conf-match-actions .edit-btn{color:var(--g3);border-color:rgba(78,122,90,.3);}
@@ -640,8 +642,19 @@ async function loadConfirmedSchedules() {
       });
       evtSel.onchange = function() {
         const opt = this.options[this.selectedIndex];
-        const d = opt.getAttribute('data-date');
-        if (d) document.getElementById('sched-date').value = d;
+        const val = this.value;
+        if (val && val.includes('정기')) {
+          // 다가올 일요일 계산
+          const now = new Date();
+          const day = now.getDay(); // 0=일 1=월 ... 6=토
+          const diff = day === 0 ? 7 : 7 - day; // 오늘이 일요일이면 다음 주
+          const next = new Date(now);
+          next.setDate(now.getDate() + diff);
+          document.getElementById('sched-date').value = next.toISOString().split('T')[0];
+        } else {
+          const d = opt.getAttribute('data-date');
+          if (d) document.getElementById('sched-date').value = d;
+        }
       };
     }
 
@@ -675,20 +688,20 @@ function renderConfirmedList(list, allMatches, femaleNames) {
     return;
   }
 
-  // 결과 찾기 헬퍼 — 같은 이벤트/날짜의 기록만 매칭
-  function findResult(t1, t2, matches, schedEvent, schedDate) {
-    return (matches||[]).find(m => {
-      // 이벤트 또는 날짜가 맞는 것만
-      const eventMatch = schedEvent && m.event ? m.event === schedEvent : true;
-      const dateMatch  = schedDate  && m.date  ? String(m.date).substring(0,10) === String(schedDate).substring(0,10) : true;
-      if (!eventMatch && !dateMatch) return false;
-
-      const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
-      const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
-      const st1 = [...t1].sort().join(',');
-      const st2 = [...t2].sort().join(',');
-      return (mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1);
-    });
+  // 결과 찾기 — schedule_id + 선수 조합(순서 무관)으로 정확 매칭
+  function findResult(t1, t2, matches, schedEvent, schedDate, schedId) {
+    const st1 = [...t1].sort().join(','), st2 = [...t2].sort().join(',');
+    // 1. schedule_id로 먼저 매칭
+    if (schedId) {
+      const byId = (matches||[]).find(m => {
+        if (String(m.schedule_id) !== String(schedId)) return false;
+        const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
+        const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
+        return (mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1);
+      });
+      if (byId) return byId;
+    }
+    return null;
   }
 
   try {
@@ -703,26 +716,23 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       const savedTeamA = schedData.teamA || [];
       const savedTeamB = schedData.teamB || [];
       const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
-      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date)).length, 0);
+      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id)).length, 0);
       const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복', team:'팀전' };
       const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open', team:'fb-mixed' };
 
       const matchRows = sched.map((r, ri) =>
         (r.matches||[]).map((m, mi) => {
           const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
-          const result = findResult(t1, t2, allMatches, s.event, s.date);
+          const result = findResult(t1, t2, allMatches, s.event, s.date, s.id);
           const mid = `${s.id}_${ri}_${mi}`;
-          const s1 = result ? parseInt(result.score1)||0 : 0;
-          const s2 = result ? parseInt(result.score2)||0 : 0;
-          const scoreHtml = result
-            ? `<input class="inline-score" type="number" min="0" max="7" value="${s1}" id="s1_${mid}" data-orig="${s1}">
+          const s1 = result ? parseInt(result.score1)||0 : '';
+          const s2 = result ? parseInt(result.score2)||0 : '';
+          const rid = result ? result.id : '';
+          const scoreHtml = `<input class="inline-score" type="number" min="0" max="7" value="${s1}" placeholder="-" id="s1_${mid}" onchange="autoSaveScore('${mid}')">
                <span class="match-score-sep">:</span>
-               <input class="inline-score" type="number" min="0" max="7" value="${s2}" id="s2_${mid}" data-orig="${s2}">`
-            : `<input class="inline-score" type="number" min="0" max="7" placeholder="-" id="s1_${mid}">
-               <span class="match-score-sep">:</span>
-               <input class="inline-score" type="number" min="0" max="7" placeholder="-" id="s2_${mid}">`;
+               <input class="inline-score" type="number" min="0" max="7" value="${s2}" placeholder="-" id="s2_${mid}" onchange="autoSaveScore('${mid}')">`;
 
-          return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${result?result.id:''}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" style="${result?'background:rgba(44,74,53,.04);':''}">
+          return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${rid}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" style="${rid?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
             <div class="conf-team">${sortFemaleFirst(t1).map(p=>pChip(p)).join('')}</div>
@@ -739,7 +749,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       // 스코어 요약 테이블
       const playerStats = {};
       sched.forEach(r => (r.matches||[]).forEach(m => {
-        const res = findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date);
+        const res = findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id);
         if (!res) return;
         const s1 = parseInt(res.score1)||0, s2 = parseInt(res.score2)||0;
         const w1 = s1 > s2;
@@ -847,19 +857,10 @@ function renderConfirmedList(list, allMatches, femaleNames) {
             </div>
             <button class="confirm-btn" onclick="addMatchToSchedule('${s.id}')" style="width:100%;font-size:.62rem;padding:.35rem;">추가</button>
           </div>
+          ${scoreTable}
           <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
-            <button class="confirm-btn" onclick="saveAllScores('${s.id}')" style="width:100%;">결과 확정 저장</button>
+            <button class="confirm-btn" onclick="finishSchedule('${s.id}')" style="width:100%;background:var(--sm2);">일정 완료 (아카이브)</button>
           </div>
-          ${isTeamMode && scoreTableRows ? `
-          <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:.8rem;">
-            <div style="cursor:pointer;display:flex;align-items:center;gap:.5rem;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('span').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
-              <span style="font-size:.7rem;color:var(--sm2);">▸</span>
-              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sm2);">개인 스코어 보기</div>
-            </div>
-            <div style="display:none;">
-              ${scoreTable}
-            </div>
-          </div>` : scoreTable}
         </div>
       </div>`;
     }).join('');
@@ -907,6 +908,12 @@ async function saveMatchPlayers(schedId, ri, mi, eid) {
     }
     const newJson = Array.isArray(raw) ? rounds : { ...raw, rounds };
     await atUpdate('Schedules', schedId, { schedule_json: JSON.stringify(newJson) });
+    // 기존 결과가 있으면 선수도 업데이트
+    const row = document.querySelector(`.conf-match-row[data-mid="${schedId}_${ri}_${mi}"]`);
+    const resultId = row ? row.getAttribute('data-result-id') : '';
+    if (resultId) {
+      await atUpdate('Matches', resultId, { team1_p1:t1[0], team1_p2:t1[1], team2_p1:t2[0], team2_p2:t2[1] });
+    }
     _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) { alert('수정 실패: ' + e.message); }
@@ -946,6 +953,68 @@ async function addMatchToSchedule(schedId) {
     await loadConfirmedSchedules();
     restoreInlineScores(savedScores);
   } catch(e) { alert('추가 실패: ' + e.message); }
+}
+
+async function finishSchedule(schedId) {
+  if (!confirm('이 일정을 완료 처리할까요?\n(경기 기록은 유지됩니다)')) return;
+  try {
+    await atDelete('Schedules', schedId);
+    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    _skipCache = true;
+    await loadConfirmedSchedules();
+    alert('일정이 완료 처리되었습니다.\n경기결과 탭에서 확인하세요.');
+  } catch(e) { alert('실패: ' + e.message); }
+}
+
+// ── 스코어 즉시 저장 ──
+async function autoSaveScore(mid) {
+  const s1El = document.getElementById('s1_' + mid);
+  const s2El = document.getElementById('s2_' + mid);
+  if (!s1El || !s2El) return;
+  // 수정 모드(드롭다운 표시 중)이면 저장 안 함
+  const row = document.querySelector(`.conf-match-row[data-mid="${mid}"]`);
+  if (row && row.querySelector('.opt-select')) return;
+  const s1 = s1El.value, s2 = s2El.value;
+  if (s1 === '' || s2 === '') return; // 양쪽 다 입력돼야 저장
+  const v1 = parseInt(s1), v2 = parseInt(s2);
+  if (isNaN(v1) || isNaN(v2) || v1 < 0 || v1 > 7 || v2 < 0 || v2 > 7) return;
+  if (!row) return;
+  const t1 = JSON.parse(row.getAttribute('data-t1'));
+  const t2 = JSON.parse(row.getAttribute('data-t2'));
+  const resultId = row.getAttribute('data-result-id');
+  const schedId = row.getAttribute('data-sched-id');
+  const event = row.getAttribute('data-event');
+  const date = row.getAttribute('data-date');
+
+  const fields = {
+    team1_p1: t1[0], team1_p2: t1[1],
+    team2_p1: t2[0], team2_p2: t2[1],
+    score1: v1, score2: v2,
+    event: event || null, date: date || null,
+    schedule_id: schedId
+  };
+
+  try {
+    let res;
+    if (resultId) {
+      res = await atUpdate('Matches', resultId, { score1: v1, score2: v2 });
+    } else {
+      res = await atCreate('Matches', fields);
+      if (res.success && res.id) {
+        row.setAttribute('data-result-id', res.id);
+        row.style.background = 'rgba(44,74,53,.04)';
+      }
+    }
+    // 저장 표시
+    const block = row.querySelector('.conf-score-block');
+    if (block) {
+      const indicator = block.querySelector('.save-indicator') || document.createElement('div');
+      indicator.className = 'save-indicator';
+      indicator.textContent = '✓';
+      if (!block.querySelector('.save-indicator')) block.appendChild(indicator);
+      setTimeout(() => indicator.remove(), 1500);
+    }
+  } catch(e) { console.error('자동 저장 실패:', e); }
 }
 
 // 인라인 스코어 입력값 저장/복원
