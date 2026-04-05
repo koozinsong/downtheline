@@ -1354,8 +1354,35 @@ function checkAvailability() {
 // 예전 validateFormats 참조 호환
 const validateFormats = checkAvailability;
 
+// ── 랭킹 계산 (Matches 기반) ──
+function computePlayerRankings(allMatches, maleList, femaleList) {
+  const stats = {};
+  [...maleList, ...femaleList].forEach(n => { stats[n] = { name:n, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; });
+  allMatches.forEach(m => {
+    const s1 = parseInt(m.score1)||0, s2 = parseInt(m.score2)||0;
+    const w1 = s1 > s2, draw = s1 === s2;
+    [m.team1_p1, m.team1_p2].forEach(n => {
+      if (!stats[n]) return;
+      if (draw) stats[n].d++; else if (w1) stats[n].w++; else stats[n].l++;
+      stats[n].gf += s1; stats[n].ga += s2;
+      stats[n].pts = stats[n].w * 3 + stats[n].d;
+    });
+    [m.team2_p1, m.team2_p2].forEach(n => {
+      if (!stats[n]) return;
+      if (draw) stats[n].d++; else if (w1) stats[n].l++; else stats[n].w++;
+      stats[n].gf += s2; stats[n].ga += s1;
+      stats[n].pts = stats[n].w * 3 + stats[n].d;
+    });
+  });
+  const sorted = arr => arr.slice().sort((a, b) => (stats[b]?.pts||0) - (stats[a]?.pts||0) || ((stats[b]?.gf||0)-(stats[b]?.ga||0)) - ((stats[a]?.gf||0)-(stats[a]?.ga||0)));
+  return {
+    malesSorted: sorted(maleList),     // 0=1위
+    femalesSorted: sorted(femaleList)   // 0=1위
+  };
+}
+
 // ── Algorithm ──
-function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
+function generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings) {
   const allPlayers = [...females, ...males];
 
   const partnerCount  = {};
@@ -1406,27 +1433,44 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
       }
     }
     if (formats.includes('open')) {
-      const n = allPlayers.length;
-      for (let i = 0; i < n; i++)
-      for (let j = i+1; j < n; j++)
-      for (let k = 0; k < n; k++) {
-        if (k===i||k===j) continue;
-        for (let l = k+1; l < n; l++) {
-          if (l===i||l===j) continue;
-          if (i*n+j < k*n+l)
-            matches.push({ t1:[allPlayers[i],allPlayers[j]], t2:[allPlayers[k],allPlayers[l]], fmt:'open' });
-        }
-      }
+      // 잡복: 혼합페어(남+여) vs 동성페어(남+남 or 여+여)
+      // 혼합 페어
+      const mixPairs = [];
+      for (let i = 0; i < males.length; i++)
+        for (let j = 0; j < females.length; j++)
+          mixPairs.push([males[i], females[j]]);
+      // 남자 동성 페어
+      const malePairs = [];
+      for (let i = 0; i < males.length; i++)
+        for (let j = i+1; j < males.length; j++)
+          malePairs.push([males[i], males[j]]);
+      // 여자 동성 페어
+      const femalePairs = [];
+      for (let i = 0; i < females.length; i++)
+        for (let j = i+1; j < females.length; j++)
+          femalePairs.push([females[i], females[j]]);
+      // 혼합 vs 남남
+      mixPairs.forEach(mp => malePairs.forEach(sp => {
+        if (mp.some(p => sp.includes(p))) return;
+        matches.push({ t1: mp, t2: sp, fmt:'open' });
+      }));
+      // 혼합 vs 여여
+      mixPairs.forEach(mp => femalePairs.forEach(sp => {
+        if (mp.some(p => sp.includes(p))) return;
+        matches.push({ t1: mp, t2: sp, fmt:'open' });
+      }));
     }
     // Deduplicate (open may overlap with others)
     if (formats.includes('open') && formats.length > 1) {
-      return matches.filter((m,i) => {
+      // 잡복에서 혼복과 완전히 동일한 매치(양팀 조합 동일)만 제거
+      const matchKey = m => {
+        const k1 = [...m.t1].sort().join('|'), k2 = [...m.t2].sort().join('|');
+        return [k1,k2].sort().join('vs');
+      };
+      const nonOpenKeys = new Set(matches.filter(m=>m.fmt!=='open').map(matchKey));
+      return matches.filter(m => {
         if (m.fmt !== 'open') return true;
-        // remove open matches that are already covered by other formats
-        const key = (a,b) => [a,b].sort().join('|');
-        const t1k = key(m.t1[0],m.t1[1]), t2k = key(m.t2[0],m.t2[1]);
-        return !matches.slice(0,i).some(x => x.fmt !== 'open' &&
-          key(x.t1[0],x.t1[1])===t1k && key(x.t2[0],x.t2[1])===t2k);
+        return !nonOpenKeys.has(matchKey(m));
       });
     }
     return matches;
@@ -1434,9 +1478,45 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
 
   const allMatches = getAllMatches();
 
+  // 포맷 우선순위: open(잡복)은 다른 포맷보다 낮은 우선순위
+  const fmtPenalty = { mixed:0, mens:0, womens:0, open:5 };
+
+  // 잡복 밸런스: 실제 랭킹 기반
+  const maleRank = {}; // 0=1위
+  const femaleRank = {};
+  const { malesSorted, femalesSorted } = rankings || { malesSorted: males, femalesSorted: females };
+  malesSorted.forEach((n,i) => maleRank[n] = i);
+  femalesSorted.forEach((n,i) => femaleRank[n] = i);
+  const mLen = malesSorted.length, fLen = femalesSorted.length;
+
   function scoreMatch(m) {
     const { t1, t2 } = m;
-    let score = Math.random() * 0.5; // 랜덤 시드로 동일 조건 시 다른 결과
+    let score = Math.random() * 0.5;
+    score += (fmtPenalty[m.fmt] || 0);
+
+    // 잡복: 랭킹 밸런스만 (파트너/상대 반복 조건 무시)
+    if (m.fmt === 'open') {
+      const mixTeam = (t1.some(n=>males.includes(n)) && t1.some(n=>females.includes(n))) ? t1 : t2;
+      const sameTeam = mixTeam === t1 ? t2 : t1;
+      const mPlayer = mixTeam.find(n => males.includes(n));
+      const fPlayer = mixTeam.find(n => females.includes(n));
+      const isSameMale = sameTeam.every(n => males.includes(n));
+      const isSameFemale = sameTeam.every(n => females.includes(n));
+
+      if (mPlayer && fPlayer) {
+        const mr = maleRank[mPlayer] || 0;
+        const fr = femaleRank[fPlayer] || 0;
+
+        if (isSameMale) {
+          score += (mr + fr) * 10;
+        } else if (isSameFemale) {
+          score += (Math.abs(mr-(mLen-1)) + Math.abs(fr-(fLen-1))) * 10;
+        }
+      }
+      // 출전 균등화 (연속 대기 방지)
+      [...t1,...t2].forEach(p => { score += (playCount[p] || 0) * 3; });
+      return score;
+    }
     if (opts.partner) {
       score += partnerCount[t1[0]][t1[1]] * 4;
       score += partnerCount[t2[0]][t2[1]] * 4;
@@ -1452,19 +1532,77 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
 
   const schedule = [];
 
-  for (let round = 0; round < numRounds; round++) {
-    const scored = allMatches.map(m => ({ m, s: scoreMatch(m) }));
-    scored.sort((a,b) => a.s - b.s);
+  const hasOpen = formats.includes('open') && formats.length > 1;
+  const mainMatches = hasOpen ? allMatches.filter(m => m.fmt !== 'open') : allMatches;
+  const openMatches = hasOpen ? allMatches.filter(m => m.fmt === 'open') : [];
 
+  // 이전 라운드 대기 선수 추적
+  let prevResting = new Set();
+  // 사용된 잡복 매치 키 추적
+  const usedOpenKeys = new Set();
+  const openMatchKey = m => [...m.t1].sort().join(',')+' vs '+[...m.t2].sort().join(',');
+
+  function pickMatch(pool) {
+    const scored = pool.map(m => ({ m, s: scoreMatch(m) }));
+    scored.sort((a,b) => a.s - b.s);
     const selected = [];
     const used = new Set();
-
     for (const { m } of scored) {
       if (selected.length >= numCourts) break;
       const players = [...m.t1, ...m.t2];
       if (players.some(p => used.has(p))) continue;
       selected.push(m);
       players.forEach(p => used.add(p));
+    }
+    return selected;
+  }
+
+  for (let round = 0; round < numRounds; round++) {
+    // 혼복 먼저 시도
+    let selected = pickMatch(hasOpen ? mainMatches : allMatches);
+    let usedOpen = false;
+
+    // 연속 대기 체크
+    if (hasOpen && openMatches.length > 0 && selected.length > 0) {
+      const activePlayers = new Set(selected.flatMap(m => [...m.t1, ...m.t2]));
+      const wouldRest = allPlayers.filter(p => !activePlayers.has(p));
+      const consecCount = wouldRest.filter(p => prevResting.has(p)).length;
+
+      // 잡복 후보 중 이미 사용된 조합 제외
+      const availOpen = openMatches.filter(m => !usedOpenKeys.has(openMatchKey(m)));
+      if (consecCount > 0 && availOpen.length > 0) {
+        const openScored = availOpen.map(m => {
+          let s = scoreMatch(m);
+          // 이전 대기자를 포함하면 보너스
+          const players = [...m.t1, ...m.t2];
+          const rescueCount = players.filter(p => prevResting.has(p)).length;
+          s -= rescueCount * 20; // 대기자 구출 최우선
+          return { m, s };
+        });
+        openScored.sort((a,b) => a.s - b.s);
+
+        const openSelected = [];
+        const openUsed = new Set();
+        for (const { m } of openScored) {
+          if (openSelected.length >= numCourts) break;
+          const players = [...m.t1, ...m.t2];
+          if (players.some(p => openUsed.has(p))) continue;
+          openSelected.push(m);
+          players.forEach(p => openUsed.add(p));
+        }
+
+        if (openSelected.length > 0) {
+          const openActive = new Set(openSelected.flatMap(m => [...m.t1, ...m.t2]));
+          const openRest = allPlayers.filter(p => !openActive.has(p));
+          const openConsec = openRest.filter(p => prevResting.has(p)).length;
+          // 잡복이 연속 대기를 줄이면 채택
+          if (openConsec < consecCount) {
+            selected = openSelected;
+            usedOpen = true;
+            openSelected.forEach(m => usedOpenKeys.add(openMatchKey(m)));
+          }
+        }
+      }
     }
 
     if (selected.length === 0 && allMatches.length > 0) {
@@ -1475,6 +1613,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
     const resting = allPlayers.filter(p => !activePlayers.includes(p));
 
     schedule.push({ round: round+1, matches: selected, resting });
+    prevResting = new Set(resting);
 
     selected.forEach(({ t1, t2 }) => {
       partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
@@ -1488,7 +1627,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats) {
 }
 
 // ── Generate & Render ──
-function generate() {
+async function generate() {
   const warn = document.getElementById('warn-msg');
   warn.className = 'warn';
 
@@ -1524,13 +1663,22 @@ function generate() {
     noConsecRest: isActive('cond-gender'),
   };
 
+  // 랭킹 계산
+  let rankings = { malesSorted: males, femalesSorted: females };
+  if (formats.includes('open')) {
+    try {
+      const allMatchData = await cachedFetch('getMatches');
+      rankings = computePlayerRankings(allMatchData, males, females);
+    } catch(e) {}
+  }
+
   const { schedule, playCount, partnerCount, opponentCount } =
-    generateSchedule(females, males, numCourts, numRounds, opts, formats);
+    generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings);
 
   _lastScheduleData = { schedule, females, males, formats, numRounds, mode:'individual' };
 
   const allPlayers = [...females, ...males];
-  renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds);
+  renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds, rankings);
 }
 
 // ── 팀전 일정 생성 ──
@@ -1649,7 +1797,7 @@ function playerChip(name, females) {
   return `<span class="player-chip ${cls}">${name}</span>`;
 }
 
-function renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds) {
+function renderResult(schedule, allPlayers, females, males, playCount, partnerCount, opponentCount, numRounds, rankings) {
   const area = document.getElementById('result-area');
   const total = schedule.reduce((s, r) => s + r.matches.length, 0);
 
