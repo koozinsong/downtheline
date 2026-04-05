@@ -278,8 +278,6 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   <div class="nav-title">시합 일정</div>
   <div class="nav-links">
     <a class="nav-link active" href="schedule.html">시합일정</a>
-    <a class="nav-link" href="results.html">경기결과</a>
-    <a class="nav-link" href="ranking.html">랭킹</a>
   </div>
 </nav>
 
@@ -359,6 +357,12 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
             <option value="">+ 선수 추가</option>
           </select>
         </div>
+      </div>
+      <!-- 게스트 추가 -->
+      <div id="guest-area" style="margin-top:.8rem;display:flex;gap:.5rem;align-items:center;">
+        <span style="font-size:.72rem;color:var(--sm);font-weight:500;">게스트:</span>
+        <button class="add-btn" onclick="addGuest('female')" style="width:auto;font-size:.6rem;padding:.3rem .7rem;">+ 여자 게스트</button>
+        <button class="add-btn" onclick="addGuest('male')" style="width:auto;font-size:.6rem;padding:.3rem .7rem;">+ 남자 게스트</button>
       </div>
       <!-- Team mode UI -->
       <div class="player-grid" id="team-grid" style="display:none;">
@@ -497,6 +501,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
       <div class="empty-text">일정을 생성해주세요</div>
     </div>
   </div>
+
 </div> <!-- end wrap -->
 
 <script>
@@ -559,7 +564,7 @@ const defaultMales   = ['남1', '남2', '남3', '남4'];
 let _mode = 'individual'; // 'individual' or 'team'
 let _teamA = [], _teamB = [];
 
-function setMode(mode) {
+async function setMode(mode) {
   _mode = mode;
   document.getElementById('mode-individual').classList.toggle('active', mode === 'individual');
   document.getElementById('mode-team').classList.toggle('active', mode === 'team');
@@ -567,12 +572,39 @@ function setMode(mode) {
   document.getElementById('team-grid').style.display = mode === 'team' ? '' : 'none';
   document.getElementById('player-section-label').textContent = mode === 'team' ? '팀 편성' : '참가자 선택';
   if (mode === 'team' && _teamA.length === 0 && _teamB.length === 0) {
-    // 자동 분배: 성별 균등하게
-    const females = _allPlayers.filter(p => p.gender === 'female').map(p => p.name);
-    const males = _allPlayers.filter(p => p.gender === 'male').map(p => p.name);
+    // 랭킹 기반 밸런스 분배 + 성비 동일
+    const females = _allPlayers.filter(p => p.gender === 'female' && !_guests.has(p.name)).map(p => p.name);
+    const males = _allPlayers.filter(p => p.gender === 'male' && !_guests.has(p.name)).map(p => p.name);
+    const guestF = _allPlayers.filter(p => p.gender === 'female' && _guests.has(p.name)).map(p => p.name);
+    const guestM = _allPlayers.filter(p => p.gender === 'male' && _guests.has(p.name)).map(p => p.name);
+
+    // 랭킹 가져오기
+    let mSorted = males, fSorted = females;
+    try {
+      const allMatchData = await cachedFetch('getMatches');
+      const rk = computePlayerRankings(allMatchData, males, females);
+      mSorted = rk.malesSorted;
+      fSorted = rk.femalesSorted;
+    } catch(e) {}
+
+    // 스네이크 드래프트 + 랜덤 시드 (같은 순위면 셔플)
     _teamA = []; _teamB = [];
-    females.forEach((n, i) => (i % 2 === 0 ? _teamA : _teamB).push(n));
-    males.forEach((n, i) => (i % 2 === 0 ? _teamA : _teamB).push(n));
+    // 랜덤으로 A/B 시작 방향 결정
+    let startA = Math.random() > 0.5;
+    function snakeDraft(sorted) {
+      sorted.forEach((n, i) => {
+        const pos = i % 4;
+        const toA = startA ? (pos === 0 || pos === 3) : (pos === 1 || pos === 2);
+        (toA ? _teamA : _teamB).push(n);
+      });
+    }
+    snakeDraft(fSorted);
+    snakeDraft(mSorted);
+    // 게스트는 랜덤 분배
+    [...guestF, ...guestM].sort(() => Math.random() - 0.5).forEach((n, i) => {
+      (i % 2 === 0 ? _teamA : _teamB).push(n);
+    });
+
     renderTeamPlayers();
   }
   checkAvailability();
@@ -732,7 +764,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
                <span class="match-score-sep">:</span>
                <input class="inline-score" type="number" min="0" max="7" value="${s2}" placeholder="-" id="s2_${mid}" onchange="autoSaveScore('${mid}')">`;
 
-          return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${rid}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" style="${rid?'background:rgba(44,74,53,.04);':''}">
+          return `<div class="conf-match-row" data-mid="${mid}" data-t1='${JSON.stringify(t1)}' data-t2='${JSON.stringify(t2)}' data-result-id="${rid}" data-sched-id="${s.id}" data-event="${s.event||''}" data-date="${s.date||''}" data-round="${r.round}" style="${rid?'background:rgba(44,74,53,.04);':''}">
             <div class="conf-round-label">R${r.round}</div>
             <span class="fmt-badge ${fmtCls[fmt]||'fb-mixed'}">${fmtLabel[fmt]||fmt}</span>
             <div class="conf-team">${sortFemaleFirst(t1).map(p=>pChip(p)).join('')}</div>
@@ -960,10 +992,90 @@ async function finishSchedule(schedId) {
   try {
     await atDelete('Schedules', schedId);
     ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
     _skipCache = true;
     await loadConfirmedSchedules();
-    alert('일정이 완료 처리되었습니다.\n경기결과 탭에서 확인하세요.');
   } catch(e) { alert('실패: ' + e.message); }
+}
+
+// ── 완료된 시합 결과 표시 ──
+async function loadFinishedResults() {
+  const el = document.getElementById('finished-results');
+  if (!el) return;
+  try {
+    const [allMatches, playerRes] = await Promise.all([atGet('Matches'), cachedFetch('getPlayers')]);
+    if (!allMatches.length) { el.innerHTML = ''; return; }
+    const _fn = new Set((playerRes||[]).filter(p=>p.gender==='female').map(p=>p.name));
+    const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${name}</span>`;
+    const sortFF = arr => [...arr].sort((a,b) => (_fn.has(b)?1:0) - (_fn.has(a)?1:0));
+
+    // schedule_id로 그룹핑
+    const groups = {};
+    allMatches.forEach(m => {
+      const key = m.schedule_id || m.event || m.id;
+      if (!groups[key]) groups[key] = { date:m.date, event:m.event, matches:[], schedule_id:m.schedule_id };
+      groups[key].matches.push(m);
+    });
+    // notes(R1,R2..)로 정렬
+    Object.values(groups).forEach(g => {
+      g.matches.sort((a,b) => {
+        const ra = parseInt((a.notes||'').replace(/\D/g,''))||999;
+        const rb = parseInt((b.notes||'').replace(/\D/g,''))||999;
+        return ra - rb;
+      });
+    });
+    const sorted = Object.values(groups).sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+
+    el.innerHTML = `
+      <div style="background:var(--g);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gdl);">Match Results</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem;">시합 결과</div>
+        </div>
+      </div>
+      <div style="padding:1rem 1.5rem;">
+      ${sorted.map((g, gi) => {
+        const date = String(g.date||'').substring(0,10);
+        const total = g.matches.length;
+        const ids = g.matches.map(m=>m.id);
+        const gid = 'fr_'+gi;
+        return `<div style="border:1px solid var(--ll);margin-bottom:.5rem;background:var(--w);">
+          <div style="display:flex;align-items:center;padding:.8rem 1rem;cursor:pointer;transition:background .15s;" onclick="document.getElementById('${gid}').style.display=document.getElementById('${gid}').style.display==='none'?'block':'none'">
+            <div style="flex:1;">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;text-transform:uppercase;">${g.event||'시합'}</div>
+              <div style="font-size:.68rem;color:var(--sm2);">${date} · ${total}경기</div>
+            </div>
+            <span style="font-size:.75rem;color:var(--sm2);">▾</span>
+          </div>
+          <div id="${gid}" style="display:none;border-top:1px solid var(--ll);padding:.5rem 1rem;">
+            ${g.matches.map(m => {
+              const s1=parseInt(m.score1)||0, s2=parseInt(m.score2)||0;
+              const w1=s1>s2;
+              const rnd = m.notes || '';
+              return `<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid rgba(26,31,28,.04);flex-wrap:wrap;">
+                ${rnd?`<span style="font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;color:var(--g3);min-width:25px;">${rnd}</span>`:''}
+                <div style="display:flex;gap:.2rem;">${sortFF([m.team1_p1,m.team1_p2]).map(pChip).join('')}</div>
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;min-width:50px;text-align:center;"><span style="color:${w1?'var(--g)':'var(--sm2)'}">${s1}</span>:<span style="color:${w1?'var(--sm2)':'var(--g)'}">${s2}</span></span>
+                <div style="display:flex;gap:.2rem;">${sortFF([m.team2_p1,m.team2_p2]).map(pChip).join('')}</div>
+              </div>`;
+            }).join('')}
+            <div style="margin-top:.5rem;text-align:right;">
+              <button class="conf-del-btn" style="color:#c0392b;border:1px solid rgba(192,57,43,.3);padding:.3rem .6rem;font-size:.6rem;" onclick="delFinishedGroup(${JSON.stringify(ids).replace(/"/g,'&quot;')})">전체 삭제</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+      </div>`;
+  } catch(e) { el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">오류: ${e.message}</div>`; }
+}
+
+async function delFinishedGroup(ids) {
+  if (!confirm('이 시합 결과를 모두 삭제할까요?')) return;
+  try {
+    await Promise.all(ids.map(id => atDelete('Matches', id)));
+    ['getMatches'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    await loadFinishedResults();
+  } catch(e) { alert('삭제 실패: ' + e.message); }
 }
 
 // ── 스코어 즉시 저장 ──
@@ -985,13 +1097,15 @@ async function autoSaveScore(mid) {
   const schedId = row.getAttribute('data-sched-id');
   const event = row.getAttribute('data-event');
   const date = row.getAttribute('data-date');
+  const roundNum = row.getAttribute('data-round') || '';
 
   const fields = {
     team1_p1: t1[0], team1_p2: t1[1],
     team2_p1: t2[0], team2_p2: t2[1],
     score1: v1, score2: v2,
     event: event || null, date: date || null,
-    schedule_id: schedId
+    schedule_id: schedId,
+    notes: 'R' + roundNum
   };
 
   try {
@@ -1258,7 +1372,7 @@ function renderSelectedPlayers() {
     const listEl = document.getElementById(gender + '-selected');
     listEl.innerHTML = selected.map((name, i) =>
       `<div class="selected-player">
-        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name">${name}</span></div>
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name">${name}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest</span>':''}</span></div>
         <button class="sp-remove" onclick="removePlayer('${gender}','${name}')">×</button>
       </div>`
     ).join('');
@@ -1286,9 +1400,30 @@ function selectPlayer(gender) {
   renderSelectedPlayers();
 }
 
+let _guestCount = { female: 0, male: 0 };
+let _guests = new Set(); // 게스트 이름 추적
+
+function addGuest(gender) {
+  _guestCount[gender]++;
+  const name = `게스트${gender === 'female' ? '여' : '남'}${_guestCount[gender]}`;
+  _guests.add(name);
+  // _allPlayers에도 추가
+  _allPlayers.push({ name, gender });
+  const selected = gender === 'female' ? _selectedFemales : _selectedMales;
+  selected.push(name);
+  renderSelectedPlayers();
+}
+
+function isGuest(name) { return _guests.has(name); }
+
 function removePlayer(gender, name) {
   if (gender === 'female') _selectedFemales = _selectedFemales.filter(n => n !== name);
   else _selectedMales = _selectedMales.filter(n => n !== name);
+  // 게스트면 _allPlayers에서도 제거
+  if (isGuest(name)) {
+    _allPlayers = _allPlayers.filter(p => p.name !== name);
+    _guests.delete(name);
+  }
   renderSelectedPlayers();
 }
 
@@ -1433,22 +1568,23 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       }
     }
     if (formats.includes('open')) {
-      // 잡복: 혼합페어(남+여) vs 동성페어(남+남 or 여+여)
-      // 혼합 페어
+      // 잡복: 혼합페어(남+여) vs 동성페어(남+남 or 여+여) — 게스트 제외
+      const regMales = males.filter(n => !_guests.has(n));
+      const regFemales = females.filter(n => !_guests.has(n));
       const mixPairs = [];
-      for (let i = 0; i < males.length; i++)
-        for (let j = 0; j < females.length; j++)
-          mixPairs.push([males[i], females[j]]);
+      for (let i = 0; i < regMales.length; i++)
+        for (let j = 0; j < regFemales.length; j++)
+          mixPairs.push([regMales[i], regFemales[j]]);
       // 남자 동성 페어
       const malePairs = [];
-      for (let i = 0; i < males.length; i++)
-        for (let j = i+1; j < males.length; j++)
-          malePairs.push([males[i], males[j]]);
+      for (let i = 0; i < regMales.length; i++)
+        for (let j = i+1; j < regMales.length; j++)
+          malePairs.push([regMales[i], regMales[j]]);
       // 여자 동성 페어
       const femalePairs = [];
-      for (let i = 0; i < females.length; i++)
-        for (let j = i+1; j < females.length; j++)
-          femalePairs.push([females[i], females[j]]);
+      for (let i = 0; i < regFemales.length; i++)
+        for (let j = i+1; j < regFemales.length; j++)
+          femalePairs.push([regFemales[i], regFemales[j]]);
       // 혼합 vs 남남
       mixPairs.forEach(mp => malePairs.forEach(sp => {
         if (mp.some(p => sp.includes(p))) return;
@@ -1691,9 +1827,20 @@ function generateTeamMode() {
     warn.textContent = '각 팀에 최소 2명이 필요합니다.';
     warn.className = 'warn show'; return;
   }
+  // 인원수 차이 체크
+  if (Math.abs(_teamA.length - _teamB.length) > 1) {
+    warn.textContent = `팀 인원수를 맞춰주세요. (A팀: ${_teamA.length}명, B팀: ${_teamB.length}명)`;
+    warn.className = 'warn show'; return;
+  }
+  // 성비 체크 (경고만)
+  const femaleNames = new Set(_allPlayers.filter(p => p.gender === 'female').map(p => p.name));
+  const aF = _teamA.filter(n => femaleNames.has(n)).length;
+  const bF = _teamB.filter(n => femaleNames.has(n)).length;
+  if (Math.abs(aF - bF) > 1) {
+    if (!confirm(`성비가 다릅니다. (A팀 여${aF}명, B팀 여${bF}명)\n그래도 진행할까요?`)) return;
+  }
 
   const allPlayers = [..._teamA, ..._teamB];
-  const femaleNames = new Set(_allPlayers.filter(p => p.gender === 'female').map(p => p.name));
   const females = allPlayers.filter(n => femaleNames.has(n));
 
   const formats = getSelectedFormats();

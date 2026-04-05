@@ -298,6 +298,12 @@ function groupBySchedule(list){
     const key=m.schedule_id||m.event||m.id;
     if(!groups[key]) groups[key]={date:m.date,event:m.event,matches:[],schedule_id:m.schedule_id};
     groups[key].matches.push(m);
+    // notes로 라운드 순서 정렬
+    groups[key].matches.sort((a,b)=>{
+      const ra=parseInt((a.notes||'').replace(/\D/g,''))||999;
+      const rb=parseInt((b.notes||'').replace(/\D/g,''))||999;
+      return ra-rb;
+    });
     if(m.date && (!groups[key].date || m.date > groups[key].date)) groups[key].date=m.date;
   });
   return Object.values(groups).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
@@ -413,6 +419,7 @@ async function delScheduleMatches(schedId, ids){
   if(!confirm('이 일정의 모든 경기 기록을 삭제할까요?')) return;
   try{
     await Promise.all(ids.map(id=>atDelete('Matches',id)));
+    localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
     matches=matches.filter(m=>!ids.includes(m.id));
     renderMatches();
     toast(ids.length+'건 삭제됨','ok');
@@ -432,6 +439,7 @@ async function updateScore(id){
       if(m){m.score1=s1;m.score2=s2;}
       s1El.setAttribute('data-orig',s1);
       s2El.setAttribute('data-orig',s2);
+      localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
       toast('수정됨 ✓','ok');
     } else toast('수정 실패','err');
   }catch(e){toast('수정 실패','err');}
@@ -442,6 +450,7 @@ async function delMatch(id){
   try{
     const res=await atDelete('Matches',id);
     if(res.success){
+      localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
       matches=matches.filter(m=>m.id!==id);
       renderMatches();
       closeDetail();

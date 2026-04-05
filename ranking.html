@@ -202,9 +202,9 @@ function computeRankings(players, matches, sortBy) {
   matches.forEach(m=>{
     const t1=[m.team1_p1,m.team1_p2],t2=[m.team2_p1,m.team2_p2];
     const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0,w1=s1>s2,draw=s1===s2;
-    [...t1,...t2].forEach(n=>{if(!stats[n])stats[n]={name:n,gender:'',played:0,wins:0,losses:0,draws:0,mvp:0,gf:0,ga:0};stats[n].played++;});
-    t1.forEach(n=>{if(!stats[n])return;if(draw)stats[n].draws++;else if(w1)stats[n].wins++;else stats[n].losses++;stats[n].gf+=s1;stats[n].ga+=s2;});
-    t2.forEach(n=>{if(!stats[n])return;if(draw)stats[n].draws++;else if(w1)stats[n].losses++;else stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
+    [...t1,...t2].forEach(n=>{if(!n||n.startsWith('게스트'))return;if(!stats[n])stats[n]={name:n,gender:'',played:0,wins:0,losses:0,draws:0,mvp:0,gf:0,ga:0};stats[n].played++;});
+    t1.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].wins++;else stats[n].losses++;stats[n].gf+=s1;stats[n].ga+=s2;});
+    t2.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].losses++;else stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
     if(m.mvp&&stats[m.mvp])stats[m.mvp].mvp++;
   });
   const result = Object.values(stats).map(s=>({
