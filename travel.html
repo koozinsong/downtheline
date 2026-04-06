@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원정 이벤트 — Down the Line</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
+  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
+  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
+  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
+  --ll:rgba(26,31,28,.1);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);}
+#nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
+.nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.nav-back:hover{color:var(--gdl);}
+.nav-back::before{content:'←';}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
+.nav-links{margin-left:auto;display:flex;gap:.5rem;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);text-decoration:none;transition:all .2s;padding:.4rem .9rem;border:1px solid rgba(255,255,255,.15);}
+.nav-link:hover,.nav-link.active{color:var(--w);background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);}
+.wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.5rem;}
+.page-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.page-sub{font-size:.88rem;color:var(--sm);font-weight:300;margin-bottom:2rem;line-height:1.7;}
+
+/* Country selector */
+.country-tabs{display:flex;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap;}
+.country-tab{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.5rem 1.2rem;border:1px solid var(--ll);background:none;color:var(--sm);cursor:pointer;transition:all .2s;}
+.country-tab:hover,.country-tab.active{background:var(--g);color:var(--w);border-color:var(--g);}
+
+/* Map */
+#map{width:100%;height:400px;border:1px solid var(--ll);margin-bottom:2rem;background:var(--iv2);}
+
+/* Club cards */
+.club-card{background:var(--w);border:1px solid var(--ll);margin-bottom:1rem;transition:border-color .2s;}
+.club-card:hover{border-color:var(--g3);}
+.club-head{padding:1.2rem 1.5rem;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.club-name{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--ink);letter-spacing:.5px;}
+.club-name-jp{font-size:.78rem;color:var(--sm);font-weight:300;margin-top:.2rem;}
+.club-area{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g3);background:rgba(78,122,90,.08);padding:.2rem .6rem;white-space:nowrap;}
+.club-body{display:none;padding:0 1.5rem 1.2rem;border-top:1px solid var(--ll);}
+.club-body.open{display:block;padding-top:1rem;}
+.club-info{display:grid;grid-template-columns:auto 1fr;gap:.4rem .8rem;font-size:.82rem;margin-bottom:.8rem;}
+.club-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);}
+.club-val{color:var(--ink2);font-weight:300;}
+.club-val a{color:var(--g);text-decoration:none;font-weight:500;}
+.club-val a:hover{text-decoration:underline;}
+.club-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem;}
+.club-tag{font-size:.65rem;font-weight:500;padding:.2rem .5rem;border-radius:2px;background:var(--iv2);color:var(--sm);}
+.club-tag.highlight{background:rgba(78,122,90,.1);color:var(--g);}
+
+@media(max-width:600px){
+  .wrap{padding:1.5rem 1rem;}
+  .page-title{font-size:2rem;}
+  #nav{padding:0 1rem;gap:.8rem;}
+  .nav-title{font-size:.85rem;}
+  #map{height:280px;}
+  .club-head{padding:.8rem 1rem;}
+  .club-body{padding:0 1rem 1rem;}
+  .club-info{grid-template-columns:1fr;gap:.3rem;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-back" href="index.html">홈</a>
+  <div class="nav-title">원정 이벤트</div>
+  <div class="nav-links">
+    <a class="nav-link" href="schedule.html">시합일정</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="page-title">Tennis<br><em>Travel</em></div>
+  <p class="page-sub">해외 원정 테니스를 위한 클럽 정보. 레슨, 코트 렌탈, 비지터 이용 가능한 곳을 정리했습니다.</p>
+
+  <div class="country-tabs">
+    <button class="country-tab active" onclick="selectCountry('japan',this)">🇯🇵 일본</button>
+    <button class="country-tab" onclick="selectCountry('bali',this)">🇮🇩 발리</button>
+    <button class="country-tab" disabled style="opacity:.4;">🇹🇭 태국 (준비중)</button>
+    <button class="country-tab" disabled style="opacity:.4;">🇻🇳 베트남 (준비중)</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="club-list"></div>
+</div>
+
+<script>
+const clubs = {
+  japan: [
+    {
+      name: 'Tokyo Tennis International',
+      nameJp: '東京テニスインターナショナル',
+      area: 'Roppongi',
+      address: '東京都港区六本木',
+      lat: 35.6627, lng: 139.7312,
+      url: 'https://www.tokyotennisinternational.com/',
+      features: ['영어 레슨', '프라이빗 레슨', '그룹 레슨'],
+      price: '프라이빗 ¥8,000~/시간',
+      desc: '영어로 레슨 가능한 도쿄 대표 테니스 클럽. USPTA 자격 코치 상주.'
+    },
+    {
+      name: 'Meiji Jingu Gaien Tennis Club',
+      nameJp: '明治神宮外苑テニスクラブ',
+      area: 'Shinjuku',
+      address: '東京都新宿区霞ヶ丘町2',
+      lat: 35.6778, lng: 139.7145,
+      url: 'http://www.meijijingugaien.jp/sports/tennis-club/',
+      features: ['실내 카펫코트', '코트 렌탈', '레스토랑', '프로샵'],
+      price: '렌탈 ¥3,000~/시간',
+      desc: '50년 역사의 도쿄 중심부 테니스 클럽. 연중무휴 실내 코트.'
+    },
+    {
+      name: 'Ariake Tennis Park',
+      nameJp: '有明テニスの森公園',
+      area: 'Koto (Ariake)',
+      address: '東京都江東区有明2-2-22',
+      lat: 35.6347, lng: 139.7914,
+      url: 'https://www.tptc.co.jp/park/ariake-tennis',
+      features: ['올림픽 경기장', '하드코트', '공공 코트', '야외'],
+      price: '렌탈 ¥1,500~/시간',
+      desc: '2020 도쿄 올림픽 테니스 경기장. 공공 코트 렌탈 가능.'
+    },
+    {
+      name: "Ken's Tennis School",
+      nameJp: 'ケンズテニススクール',
+      area: 'Shinjuku / Roppongi',
+      address: '東京都新宿区 (다수 지점)',
+      lat: 35.6938, lng: 139.7034,
+      url: 'https://www.kenns.co.jp/',
+      features: ['실내코트', '체험 레슨', '장비 렌탈', '다수 지점'],
+      price: '체험 ¥1,000~3,000',
+      desc: '도쿄 최대 테니스 스쿨 체인. 체험 레슨(体験レッスン) 가능.'
+    },
+    {
+      name: 'YMCA Tennis School',
+      nameJp: '東京YMCAテニススクール',
+      area: 'Koto (Toyocho)',
+      address: '東京都江東区東陽',
+      lat: 35.6669, lng: 139.8175,
+      url: 'https://tokyo.ymca.or.jp/wellness/toyo_tennis_visitor.html',
+      features: ['비지터 환영', '장비 렌탈', '주중/주말'],
+      price: '비지터 ¥4,300/회 (105분)',
+      desc: 'YMCA 운영 테니스 스쿨. 비지터 레슨 ¥4,300 (사전 예약).'
+    },
+    {
+      name: 'Dunlop Tennis School',
+      nameJp: 'ダンロップテニススクール',
+      area: 'Shibuya / Meguro',
+      address: '東京都渋谷区 (다수 지점)',
+      lat: 35.6580, lng: 139.7016,
+      url: 'https://school.dunlop-sports.co.jp/tennis/',
+      features: ['실내코트', '무료 체험', '초급~상급', '다수 지점'],
+      price: '체험 무료~¥1,000',
+      desc: '던롭 공식 테니스 스쿨. 무료 체험 레슨 제공.'
+    },
+    {
+      name: 'Tennis Universe Shinjuku',
+      nameJp: '大正セントラルテニススクール新宿',
+      area: 'Shinjuku',
+      address: '東京都新宿区',
+      lat: 35.6896, lng: 139.6921,
+      url: 'https://www.tennisuniverse.co.jp/school/shinjyuku/',
+      features: ['실내코트', '체험 레슨', '그룹 레슨'],
+      price: '체험 ¥1,100~',
+      desc: '신주쿠 중심부 실내 테니스 스쿨.'
+    }
+  ],
+  bali: [
+    {
+      name: 'Grand Hyatt Bali',
+      nameJp: '그랜드 하얏트 발리',
+      area: 'Nusa Dua',
+      address: 'Kawasan Wisata Nusa Dua BTDC, Nusa Dua, Bali 80363',
+      lat: -8.7975, lng: 115.2310,
+      url: 'https://www.hyatt.com/grand-hyatt/en-US/balgh-grand-hyatt-bali',
+      features: ['하드코트 3면', '야간 조명', '레슨 가능', '비치프론트', '5성급'],
+      price: '코트 렌탈 투숙객 무료~$30',
+      desc: '누사두아 비치프론트 5성급 리조트. 플러드라이트 테니스코트 3면, 주간/야간 이용 가능. 레슨 및 파트너 매칭 제공.'
+    },
+    {
+      name: 'Hilton Bali Resort',
+      nameJp: '힐튼 발리 리조트',
+      area: 'Nusa Dua',
+      address: 'Jl. Raya Nusa Dua Selatan, Nusa Dua, Bali 80363',
+      lat: -8.8136, lng: 115.2268,
+      url: 'https://www.hilton.com/en/hotels/dpsbahi-hilton-bali-resort/',
+      features: ['코트 3면', '장비 대여', 'Liga.Tennis 제휴', '실내코트', '5성급'],
+      price: '추가 요금 있음',
+      desc: '절벽 위 리조트. Liga.Tennis Nusa Dua 제휴로 실내코트 3면, 레슨, 장비 렌탈 가능. 워터슬라이드 등 가족 시설 우수.'
+    },
+    {
+      name: 'Mulia Resort Nusa Dua',
+      nameJp: '물리아 리조트 누사두아',
+      area: 'Nusa Dua',
+      address: 'Jl. Raya Nusa Dua Selatan, Nusa Dua, Bali 80363',
+      lat: -8.8195, lng: 115.2245,
+      url: 'https://www.themulia.com/bali/mulia-resort',
+      features: ['코트 2면', '최신 시설', '럭셔리', 'T+L 수상', '5성급'],
+      price: '투숙객 무료',
+      desc: 'Travel + Leisure 아시아 최고 비치리조트 수상. 테니스코트 2면, 체육관, 스파 등 최첨단 시설.'
+    },
+    {
+      name: 'AYANA Resort & Spa Bali',
+      nameJp: '아야나 리조트 & 스파 발리',
+      area: 'Jimbaran',
+      address: 'Jl. Karang Mas Sejahtera, Jimbaran, Bali 80364',
+      lat: -8.7783, lng: 115.1555,
+      url: 'https://www.ayana.com/bali/ayana-resort-and-spa',
+      features: ['야외 코트', '90헥타르 규모', '절벽 뷰', '록바', '5성급'],
+      price: '투숙객 무료',
+      desc: '짐바란 절벽 위 90헥타르 초대형 리조트. 유명한 록바(Rock Bar), 12개 수영장, 테니스코트 보유. 한국인 인기 리조트.'
+    },
+    {
+      name: 'Melia Bali',
+      nameJp: '멜리아 발리',
+      area: 'Nusa Dua',
+      address: 'Kawasan Wisata BTDC, Nusa Dua, Bali 80363',
+      lat: -8.7940, lng: 115.2330,
+      url: 'https://www.melia.com/en/hotels/indonesia/bali/melia-bali',
+      features: ['코트 다수', '스쿼시', '카누', '양궁', '액티비티 풍부'],
+      price: '투숙객 무료',
+      desc: '스포츠 여행객에게 최고. 테니스 코트 다수, 스쿼시, 카누, 양궁 등 다양한 액티비티 제공.'
+    },
+    {
+      name: 'The Westin Resort Nusa Dua',
+      nameJp: '웨스틴 리조트 누사두아',
+      area: 'Nusa Dua',
+      address: 'Kawasan Wisata BTDC, Nusa Dua, Bali 80363',
+      lat: -8.8010, lng: 115.2290,
+      url: 'https://www.marriott.com/hotels/travel/dpsuw-the-westin-resort-nusa-dua-bali/',
+      features: ['코트 2면', '화이트샌드 비치', '가족 친화', '5성급'],
+      price: '투숙객 이용 가능',
+      desc: '누사두아 화이트샌드 비치 직접 연결. 풀사이즈 테니스코트 2면, 장비 대여 가능.'
+    },
+    {
+      name: 'The Laguna, a Luxury Collection',
+      nameJp: '더 라구나 럭셔리 컬렉션',
+      area: 'Nusa Dua',
+      address: 'Kawasan Wisata BTDC, Nusa Dua, Bali 80363',
+      lat: -8.7988, lng: 115.2345,
+      url: 'https://www.marriott.com/hotels/travel/dpsla-the-laguna-a-luxury-collection-resort-and-spa-nusa-dua-bali/',
+      features: ['하드코트', '열대 정원', '라군풀 7개', '5성급'],
+      price: '투숙객 이용 가능',
+      desc: '열대 정원 속 하드코트. 7개 라군풀, 스파, 프라이빗 비치 보유.'
+    },
+    {
+      name: 'The St. Regis Bali Resort',
+      nameJp: '세인트 레지스 발리',
+      area: 'Nusa Dua',
+      address: 'Kawasan Wisata BTDC Lot S6, Nusa Dua, Bali 80363',
+      lat: -8.8050, lng: 115.2360,
+      url: 'https://www.marriott.com/hotels/travel/dpsxr-the-st-regis-bali-resort/',
+      features: ['프라이빗 코트', '버틀러 서비스', '골프클럽 인접', '최고급'],
+      price: '투숙객 전용',
+      desc: '발리 최고급 리조트. 프라이빗 테니스코트, 전담 버틀러 서비스, 누사두아 골프클럽 인접.'
+    },
+    {
+      name: 'Tanah Gajah, A Resort By Hadiprana',
+      nameJp: '타나가자 리조트',
+      area: 'Ubud',
+      address: 'Jl. Raya Goa Gajah, Tengkulak Kaja, Ubud, Bali 80571',
+      lat: -8.5240, lng: 115.2880,
+      url: 'https://www.tanahgajahubud.com/',
+      features: ['프리미엄 코트', '국제 규격', '장비 렌탈', '열대 정원', '부티크 리조트'],
+      price: '코트 렌탈 패키지 (라켓+볼+타올+음료 포함)',
+      desc: '우붓 중심부 럭셔리 부티크 리조트. 국제 규격 테니스코트, 열대 정원 속 프리미엄 코트. 우붓에서 테니스코트를 보유한 몇 안 되는 리조트.'
+    },
+    {
+      name: 'Maya Ubud Resort & Spa',
+      nameJp: '마야 우붓 리조트 & 스파',
+      area: 'Ubud',
+      address: 'Jl. Gunung Sari, Peliatan, Ubud, Bali 80571',
+      lat: -8.5180, lng: 115.2780,
+      url: 'https://mayaresorts.com/ubud/',
+      features: ['야외 코트 1면', '야간 조명', '아크릴 코트', '계곡 뷰'],
+      price: '투숙객 이용 가능',
+      desc: '우붓 계곡 뷰 리조트. 야간 조명 아크릴 코트 1면, 퍼팅그린, 체육관 보유. 열대 정원 속 테니스.'
+    },
+    {
+      name: 'Ashoka Tree Resort Ubud',
+      nameJp: '아쇼카 트리 리조트 우붓',
+      area: 'Ubud (Tanggayuda)',
+      address: 'Br. Ayah, Desa Tanggayuda, Ubud, Bali',
+      lat: -8.4620, lng: 115.2540,
+      url: 'https://ashokatreeresort.com/',
+      features: ['야외 코트', '라이스 테라스 뷰', '선데크', '자연 속'],
+      price: '투숙객 이용 가능',
+      desc: '떼갈랄랑 라이스 테라스 인근. 자연 속 테니스코트, 인피니티 풀, 스파 보유.'
+    }
+  ]
+};
+
+let map, markers = [];
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 35.6762, lng: 139.6503 },
+    zoom: 11,
+    styles: [
+      { featureType:'all', elementType:'labels.text.fill', stylers:[{color:'#2c4a35'}] },
+      { featureType:'water', stylers:[{color:'#d4e4da'}] },
+      { featureType:'landscape', stylers:[{color:'#f0ebe3'}] }
+    ]
+  });
+  selectCountry('japan', document.querySelector('.country-tab.active'));
+}
+
+function selectCountry(country, btn) {
+  document.querySelectorAll('.country-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderClubs(clubs[country] || []);
+}
+
+function renderClubs(list) {
+  // Clear markers
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+
+  const el = document.getElementById('club-list');
+  el.innerHTML = list.map((c, i) => {
+    // Add marker
+    if (map) {
+      const marker = new google.maps.Marker({
+        position: { lat: c.lat, lng: c.lng },
+        map,
+        title: c.name,
+        label: { text: String(i + 1), color: '#fff', fontSize: '11px', fontWeight: '700' }
+      });
+      marker.addListener('click', () => {
+        document.getElementById('club-' + i).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        toggleClub(i);
+      });
+      markers.push(marker);
+    }
+
+    return `<div class="club-card" id="club-${i}">
+      <div class="club-head" onclick="toggleClub(${i});panTo(${c.lat},${c.lng})">
+        <div>
+          <div class="club-name"><span style="color:var(--gd);margin-right:.4rem;">${i+1}.</span> ${c.name}</div>
+          <div class="club-name-jp">${c.nameJp}</div>
+        </div>
+        <div class="club-area">${c.area}</div>
+      </div>
+      <div class="club-body" id="cb-${i}">
+        <p style="font-size:.82rem;color:var(--ink2);line-height:1.7;margin-bottom:.8rem;">${c.desc}</p>
+        <div class="club-info">
+          <span class="club-label">주소</span><span class="club-val">${c.address}</span>
+          <span class="club-label">가격</span><span class="club-val">${c.price}</span>
+          <span class="club-label">웹사이트</span><span class="club-val"><a href="${c.url}" target="_blank">${c.url.replace('https://','').replace('http://','').split('/')[0]}</a></span>
+        </div>
+        <div class="club-tags">
+          ${c.features.map(f => `<span class="club-tag ${f.includes('영어')||f.includes('비지터')||f.includes('5성급')||f.includes('최고급')?'highlight':''}">${f}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleClub(i) {
+  const el = document.getElementById('cb-' + i);
+  el.classList.toggle('open');
+}
+
+function panTo(lat, lng) {
+  if (map) map.panTo({ lat, lng });
+}
+
+// Google Maps fallback (no API key)
+window.initMap = initMap;
+</script>
+<script>
+// Leaflet 대체 (무료, API 키 불필요)
+(function(){
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.onload = function() {
+    map = L.map('map').setView([35.6762, 139.6503], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    renderClubsLeaflet(clubs.japan, 'japan');
+  };
+  document.body.appendChild(script);
+
+  const mapCenters = {
+    japan: { lat: 35.6762, lng: 139.6503, zoom: 11 },
+    bali: { lat: -8.6500, lng: 115.2200, zoom: 10 }
+  };
+
+  function renderClubsLeaflet(list, country) {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    const center = mapCenters[country] || mapCenters.japan;
+    map.setView([center.lat, center.lng], center.zoom);
+
+    const el = document.getElementById('club-list');
+    el.innerHTML = list.map((c, i) => {
+      const marker = L.marker([c.lat, c.lng]).addTo(map)
+        .bindPopup(`<b>${c.name}</b><br>${c.nameJp}<br>${c.area}`);
+      marker.on('click', () => {
+        document.getElementById('club-' + i).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        toggleClub(i);
+      });
+      markers.push(marker);
+
+      return `<div class="club-card" id="club-${i}">
+        <div class="club-head" onclick="toggleClub(${i});map.panTo([${c.lat},${c.lng}])">
+          <div>
+            <div class="club-name"><span style="color:var(--gd);margin-right:.4rem;">${i+1}.</span> ${c.name}</div>
+            <div class="club-name-jp">${c.nameJp}</div>
+          </div>
+          <div class="club-area">${c.area}</div>
+        </div>
+        <div class="club-body" id="cb-${i}">
+          <p style="font-size:.82rem;color:var(--ink2);line-height:1.7;margin-bottom:.8rem;">${c.desc}</p>
+          <div class="club-info">
+            <span class="club-label">주소</span><span class="club-val">${c.address}</span>
+            <span class="club-label">가격</span><span class="club-val">${c.price}</span>
+            <span class="club-label">웹사이트</span><span class="club-val"><a href="${c.url}" target="_blank">${c.url.replace('https://','').replace('http://','').split('/')[0]}</a></span>
+          </div>
+          <div class="club-tags">
+            ${c.features.map(f => `<span class="club-tag ${f.includes('영어')||f.includes('비지터')||f.includes('5성급')||f.includes('최고급')?'highlight':''}">${f}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Override selectCountry for Leaflet
+  window.selectCountry = function(country, btn) {
+    document.querySelectorAll('.country-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderClubsLeaflet(clubs[country] || [], country);
+  };
+})();
+</script>
+</body>
+</html>

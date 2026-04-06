@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>애프터 소셜 — Down the Line</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
+  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
+  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
+  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
+  --ll:rgba(26,31,28,.1);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);}
+#nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
+.nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.nav-back:hover{color:var(--gdl);}
+.nav-back::before{content:'←';}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
+.wrap{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.5rem;}
+.page-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.page-sub{font-size:.88rem;color:var(--sm);font-weight:300;margin-bottom:2rem;line-height:1.7;}
+#map{width:100%;height:400px;border:1px solid var(--ll);margin-bottom:2rem;background:var(--iv2);}
+
+.spot-card{background:var(--w);border:1px solid var(--ll);margin-bottom:1rem;overflow:hidden;transition:border-color .2s;}
+.spot-card:hover{border-color:var(--g3);}
+.spot-head{display:flex;align-items:stretch;cursor:pointer;}
+.spot-num{background:var(--g);color:var(--gdl);font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;display:flex;align-items:center;justify-content:center;min-width:60px;}
+.spot-info{flex:1;padding:1rem 1.2rem;}
+.spot-name{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--ink);letter-spacing:.5px;}
+.spot-type{font-size:.72rem;color:var(--gd);font-weight:500;margin-top:.15rem;}
+.spot-addr{font-size:.75rem;color:var(--sm);margin-top:.3rem;}
+.spot-arrow{display:flex;align-items:center;padding:0 1rem;color:var(--sm2);font-size:.8rem;}
+.spot-body{display:none;border-top:1px solid var(--ll);}
+.spot-body.open{display:block;}
+.spot-detail{padding:1.2rem 1.5rem;}
+.spot-meta{display:grid;grid-template-columns:auto 1fr;gap:.4rem .8rem;font-size:.82rem;margin-bottom:1rem;}
+.spot-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);}
+.spot-val{color:var(--ink2);font-weight:300;}
+.spot-val a{color:var(--g);text-decoration:none;font-weight:500;}
+.spot-val a:hover{text-decoration:underline;}
+.spot-desc{font-size:.82rem;color:var(--ink2);line-height:1.7;margin-bottom:.8rem;}
+.spot-tags{display:flex;gap:.4rem;flex-wrap:wrap;}
+.spot-tag{font-size:.65rem;font-weight:500;padding:.2rem .5rem;border-radius:2px;background:var(--iv2);color:var(--sm);}
+.spot-tag.fav{background:rgba(184,147,58,.12);color:var(--gd);}
+.spot-photos{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding:0;}
+.spot-photos::-webkit-scrollbar{display:none;}
+.spot-photo{flex:0 0 200px;height:140px;background:var(--iv2);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--sm2);}
+.spot-photo img{width:100%;height:100%;object-fit:cover;}
+
+@media(max-width:600px){
+  .wrap{padding:1.5rem 1rem;}
+  .page-title{font-size:2rem;}
+  #nav{padding:0 1rem;gap:.8rem;}
+  .nav-title{font-size:.85rem;}
+  #map{height:280px;}
+  .spot-head{flex-direction:column;}
+  .spot-num{min-width:auto;padding:.5rem;font-size:1.2rem;}
+  .spot-arrow{display:none;}
+  .spot-photo{flex:0 0 160px;height:110px;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-back" href="index.html">홈</a>
+  <div class="nav-title">애프터 소셜</div>
+</nav>
+
+<div class="wrap">
+  <div class="page-title">After<br><em>Social</em></div>
+  <p class="page-sub">운동 후 함께하는 식사와 음료. 코트 밖에서 더 깊어지는 관계.<br>Down the Line 멤버들이 자주 찾는 곳.</p>
+
+  <div id="map"></div>
+
+  <div id="spot-list"></div>
+</div>
+
+<script>
+const spots = [
+  {
+    name: '깐부치킨 잠원점',
+    type: '치킨 · 맥주',
+    address: '서울 서초구 잠원동 67-6 1층',
+    tel: '02-534-9291',
+    hours: '16:00 ~ 01:00 (연중무휴)',
+    lat: 37.5133, lng: 127.0108,
+    tags: ['치킨', '맥주', 'DTL 단골', '반포역 7분'],
+    desc: '바삭한 치킨과 시원한 맥주. 운동 후 첫 번째 선택지. 반포역 4번 출구에서 도보 7분.',
+    svg: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="width:200px;height:140px;">
+      <rect width="200" height="140" fill="#1a1f1c"/>
+      <circle cx="100" cy="55" r="30" fill="none" stroke="#d4b36a" stroke-width="2"/>
+      <path d="M85 45 Q100 30 115 45" fill="none" stroke="#d4b36a" stroke-width="1.5"/>
+      <path d="M80 55 L75 75 M120 55 L125 75" stroke="#d4b36a" stroke-width="1.5"/>
+      <rect x="70" y="90" width="60" height="25" rx="3" fill="none" stroke="#7aab87" stroke-width="1.5"/>
+      <line x1="85" y1="90" x2="85" y2="115" stroke="#7aab87" stroke-width="1"/>
+      <line x1="100" y1="90" x2="100" y2="115" stroke="#7aab87" stroke-width="1"/>
+      <line x1="115" y1="90" x2="115" y2="115" stroke="#7aab87" stroke-width="1"/>
+      <text x="100" y="132" text-anchor="middle" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,.3)" letter-spacing="2">CHICKEN & BEER</text>
+    </svg>`
+  },
+  {
+    name: '고래등',
+    type: '해산물 · 이모카세',
+    address: '서울 용산구 이촌로64길 61 1층',
+    tel: '0507-1399-6635',
+    hours: '',
+    lat: 37.5215, lng: 126.9690,
+    tags: ['해산물', '이모카세', 'DTL 단골', '이촌동'],
+    desc: '이촌동의 숨은 해산물 맛집. 이모카세 스타일로 정성스러운 해산물 요리를 즐길 수 있는 곳.',
+    svg: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="width:200px;height:140px;">
+      <rect width="200" height="140" fill="#1a2530"/>
+      <ellipse cx="100" cy="70" rx="50" ry="30" fill="none" stroke="#d4b36a" stroke-width="1.5"/>
+      <path d="M70 60 Q80 45 100 50 Q120 45 130 60" fill="none" stroke="#7aab87" stroke-width="1.5"/>
+      <circle cx="80" cy="70" r="5" fill="none" stroke="#d4b36a" stroke-width="1"/>
+      <circle cx="100" cy="65" r="7" fill="none" stroke="#d4b36a" stroke-width="1"/>
+      <circle cx="120" cy="70" r="4" fill="none" stroke="#d4b36a" stroke-width="1"/>
+      <path d="M75 80 Q100 90 125 80" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <line x1="60" y1="105" x2="140" y2="105" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+      <text x="100" y="125" text-anchor="middle" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,.3)" letter-spacing="2">SEAFOOD OMAKASE</text>
+    </svg>`
+  },
+  {
+    name: '묵전',
+    type: '한식주점 · 막걸리',
+    address: '서울 강남구 언주로168길 22 (신사동)',
+    tel: '02-548-1461',
+    hours: '월~토 11:30~02:00 / 일 11:30~23:00',
+    lat: 37.5247, lng: 127.0310,
+    tags: ['막걸리', '한식', 'DTL 단골', '압구정'],
+    desc: '압구정 도산공원 인근 한식 주점. 낮에는 한식·국수, 저녁에는 막걸리와 안주. 가정집을 개조한 아늑한 분위기.',
+    svg: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="width:200px;height:140px;">
+      <rect width="200" height="140" fill="#2a1e14"/>
+      <rect x="75" y="40" width="50" height="60" rx="4" fill="none" stroke="#d4b36a" stroke-width="1.5"/>
+      <ellipse cx="100" cy="40" rx="25" ry="5" fill="none" stroke="#d4b36a" stroke-width="1.5"/>
+      <circle cx="90" cy="60" r="3" fill="rgba(212,179,106,.3)"/>
+      <circle cx="105" cy="55" r="2" fill="rgba(212,179,106,.2)"/>
+      <circle cx="95" cy="70" r="2.5" fill="rgba(212,179,106,.25)"/>
+      <path d="M60 110 L80 85 M140 110 L120 85" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <rect x="55" y="110" width="90" height="3" rx="1" fill="rgba(255,255,255,.1)"/>
+      <text x="100" y="130" text-anchor="middle" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,.3)" letter-spacing="2">MAKGEOLLI & HANSIK</text>
+    </svg>`
+  }
+];
+
+let map, markers = [];
+
+(function(){
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.onload = function() {
+    map = L.map('map').setView([37.5200, 127.0000], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+    renderSpots();
+  };
+  document.body.appendChild(script);
+})();
+
+function renderSpots() {
+  const el = document.getElementById('spot-list');
+  el.innerHTML = spots.map((s, i) => {
+    // 마커
+    const marker = L.marker([s.lat, s.lng]).addTo(map)
+      .bindPopup(`<b>${s.name}</b><br>${s.type}`);
+    marker.on('click', () => {
+      document.getElementById('spot-' + i).scrollIntoView({ behavior:'smooth', block:'center' });
+      toggleSpot(i);
+    });
+    markers.push(marker);
+
+    const photoHtml = s.svg
+      ? `<div class="spot-photo">${s.svg}</div>`
+      : `<div class="spot-photo">사진 준비중</div>`;
+
+    return `<div class="spot-card" id="spot-${i}">
+      <div class="spot-head" onclick="toggleSpot(${i});map.panTo([${s.lat},${s.lng}])">
+        <div class="spot-num">${i+1}</div>
+        <div class="spot-info">
+          <div class="spot-name">${s.name}</div>
+          <div class="spot-type">${s.type}</div>
+          <div class="spot-addr">${s.address}</div>
+        </div>
+        <div class="spot-arrow">▾</div>
+      </div>
+      <div class="spot-body" id="sb-${i}">
+        <div class="spot-photos">${photoHtml}</div>
+        <div class="spot-detail">
+          <p class="spot-desc">${s.desc}</p>
+          <div class="spot-meta">
+            <span class="spot-label">주소</span><span class="spot-val">${s.address}</span>
+            <span class="spot-label">전화</span><span class="spot-val"><a href="tel:${s.tel}">${s.tel}</a></span>
+            ${s.hours ? `<span class="spot-label">영업시간</span><span class="spot-val">${s.hours}</span>` : ''}
+          </div>
+          <div class="spot-tags">
+            ${s.tags.map(t => `<span class="spot-tag ${t.includes('DTL')?'fav':''}">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSpot(i) {
+  document.getElementById('sb-' + i).classList.toggle('open');
+}
+</script>
+</body>
+</html>
