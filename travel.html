@@ -173,6 +173,50 @@ const clubs = {
       features: ['실내코트', '체험 레슨', '그룹 레슨'],
       price: '체험 ¥1,100~',
       desc: '신주쿠 중심부 실내 테니스 스쿨.'
+    },
+    {
+      name: 'Fuji Premium Resort',
+      nameJp: 'フジプレミアムリゾート',
+      area: 'Kawaguchiko (후지산)',
+      address: '山梨県南都留郡富士河口湖町',
+      lat: 35.4478, lng: 138.7556,
+      url: 'https://fuji-premium-resort.jp/sports/tennis/',
+      features: ['후지산 뷰', '야외 4면', '실내 3면', '오무니코트', '장비 렌탈'],
+      price: '게스트 ¥2,750~/시간 (숙박객 라켓·슈즈 무료)',
+      desc: '후지산을 바라보며 플레이하는 프리미엄 리조트. 야외 오무니코트 4면 + 실내 3면. 숙박 시 장비 무료 렌탈.'
+    },
+    {
+      name: 'Fuji View Hotel',
+      nameJp: '富士ビューホテル',
+      area: 'Kawaguchiko (후지산)',
+      address: '山梨県南都留郡富士河口湖町勝山511',
+      lat: 35.5052, lng: 138.7430,
+      url: 'https://www.fujiview.jp/',
+      features: ['후지산 뷰', '코트 3면', '가와구치코 호수', '정원 3만평'],
+      price: '숙박객 ¥2,200/시간, 비숙박 ¥3,300/시간',
+      desc: '가와구치코 호수변 호텔. 3만평 정원 속 테니스코트 3면, 후지산 뷰. 06:30~일몰.'
+    },
+    {
+      name: "Y's Club House Oshino",
+      nameJp: 'Y\'sクラブハウス 忍野',
+      area: 'Oshino (후지산)',
+      address: '山梨県南都留郡忍野村',
+      lat: 35.4620, lng: 138.8350,
+      url: 'https://p-centerhouse.com/club.html',
+      features: ['후지산 정면 뷰', '오무니코트 8면', '합숙 가능', '숲속'],
+      price: '문의',
+      desc: '오시노무라 후지산 기슭. 오무니코트 8면에서 후지산을 정면으로 바라보며 테니스. 합숙 시설 완비.'
+    },
+    {
+      name: 'Yamanakako Corocoro',
+      nameJp: '山中湖コロコロ',
+      area: 'Yamanakako (후지산)',
+      address: '山梨県南都留郡山中湖村',
+      lat: 35.4180, lng: 138.8620,
+      url: 'http://www.corocoro.co.jp/facility_tennis.html',
+      features: ['후지산 근접 뷰', '클레이코트 11면', '레드클레이 7면', '대규모'],
+      price: '문의',
+      desc: '야마나카코에서 후지산을 가장 가까이 보며 플레이. 클레이 11면 + 레드클레이 7면, 총 18면 대규모 시설.'
     }
   ],
   bali: [
@@ -399,7 +443,7 @@ window.initMap = initMap;
   document.body.appendChild(script);
 
   const mapCenters = {
-    japan: { lat: 35.6762, lng: 139.6503, zoom: 11 },
+    japan: { lat: 35.55, lng: 139.2, zoom: 9 },
     bali: { lat: -8.6500, lng: 115.2200, zoom: 10 }
   };
 
