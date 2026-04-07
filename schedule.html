@@ -669,17 +669,24 @@ async function loadConfirmedSchedules() {
     const evtSel = document.getElementById('sched-event');
     if (evtSel) {
       evtSel.innerHTML = '<option value="">선택 안함</option>';
+      // 다가올 일요일 계산
+      const _now = new Date();
+      const _dayOff = _now.getDay() === 0 ? 0 : 7 - _now.getDay();
+      const _nextSun = new Date(_now); _nextSun.setDate(_now.getDate() + _dayOff);
+      const _nextSunStr = _nextSun.toISOString().split('T')[0];
       (eventRes||[]).forEach(ev => {
-        evtSel.innerHTML += `<option value="${ev.name}" data-date="${ev.date}">${ev.name} (${ev.date})</option>`;
+        const isRegular = ev.name && ev.name.includes('정기');
+        const date = isRegular ? _nextSunStr : ev.date;
+        evtSel.innerHTML += `<option value="${ev.name}" data-date="${date}">${ev.name} (${date})</option>`;
       });
       evtSel.onchange = function() {
         const opt = this.options[this.selectedIndex];
         const val = this.value;
         if (val && val.includes('정기')) {
-          // 다가올 일요일 계산
+          // 다가올 일요일 계산 (오늘이 일요일이면 오늘)
           const now = new Date();
           const day = now.getDay(); // 0=일 1=월 ... 6=토
-          const diff = day === 0 ? 7 : 7 - day; // 오늘이 일요일이면 다음 주
+          const diff = day === 0 ? 0 : 7 - day;
           const next = new Date(now);
           next.setDate(now.getDate() + diff);
           document.getElementById('sched-date').value = next.toISOString().split('T')[0];
@@ -1590,10 +1597,14 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
         if (mp.some(p => sp.includes(p))) return;
         matches.push({ t1: mp, t2: sp, fmt:'open' });
       }));
-      // 혼합 vs 여여
+      // 남+여 vs 여여
       mixPairs.forEach(mp => femalePairs.forEach(sp => {
         if (mp.some(p => sp.includes(p))) return;
         matches.push({ t1: mp, t2: sp, fmt:'open' });
+      }));
+      // 남남 vs 여여
+      malePairs.forEach(mp => femalePairs.forEach(fp => {
+        matches.push({ t1: mp, t2: fp, fmt:'open' });
       }));
     }
     // Deduplicate (open may overlap with others)
@@ -1617,6 +1628,10 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   // 포맷 우선순위: open(잡복)은 다른 포맷보다 낮은 우선순위
   const fmtPenalty = { mixed:0, mens:0, womens:0, open:5 };
 
+  // 연속 출전 추적: 최근 연속 출전 횟수
+  const consecPlay = {};
+  allPlayers.forEach(p => consecPlay[p] = 0);
+
   // 잡복 밸런스: 실제 랭킹 기반
   const maleRank = {}; // 0=1위
   const femaleRank = {};
@@ -1627,7 +1642,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
 
   function scoreMatch(m) {
     const { t1, t2 } = m;
-    let score = Math.random() * 0.5;
+    let score = Math.random() * 5;
     score += (fmtPenalty[m.fmt] || 0);
 
     // 잡복: 랭킹 밸런스만 (파트너/상대 반복 조건 무시)
@@ -1636,32 +1651,51 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       const sameTeam = mixTeam === t1 ? t2 : t1;
       const mPlayer = mixTeam.find(n => males.includes(n));
       const fPlayer = mixTeam.find(n => females.includes(n));
-      const isSameMale = sameTeam.every(n => males.includes(n));
-      const isSameFemale = sameTeam.every(n => females.includes(n));
-
       if (mPlayer && fPlayer) {
+        // 남+여 vs 남남 — 랭킹 밸런스, 우선
         const mr = maleRank[mPlayer] || 0;
         const fr = femaleRank[fPlayer] || 0;
-
-        if (isSameMale) {
-          score += (mr + fr) * 10;
-        } else if (isSameFemale) {
-          score += (Math.abs(mr-(mLen-1)) + Math.abs(fr-(fLen-1))) * 10;
-        }
+        score += (mr + fr) * 10;
+        if (openTypeToggle % 2 === 1) score += 20;
+      } else {
+        // 남남 vs 여여 — 후순위, 번갈아
+        score += 5;
+        if (openTypeToggle % 2 === 0) score += 20;
       }
-      // 출전 균등화 (연속 대기 방지)
-      [...t1,...t2].forEach(p => { score += (playCount[p] || 0) * 3; });
+      // 출전 균등화 — 최우선
+      const simO = {};
+      allPlayers.forEach(p => simO[p] = playCount[p]||0);
+      [...t1,...t2].forEach(p => simO[p]++);
+      const simOV = Object.values(simO);
+      score += (Math.max(...simOV) - Math.min(...simOV)) * 100;
+      // 이전 대기자 우선
+      if (prevResting.size > 0) {
+        const included = [...t1,...t2].filter(p => prevResting.has(p)).length;
+        score -= included * 20;
+      }
       return score;
     }
     if (opts.partner) {
-      score += partnerCount[t1[0]][t1[1]] * 4;
-      score += partnerCount[t2[0]][t2[1]] * 4;
+      score += partnerCount[t1[0]][t1[1]] * 15;
+      score += partnerCount[t2[0]][t2[1]] * 15;
     }
     if (opts.opponent) {
-      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 2; }));
+      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 8; }));
     }
-    if (opts.rest) {
-      [...t1,...t2].forEach(p => { score += playCount[p] * 1.5; });
+    // 3연속 출전 방지
+    if ([...t1,...t2].some(p => consecPlay[p] >= 2)) return 9999;
+    // 출전 균등화 — 최우선: 차이를 최소화
+    const simCounts = {};
+    allPlayers.forEach(p => simCounts[p] = playCount[p]||0);
+    [...t1,...t2].forEach(p => simCounts[p]++);
+    const simVals = Object.values(simCounts);
+    const simDiff = Math.max(...simVals) - Math.min(...simVals);
+    score += simDiff * 100; // 차이가 클수록 큰 페널티 (최우선)
+
+    // 2연속 대기 방지 — 이전 대기자 우선 출전
+    if (prevResting.size > 0) {
+      const included = [...t1,...t2].filter(p => prevResting.has(p)).length;
+      score -= included * 20;
     }
     return score;
   }
@@ -1677,69 +1711,55 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   // 사용된 잡복 매치 키 추적
   const usedOpenKeys = new Set();
   const openMatchKey = m => [...m.t1].sort().join(',')+' vs '+[...m.t2].sort().join(',');
+  // 잡복 타입 번갈아 사용: mixed(남+여vs남남) → same(남남vs여여) → mixed → ...
+  let openTypeToggle = 0; // 0=mixed우선, 1=same우선
 
   function pickMatch(pool) {
-    const scored = pool.map(m => ({ m, s: scoreMatch(m) }));
+    // 출전 최소인 선수를 반드시 포함하는 매치 우선
+    const counts = allPlayers.map(p => playCount[p]||0);
+    const minPlay = Math.min(...counts);
+    const mustPlay = allPlayers.filter(p => (playCount[p]||0) === minPlay);
+
+    // 1단계: mustPlay 선수를 포함하는 매치만 필터
+    let filtered = pool.filter(m => {
+      const pl = [...m.t1, ...m.t2];
+      return mustPlay.some(p => pl.includes(p));
+    });
+    // mustPlay 매치가 없으면 전체 풀 사용
+    if (!filtered.length) filtered = pool;
+
+    const scored = filtered.map(m => ({ m, s: scoreMatch(m) }));
     scored.sort((a,b) => a.s - b.s);
     const selected = [];
     const used = new Set();
     for (const { m } of scored) {
       if (selected.length >= numCourts) break;
+      if (m.s >= 9990) continue; // 차단된 매치 제외
       const players = [...m.t1, ...m.t2];
       if (players.some(p => used.has(p))) continue;
       selected.push(m);
       players.forEach(p => used.add(p));
     }
+    // 선택 못 했으면 전체 풀에서 재시도
+    if (!selected.length) {
+      const allScored = pool.map(m => ({ m, s: scoreMatch(m) }));
+      allScored.sort((a,b) => a.s - b.s);
+      for (const { m } of allScored) {
+        if (selected.length >= numCourts) break;
+        const players = [...m.t1, ...m.t2];
+        if (players.some(p => used.has(p))) continue;
+        selected.push(m);
+        players.forEach(p => used.add(p));
+      }
+    }
     return selected;
   }
 
+  // 잡복은 생성 후 교체 방식
+
   for (let round = 0; round < numRounds; round++) {
-    // 혼복 먼저 시도
+    // 항상 혼복(메인) 매치에서 선택
     let selected = pickMatch(hasOpen ? mainMatches : allMatches);
-    let usedOpen = false;
-
-    // 연속 대기 체크
-    if (hasOpen && openMatches.length > 0 && selected.length > 0) {
-      const activePlayers = new Set(selected.flatMap(m => [...m.t1, ...m.t2]));
-      const wouldRest = allPlayers.filter(p => !activePlayers.has(p));
-      const consecCount = wouldRest.filter(p => prevResting.has(p)).length;
-
-      // 잡복 후보 중 이미 사용된 조합 제외
-      const availOpen = openMatches.filter(m => !usedOpenKeys.has(openMatchKey(m)));
-      if (consecCount > 0 && availOpen.length > 0) {
-        const openScored = availOpen.map(m => {
-          let s = scoreMatch(m);
-          // 이전 대기자를 포함하면 보너스
-          const players = [...m.t1, ...m.t2];
-          const rescueCount = players.filter(p => prevResting.has(p)).length;
-          s -= rescueCount * 20; // 대기자 구출 최우선
-          return { m, s };
-        });
-        openScored.sort((a,b) => a.s - b.s);
-
-        const openSelected = [];
-        const openUsed = new Set();
-        for (const { m } of openScored) {
-          if (openSelected.length >= numCourts) break;
-          const players = [...m.t1, ...m.t2];
-          if (players.some(p => openUsed.has(p))) continue;
-          openSelected.push(m);
-          players.forEach(p => openUsed.add(p));
-        }
-
-        if (openSelected.length > 0) {
-          const openActive = new Set(openSelected.flatMap(m => [...m.t1, ...m.t2]));
-          const openRest = allPlayers.filter(p => !openActive.has(p));
-          const openConsec = openRest.filter(p => prevResting.has(p)).length;
-          // 잡복이 연속 대기를 줄이면 채택
-          if (openConsec < consecCount) {
-            selected = openSelected;
-            usedOpen = true;
-            openSelected.forEach(m => usedOpenKeys.add(openMatchKey(m)));
-          }
-        }
-      }
-    }
 
     if (selected.length === 0 && allMatches.length > 0) {
       selected.push(allMatches[round % allMatches.length]);
@@ -1750,6 +1770,13 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
 
     schedule.push({ round: round+1, matches: selected, resting });
     prevResting = new Set(resting);
+
+    // 연속 출전 카운터 업데이트
+    const activeSet = new Set(activePlayers);
+    allPlayers.forEach(p => {
+      if (activeSet.has(p)) consecPlay[p]++;
+      else consecPlay[p] = 0; // 쉬면 리셋
+    });
 
     selected.forEach(({ t1, t2 }) => {
       partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
@@ -1808,8 +1835,44 @@ async function generate() {
     } catch(e) {}
   }
 
-  const { schedule, playCount, partnerCount, opponentCount } =
-    generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings);
+  // 최대 50회 시도, 출전 차이 1 이하 + 파트너 균등
+  let best = null, bestScore = 99999;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings);
+    const counts = Object.values(result.playCount);
+    const playDiff = Math.max(...counts) - Math.min(...counts);
+    // 파트너 균등 평가
+    const pCounts = [];
+    const ap = [...females, ...males];
+    ap.forEach((p, i) => ap.slice(i+1).forEach(q => {
+      if (result.partnerCount[p] && result.partnerCount[p][q] > 0) pCounts.push(result.partnerCount[p][q]);
+    }));
+    const partnerDiff = pCounts.length ? Math.max(...pCounts) - Math.min(...pCounts) : 0;
+    // 종합 점수: 출전 차이 최우선, 파트너 차이 부차
+    const score = playDiff * 100 + partnerDiff;
+    if (score < bestScore) { bestScore = score; best = result; }
+    if (playDiff <= 1 && partnerDiff <= 1) break; // 완벽
+  }
+  const { schedule, playCount, partnerCount, opponentCount } = best;
+
+  // 잡복 교체: R4, R8...의 같은 4명을 랜덤 2:2로 잡복 변환
+  console.log('잡복 교체 체크:', formats, 'open포함:', formats.includes('open'), '길이:', formats.length, '스케줄:', schedule.length);
+  if (formats.includes('open') && formats.length > 1) {
+    const isFemale = n => females.includes(n);
+    let openIdx = 0;
+    for (let i = 3; i < schedule.length; i += 4) {
+      const round = schedule[i];
+      if (!round || !round.matches || !round.matches.length) continue;
+      const m = round.matches[0];
+      const f = [...m.t1, ...m.t2].filter(isFemale);
+      const ml = [...m.t1, ...m.t2].filter(n => !isFemale(n));
+      // 남2+여2 → 남남vs여여로 변환
+      if (ml.length >= 2 && f.length >= 2) {
+        round.matches[0] = { t1: [ml[0], ml[1]], t2: [f[0], f[1]], fmt: 'open' };
+      }
+      openIdx++;
+    }
+  }
 
   _lastScheduleData = { schedule, females, males, formats, numRounds, mode:'individual' };
 
