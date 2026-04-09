@@ -1575,24 +1575,53 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       }
     }
     if (formats.includes('open')) {
-      // 잡복: 혼합페어(남+여) vs 동성페어(남+남 or 여+여) — 게스트 제외
       const regMales = males.filter(n => !_guests.has(n));
       const regFemales = females.filter(n => !_guests.has(n));
       const mixPairs = [];
       for (let i = 0; i < regMales.length; i++)
         for (let j = 0; j < regFemales.length; j++)
           mixPairs.push([regMales[i], regFemales[j]]);
-      // 남자 동성 페어
       const malePairs = [];
       for (let i = 0; i < regMales.length; i++)
         for (let j = i+1; j < regMales.length; j++)
           malePairs.push([regMales[i], regMales[j]]);
-      // 여자 동성 페어
       const femalePairs = [];
       for (let i = 0; i < regFemales.length; i++)
         for (let j = i+1; j < regFemales.length; j++)
           femalePairs.push([regFemales[i], regFemales[j]]);
-      // 혼합 vs 남남
+
+      const onlyOpen = formats.length === 1; // 잡복만 선택
+
+      if (onlyOpen) {
+        // 모든 가능한 조합 포함
+        // 혼복 스타일: 남+여 vs 남+여
+        for (let mi = 0; mi < regMales.length; mi++)
+        for (let fi = 0; fi < regFemales.length; fi++)
+        for (let mj = mi+1; mj < regMales.length; mj++)
+        for (let fj = 0; fj < regFemales.length; fj++) {
+          if (fj === fi) continue;
+          matches.push({ t1:[regMales[mi],regFemales[fi]], t2:[regMales[mj],regFemales[fj]], fmt:'open' });
+        }
+        // 남복 스타일: 남남 vs 남남
+        if (regMales.length >= 4) {
+          for (let i=0;i<regMales.length;i++)
+          for (let j=i+1;j<regMales.length;j++)
+          for (let k=j+1;k<regMales.length;k++)
+          for (let l=k+1;l<regMales.length;l++) {
+            matches.push({ t1:[regMales[i],regMales[j]], t2:[regMales[k],regMales[l]], fmt:'open' });
+          }
+        }
+        // 여복 스타일: 여여 vs 여여
+        if (regFemales.length >= 4) {
+          for (let i=0;i<regFemales.length;i++)
+          for (let j=i+1;j<regFemales.length;j++)
+          for (let k=j+1;k<regFemales.length;k++)
+          for (let l=k+1;l<regFemales.length;l++) {
+            matches.push({ t1:[regFemales[i],regFemales[j]], t2:[regFemales[k],regFemales[l]], fmt:'open' });
+          }
+        }
+      }
+      // 남+여 vs 남남
       mixPairs.forEach(mp => malePairs.forEach(sp => {
         if (mp.some(p => sp.includes(p))) return;
         matches.push({ t1: mp, t2: sp, fmt:'open' });
@@ -1668,6 +1697,10 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       [...t1,...t2].forEach(p => simO[p]++);
       const simOV = Object.values(simO);
       score += (Math.max(...simOV) - Math.min(...simOV)) * 100;
+      // 파트너/상대 반복 최소화
+      if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 15;
+      if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 15;
+      t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 15; }));
       // 이전 대기자 우선
       if (prevResting.size > 0) {
         const included = [...t1,...t2].filter(p => prevResting.has(p)).length;
@@ -1680,7 +1713,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       score += partnerCount[t2[0]][t2[1]] * 15;
     }
     if (opts.opponent) {
-      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 8; }));
+      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 15; }));
     }
     // 3연속 출전 방지
     if ([...t1,...t2].some(p => consecPlay[p] >= 2)) return 9999;
@@ -1848,10 +1881,16 @@ async function generate() {
       if (result.partnerCount[p] && result.partnerCount[p][q] > 0) pCounts.push(result.partnerCount[p][q]);
     }));
     const partnerDiff = pCounts.length ? Math.max(...pCounts) - Math.min(...pCounts) : 0;
-    // 종합 점수: 출전 차이 최우선, 파트너 차이 부차
-    const score = playDiff * 100 + partnerDiff;
+    // 대전 균등 평가
+    const oCounts = [];
+    ap.forEach((p, i) => ap.slice(i+1).forEach(q => {
+      if (result.opponentCount[p] && result.opponentCount[p][q] > 0) oCounts.push(result.opponentCount[p][q]);
+    }));
+    const oppDiff = oCounts.length ? Math.max(...oCounts) - Math.min(...oCounts) : 0;
+    // 종합 점수: 출전 > 파트너 > 대전
+    const score = playDiff * 100 + partnerDiff * 5 + oppDiff * 3;
     if (score < bestScore) { bestScore = score; best = result; }
-    if (playDiff <= 1 && partnerDiff <= 1) break; // 완벽
+    if (playDiff <= 1 && partnerDiff <= 1 && oppDiff <= 1) break;
   }
   const { schedule, playCount, partnerCount, opponentCount } = best;
 
