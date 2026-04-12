@@ -1118,7 +1118,7 @@ async function autoSaveScore(mid) {
   try {
     let res;
     if (resultId) {
-      res = await atUpdate('Matches', resultId, { score1: v1, score2: v2 });
+      res = await atUpdate('Matches', resultId, { score1: v1, score2: v2, notes: 'R' + roundNum });
     } else {
       res = await atCreate('Matches', fields);
       if (res.success && res.id) {
@@ -1158,6 +1158,11 @@ async function removeMatchFromSchedule(schedId, ri, mi) {
   if (!confirm('이 매치를 삭제할까요?')) return;
   const savedScores = saveInlineScores();
   try {
+    // Airtable Match 레코드도 삭제
+    const row = document.querySelector(`.conf-match-row[data-mid="${schedId}_${ri}_${mi}"]`);
+    const resultId = row ? row.getAttribute('data-result-id') : '';
+    if (resultId) await atDelete('Matches', resultId);
+
     const scheds = await atGet('Schedules');
     const s = scheds.find(x => x.id === schedId);
     if (!s) return;
@@ -1171,6 +1176,7 @@ async function removeMatchFromSchedule(schedId, ri, mi) {
     }
     const newJson = Array.isArray(raw) ? rounds : { ...raw, rounds };
     await atUpdate('Schedules', schedId, { schedule_json: JSON.stringify(newJson) });
+    ['getMatches','getSchedules'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
     _skipCache = true;
     await loadConfirmedSchedules();
     restoreInlineScores(savedScores);

@@ -284,7 +284,7 @@ function render(data){
     return;
   }
 
-  const totalPlayed=data.reduce((s,p)=>s+parseInt(p.played||0),0)/2; // divided by 2 because each match has 2 teams
+  const totalPlayed=data.reduce((s,p)=>s+parseInt(p.played||0),0)/4; // 매치당 4명 참여
   const totalMvp=data.reduce((s,p)=>s+parseInt(p.mvp||0),0);
 
   // Summary
