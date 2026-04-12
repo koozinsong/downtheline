@@ -692,13 +692,16 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 
     <!-- Smaller events -->
     <div class="evt-grid rv" style="transition-delay:.25s">
-      <a class="evt-card hov" href="#">
-        <div class="ec-label">Completed · 2026.04.12</div>
-        <div class="ec-title">아난티의 봄</div>
-        <div class="ec-loc">아난티 가평</div>
-        <div class="ec-arrow">→</div>
-      </a>
-      <a class="evt-card hov" href="#">
+      <div class="evt-card hov" style="cursor:pointer;position:relative;overflow:hidden;" onclick="document.getElementById('ananti-detail').style.display=document.getElementById('ananti-detail').style.display==='none'?'block':'none'">
+        <img src="images/ananti-spring.jpg" alt="아난티의 봄" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.15;">
+        <div style="position:relative;">
+          <div class="ec-label">Completed · 2026.04.12</div>
+          <div class="ec-title">아난티의 봄</div>
+          <div class="ec-loc">아난티 가평</div>
+          <div class="ec-arrow">▾</div>
+        </div>
+      </div>
+      <a class="evt-card hov" href="schedule.html">
         <div class="ec-label">Weekly · 매주 일요일</div>
         <div class="ec-title">정기 매치</div>
         <div class="ec-loc">세곡 테니스코트</div>
@@ -710,6 +713,57 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
         <div class="ec-loc">장소 미정</div>
         <div class="ec-arrow">→</div>
       </a>
+    </div>
+    <!-- 아난티 상세 (아코디언) -->
+    <div id="ananti-detail" class="rv" style="display:none;background:var(--w);border:1px solid var(--ll);overflow:hidden;margin-top:3px;">
+      <img src="images/ananti-spring.jpg" alt="아난티의 봄" style="width:100%;display:block;">
+      <div style="padding:2rem;display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;">
+        <div>
+          <div class="eff-tag">Completed · April 12, 2026</div>
+          <div style="font-family:'Noto Sans KR',sans-serif;font-size:1.5rem;font-weight:700;margin:.5rem 0;">아난티의 봄</div>
+          <div style="font-size:.82rem;color:var(--sm);line-height:1.7;margin-bottom:1rem;">
+            🌸 아난티 가평에서 펼쳐진 특별한 하루.<br>
+            테니스, 사우나, 뷔페, 그리고 Down's Rooftop Party까지.
+          </div>
+          <table class="eff-table">
+            <tr><td class="et-time">🍇 06:00</td><td class="et-act">뉴타운주차장 집결</td></tr>
+            <tr><td class="et-time">🍈 07:00</td><td class="et-act">도착 후 사진촬영 → 테니스 (~11:00)</td></tr>
+            <tr><td class="et-time">🍉 11:00</td><td class="et-act">사우나</td></tr>
+            <tr><td class="et-time">🍊 11:50</td><td class="et-act">점심 뷔페 (~13:50)</td></tr>
+            <tr><td class="et-time">🍋 15:00</td><td class="et-act">Down's Rooftop Party (~18:00)</td></tr>
+          </table>
+          <div class="eff-cars" style="margin-top:1rem;">
+            <div class="eff-mem-label">차량 배정 · 총 8명</div>
+            <div class="eff-car-grid">
+              <div class="car-card">
+                <div class="car-label">Down차</div>
+                <div class="car-pills">
+                  <span class="mem-pill male">DandyBoy</span>
+                  <span class="mem-pill female">Down</span>
+                  <span class="mem-pill male">Song</span>
+                  <span class="mem-pill male">正ABS</span>
+                </div>
+              </div>
+              <div class="car-card">
+                <div class="car-label">Sunny차</div>
+                <div class="car-pills">
+                  <span class="mem-pill female">Young</span>
+                  <span class="mem-pill male">🍶</span>
+                  <span class="mem-pill male">🥤</span>
+                  <span class="mem-pill female">🍢</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="eff-meta">
+          <div class="em-item"><div class="em-key">Date</div><div class="em-val">4월 12일 토요일</div><div class="em-sub">Saturday, April 12</div></div>
+          <div class="em-item"><div class="em-key">Time</div><div class="em-val">06:00–18:00</div><div class="em-sub">올데이 이벤트</div></div>
+          <div class="em-item"><div class="em-key">Venue</div><div class="em-val">아난티 가평</div><div class="em-sub">Ananti at Gapyeong</div></div>
+          <div class="em-item"><div class="em-key">After</div><div class="em-val">Down's Rooftop Party</div><div class="em-sub">15:00–18:00</div></div>
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 </section>
