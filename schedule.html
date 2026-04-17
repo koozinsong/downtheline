@@ -670,14 +670,13 @@ async function loadConfirmedSchedules() {
     if (evtSel) {
       evtSel.innerHTML = '<option value="">선택 안함</option>';
       // 다가올 일요일 계산 (KST 기준)
-      const _kstStr = new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'});
-      const _kstDate = new Date(_kstStr.replace(' ','T') + '+09:00');
-      const _kstLocalDay = new Date(_kstStr.split(' ')[0] + 'T00:00:00+09:00').getUTCDay();
-      const _dayOff = _kstLocalDay === 0 ? 0 : 7 - _kstLocalDay;
-      const _nextSun = new Date(_kstStr.split(' ')[0] + 'T00:00:00+09:00');
-      _nextSun.setUTCDate(_nextSun.getUTCDate() + _dayOff);
-      const _nextSunStr = _nextSun.toISOString().split('T')[0];
-      const _today = _kstStr.split(' ')[0];
+      const _today = new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'}).split(' ')[0];
+      const [_y,_m,_d] = _today.split('-').map(Number);
+      const _utcDate = new Date(Date.UTC(_y, _m-1, _d));
+      const _kstDay = _utcDate.getUTCDay(); // KST 날짜의 요일
+      const _dayOff = _kstDay === 0 ? 0 : 7 - _kstDay;
+      _utcDate.setUTCDate(_utcDate.getUTCDate() + _dayOff);
+      const _nextSunStr = _utcDate.toISOString().split('T')[0];
       (eventRes||[]).forEach(ev => {
         const isRegular = ev.name && ev.name.includes('정기');
         const date = isRegular ? _nextSunStr : ev.date;
