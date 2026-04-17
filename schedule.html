@@ -686,19 +686,8 @@ async function loadConfirmedSchedules() {
       });
       evtSel.onchange = function() {
         const opt = this.options[this.selectedIndex];
-        const val = this.value;
-        if (val && val.includes('정기')) {
-          // 다가올 일요일 계산 (오늘이 일요일이면 오늘)
-          const now = new Date();
-          const day = now.getDay(); // 0=일 1=월 ... 6=토
-          const diff = day === 0 ? 0 : 7 - day;
-          const next = new Date(now);
-          next.setDate(now.getDate() + diff);
-          document.getElementById('sched-date').value = next.toISOString().split('T')[0];
-        } else {
-          const d = opt.getAttribute('data-date');
-          if (d) document.getElementById('sched-date').value = d;
-        }
+        const d = opt.getAttribute('data-date');
+        if (d) document.getElementById('sched-date').value = d;
       };
     }
 
