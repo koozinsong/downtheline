@@ -669,14 +669,20 @@ async function loadConfirmedSchedules() {
     const evtSel = document.getElementById('sched-event');
     if (evtSel) {
       evtSel.innerHTML = '<option value="">선택 안함</option>';
-      // 다가올 일요일 계산
-      const _now = new Date();
-      const _dayOff = _now.getDay() === 0 ? 0 : 7 - _now.getDay();
-      const _nextSun = new Date(_now); _nextSun.setDate(_now.getDate() + _dayOff);
+      // 다가올 일요일 계산 (KST 기준)
+      const _kstStr = new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'});
+      const _kstDate = new Date(_kstStr.replace(' ','T') + '+09:00');
+      const _kstLocalDay = new Date(_kstStr.split(' ')[0] + 'T00:00:00+09:00').getUTCDay();
+      const _dayOff = _kstLocalDay === 0 ? 0 : 7 - _kstLocalDay;
+      const _nextSun = new Date(_kstStr.split(' ')[0] + 'T00:00:00+09:00');
+      _nextSun.setUTCDate(_nextSun.getUTCDate() + _dayOff);
       const _nextSunStr = _nextSun.toISOString().split('T')[0];
+      const _today = _kstStr.split(' ')[0];
       (eventRes||[]).forEach(ev => {
         const isRegular = ev.name && ev.name.includes('정기');
         const date = isRegular ? _nextSunStr : ev.date;
+        // 과거 이벤트는 제외 (정기 매치는 항상 미래이므로 통과)
+        if (!isRegular && date && date < _today) return;
         evtSel.innerHTML += `<option value="${ev.name}" data-date="${date}">${ev.name} (${date})</option>`;
       });
       evtSel.onchange = function() {
