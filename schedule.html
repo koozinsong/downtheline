@@ -721,13 +721,25 @@ function renderConfirmedList(list, allMatches, femaleNames) {
     return;
   }
 
-  // 결과 찾기 — schedule_id + 선수 조합(순서 무관)으로 정확 매칭
-  function findResult(t1, t2, matches, schedEvent, schedDate, schedId) {
+  // 결과 찾기 — schedule_id + 라운드 번호 + 선수 조합으로 정확 매칭
+  function findResult(t1, t2, matches, schedEvent, schedDate, schedId, roundNum) {
     const st1 = [...t1].sort().join(','), st2 = [...t2].sort().join(',');
-    // 1. schedule_id로 먼저 매칭
     if (schedId) {
+      // 1. 라운드 번호(notes)까지 매칭
+      if (roundNum) {
+        const byRound = (matches||[]).find(m => {
+          if (String(m.schedule_id) !== String(schedId)) return false;
+          if (String(m.notes||'') !== 'R' + roundNum) return false;
+          const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
+          const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
+          return (mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1);
+        });
+        if (byRound) return byRound;
+      }
+      // 2. 라운드 없으면 선수 조합만으로 (fallback)
       const byId = (matches||[]).find(m => {
         if (String(m.schedule_id) !== String(schedId)) return false;
+        if (m.notes) return false; // notes 있는 레코드는 위에서 이미 체크했으므로 제외
         const mt1 = [m.team1_p1, m.team1_p2].sort().join(',');
         const mt2 = [m.team2_p1, m.team2_p2].sort().join(',');
         return (mt1===st1 && mt2===st2) || (mt1===st2 && mt2===st1);
@@ -749,14 +761,14 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       const savedTeamA = schedData.teamA || [];
       const savedTeamB = schedData.teamB || [];
       const totalMatches = sched.reduce((acc, r) => acc + (r.matches||[]).length, 0);
-      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id)).length, 0);
+      const doneMatches  = sched.reduce((acc, r) => acc + (r.matches||[]).filter(m => findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id, r.round)).length, 0);
       const fmtLabel = { mixed:'혼복', mens:'남복', womens:'여복', open:'잡복', team:'팀전' };
       const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open', team:'fb-mixed' };
 
       const matchRows = sched.map((r, ri) =>
         (r.matches||[]).map((m, mi) => {
           const t1 = m.t1||[], t2 = m.t2||[], fmt = m.fmt||'mixed';
-          const result = findResult(t1, t2, allMatches, s.event, s.date, s.id);
+          const result = findResult(t1, t2, allMatches, s.event, s.date, s.id, r.round);
           const mid = `${s.id}_${ri}_${mi}`;
           const s1 = result ? parseInt(result.score1)||0 : '';
           const s2 = result ? parseInt(result.score2)||0 : '';
@@ -782,7 +794,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       // 스코어 요약 테이블
       const playerStats = {};
       sched.forEach(r => (r.matches||[]).forEach(m => {
-        const res = findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id);
+        const res = findResult(m.t1||[], m.t2||[], allMatches, s.event, s.date, s.id, r.round);
         if (!res) return;
         const s1 = parseInt(res.score1)||0, s2 = parseInt(res.score2)||0;
         const w1 = s1 > s2;
