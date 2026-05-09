@@ -100,6 +100,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .day-bookings{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
 .day-bk-item{padding:.6rem .8rem;border:1px solid var(--ll);border-left:4px solid var(--g);display:grid;grid-template-columns:60px 1fr auto;gap:.6rem;align-items:center;font-size:.82rem;}
 .day-bk-item.canceled{opacity:.5;border-left-color:var(--sm2);}
+.day-bk-item.is-default{background:rgba(44,74,53,.04);}
+.day-bk-item.is-default .bk-info{font-style:italic;}
 .day-bk-item.canceled .bk-court{text-decoration:line-through;}
 .day-bk-item.segok{border-left-color:var(--segok);}
 .day-bk-item.naegok{border-left-color:var(--naegok);}
@@ -482,24 +484,54 @@ function closeModal(){
 }
 
 function renderDayList(){
-  const list=bookings.filter(b=>String(b.date||'').substring(0,10)===selectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const realList=bookings.filter(b=>String(b.date||'').substring(0,10)===selectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   const el=document.getElementById('day-list');
-  if(!list.length){el.innerHTML=`<div class="empty">예약 없음</div>`;return;}
-  el.innerHTML=list.map(b=>{
+  // 일요일이고 6시 또는 7시를 덮는 세곡 예약이 없으면 가상 기본 세곡 항목 추가
+  const [yy,mm,dd]=selectedDate.split('-').map(Number);
+  const isSunday=new Date(Date.UTC(yy,mm-1,dd)).getUTCDay()===0;
+  const segokCovers6=realList.some(b=>{
+    if(b.court!=='세곡') return false;
+    const r=parseTimeRange(b.time);
+    return r&&r.start<=6&&r.end>6;
+  });
+  const items=(isSunday&&!segokCovers6)?[{_default:true,court:'세곡',time:'06:00-08:00',status:'기본'},...realList]:realList;
+  if(!items.length){el.innerHTML=`<div class="empty">예약 없음</div>`;return;}
+  el.innerHTML=items.map(b=>{
     const cls=courtCls[b.court]||'';
     const venue=b.court==='기타'?`기타${b.memo?' ['+b.memo+']':''}`:(b.court||'-');
-    const no=displayCourtNo(b[COURT_NO_KEY]);
+    const no=b._default?'1번':displayCourtNo(b[COURT_NO_KEY]);
     const memo=(b.court!=='기타'&&b.memo)?b.memo:'';
     const whoText=whoName(b.who);
-    return `<div class="day-bk-item ${cls} ${b.status==='취소'?'canceled':''}">
+    const actions=b._default
+      ? `<button class="btn btn-mini btn-danger" onclick="cancelDefaultSegok()">취소</button>`
+      : `<button class="btn btn-mini" onclick="editBooking('${b.id}')">수정</button>
+         <button class="btn btn-mini btn-danger" onclick="delBooking('${b.id}')">삭제</button>`;
+    return `<div class="day-bk-item ${cls} ${b.status==='취소'?'canceled':''} ${b._default?'is-default':''}">
       <div class="bk-court ${cls}">${venue}</div>
-      <div class="bk-info"><b>${b.time||''}</b>${no?' · 🎾'+no:''}${whoText?' · 👤'+whoText:''}${b.status&&b.status!=='기본'?' · '+b.status:''}${memo?' · '+memo:''}</div>
-      <div class="bk-actions">
-        <button class="btn btn-mini" onclick="editBooking('${b.id}')">수정</button>
-        <button class="btn btn-mini btn-danger" onclick="delBooking('${b.id}')">삭제</button>
-      </div>
+      <div class="bk-info"><b>${b.time||''}</b>${no?' · 🎾'+no:''}${whoText?' · 👤'+whoText:''}${b._default?' · 기본':(b.status&&b.status!=='기본'?' · '+b.status:'')}${memo?' · '+memo:''}</div>
+      <div class="bk-actions">${actions}</div>
     </div>`;
   }).join('');
+}
+
+async function cancelDefaultSegok(){
+  if(!confirm('이 날 기본 세곡(06:00-08:00) 예약을 취소할까요?')) return;
+  const data={
+    Date:selectedDate,
+    Court:'세곡',
+    Time:'06:00-08:00',
+    Status:'취소',
+    [COURT_NO_FIELD]:'1'
+  };
+  try{
+    const res=await atCreate('Booking',data);
+    if(res.success){
+      toast('취소됐습니다','ok');
+      bookings=await atGet('Booking');
+      renderDayList();
+      renderCal();
+    } else toast('실패: '+res.error,'err');
+  }catch(e){toast('오류: '+e.message,'err');}
 }
 
 function resetForm(){
