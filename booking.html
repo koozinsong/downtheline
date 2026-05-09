@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>코트 예약 — Down the Line</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
+  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
+  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
+  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
+  --ll:rgba(26,31,28,.1);
+  --segok:#2c4a35;--naegok:#3a7da5;--jangchung:#a55c3a;--yangjae:#9b7dc4;--other:#d97f3a;
+}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);min-height:100vh;}
+#nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
+.nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.nav-back:hover{color:var(--gdl);}
+.nav-back::before{content:'←';}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);}
+.wrap{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:800;text-transform:uppercase;line-height:.9;color:var(--ink);margin-bottom:.4rem;}
+.page-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.page-sub{font-size:.82rem;color:var(--sm);font-weight:300;margin-bottom:1.5rem;line-height:1.7;}
+
+/* Calendar */
+.cal-card{background:var(--w);border:1px solid var(--ll);overflow:hidden;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--g);color:var(--w);}
+.cal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;}
+.cal-nav{display:flex;gap:.4rem;align-items:center;}
+.cal-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--w);font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:.4rem .8rem;cursor:pointer;transition:background .15s;}
+.cal-btn:hover{background:rgba(255,255,255,.2);}
+.cal-grid{padding:.5rem;}
+.bk-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.bk-table th,.bk-table td{border:1px solid var(--ll);text-align:center;font-size:.78rem;vertical-align:middle;}
+.bk-table thead th{background:var(--iv2);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;color:#c0392b;cursor:pointer;padding:.55rem .3rem;font-size:.9rem;}
+.bk-table thead th:first-child{color:var(--sm);font-size:.7rem;letter-spacing:1px;cursor:default;width:96px;}
+.bk-table thead th.today{background:rgba(184,147,58,.18);color:var(--gd);}
+.bk-table thead th:hover:not(:first-child){background:var(--iv3);}
+.bk-table tbody th{background:var(--iv2);font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--sm);font-size:.72rem;letter-spacing:.5px;padding:.4rem .3rem;}
+.bk-table td{cursor:pointer;height:62px;background:var(--iv);transition:filter .15s;padding:0;}
+.bk-table td:hover{filter:brightness(.96);}
+.bk-cell{display:flex;flex-direction:column;height:100%;min-height:62px;}
+.bk-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--w);padding:.25rem .2rem;line-height:1.2;gap:.08rem;text-align:center;}
+.bk-slot-court{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;}
+.bk-slot-who{font-size:.64rem;font-weight:500;opacity:.95;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bk-slot-status{font-size:.55rem;background:rgba(0,0,0,.25);padding:.02rem .3rem;border-radius:2px;letter-spacing:.5px;margin-top:.05rem;}
+.bk-slot.segok{background:var(--segok);}
+.bk-slot.naegok{background:var(--naegok);}
+.bk-slot.jangchung{background:var(--jangchung);}
+.bk-slot.yangjae{background:var(--yangjae);}
+.bk-slot.other{background:var(--other);}
+.bk-slot.canceled{background:var(--sm2);opacity:.65;}
+.bk-slot-no{font-size:.58rem;opacity:.92;font-weight:600;margin-top:.05rem;display:flex;align-items:center;justify-content:center;gap:.15rem;}
+.bk-slot-no .ic,.bk-slot-who .ic{font-size:.62rem;line-height:1;filter:saturate(.4);}
+.bk-slot-who{display:flex;align-items:center;justify-content:center;gap:.15rem;}
+.bk-slot.canceled .bk-slot-court{text-decoration:line-through;}
+
+/* Court-specific monthly booking lists */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;text-transform:uppercase;line-height:1;color:var(--ink);margin-top:2.5rem;margin-bottom:.3rem;letter-spacing:1px;}
+.section-title em{font-style:italic;color:var(--g3);font-weight:300;}
+.section-sub{font-size:.78rem;color:var(--sm);font-weight:300;margin-bottom:1rem;}
+.court-lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+.court-list{background:var(--w);border:1px solid var(--ll);border-top:3px solid var(--g);padding:1rem 1.2rem;}
+.court-list.naegok{border-top-color:var(--naegok);}
+.court-list.jangchung{border-top-color:var(--jangchung);}
+.court-list.yangjae{border-top-color:var(--yangjae);}
+.court-list.other{border-top-color:var(--other);}
+.court-list h3{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem;}
+.court-list.naegok h3{color:var(--naegok);}
+.court-list.jangchung h3{color:var(--jangchung);}
+.court-list.yangjae h3{color:var(--yangjae);}
+.court-list.c88 h3{color:var(--c88);}
+.court-dates{display:flex;flex-direction:column;gap:.35rem;}
+.court-date-item{font-size:.78rem;color:var(--ink2);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;cursor:pointer;padding:.25rem .4rem;border-radius:2px;transition:background .15s;}
+.court-date-item:hover{background:var(--iv2);}
+.court-date-item.canceled{opacity:.45;text-decoration:line-through;}
+.court-date-item .cd-day{font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--ink);}
+.court-date-item .cd-time{color:var(--sm);font-size:.72rem;}
+.court-list .empty{padding:.5rem;font-size:.75rem;text-align:left;}
+.rule-when{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;letter-spacing:.5px;}
+.rule-desc{font-size:.75rem;color:var(--sm);margin-bottom:.6rem;line-height:1.5;}
+.rule-link{display:inline-block;font-size:.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--g3);text-decoration:none;border-top:1px solid var(--ll);padding-top:.5rem;margin-top:.2rem;}
+.rule-link:hover{color:var(--g);}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal.open{display:flex;}
+.modal-box{background:var(--w);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--ll);}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--sm2);padding:0;line-height:1;}
+.modal-body{padding:1.2rem 1.5rem;}
+.modal-foot{padding:1rem 1.5rem;border-top:1px solid var(--ll);display:flex;gap:.5rem;justify-content:flex-end;}
+
+.day-bookings{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+.day-bk-item{padding:.6rem .8rem;border:1px solid var(--ll);border-left:4px solid var(--g);display:grid;grid-template-columns:60px 1fr auto;gap:.6rem;align-items:center;font-size:.82rem;}
+.day-bk-item.canceled{opacity:.5;border-left-color:var(--sm2);}
+.day-bk-item.canceled .bk-court{text-decoration:line-through;}
+.day-bk-item.segok{border-left-color:var(--segok);}
+.day-bk-item.naegok{border-left-color:var(--naegok);}
+.day-bk-item.jangchung{border-left-color:var(--jangchung);}
+.day-bk-item.yangjae{border-left-color:var(--yangjae);}
+.bk-court{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.bk-court.segok{color:var(--segok);}
+.bk-court.naegok{color:var(--naegok);}
+.bk-court.jangchung{color:var(--jangchung);}
+.bk-court.yangjae{color:var(--yangjae);}
+.bk-info{font-size:.75rem;color:var(--sm);}
+.bk-info b{color:var(--ink);font-weight:500;}
+.bk-actions{display:flex;gap:.3rem;}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+.form-group{display:flex;flex-direction:column;}
+.form-group.full{grid-column:span 2;}
+.form-label{font-size:.62rem;color:var(--sm2);margin-bottom:.3rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+.form-input,.form-select{border:1px solid var(--ll);padding:.5rem .65rem;font-family:'Barlow','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--ink);background:var(--iv);outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus{border-color:var(--g3);}
+.hour-checks{display:flex;gap:.4rem;flex-wrap:wrap;}
+.hour-chk{cursor:pointer;}
+.hour-chk input{position:absolute;opacity:0;pointer-events:none;}
+.hour-chk span{display:inline-block;padding:.45rem .75rem;border:1px solid var(--ll);background:var(--iv);font-size:.78rem;font-weight:600;color:var(--sm);border-radius:2px;transition:all .15s;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;}
+.hour-chk:hover span{border-color:var(--g3);}
+.hour-chk input:checked + span{background:var(--g);color:var(--w);border-color:var(--g);}
+
+.btn{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--ll);background:var(--w);padding:.55rem 1rem;cursor:pointer;transition:all .15s;color:var(--ink);}
+.btn-primary{background:var(--g);color:var(--w);border-color:var(--g);}
+.btn-primary:hover{background:var(--g2);}
+.btn-danger{color:#c0392b;border-color:rgba(192,57,43,.3);}
+.btn-danger:hover{background:#c0392b;color:var(--w);}
+.btn-mini{font-size:.6rem;padding:.3rem .55rem;}
+
+.empty{text-align:center;padding:1.5rem;color:var(--sm2);font-size:.82rem;}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--ll);border-top-color:var(--g3);border-radius:50%;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:2rem;right:2rem;padding:.8rem 1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;z-index:300;transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px);pointer-events:none;}
+.toast.show{opacity:1;transform:none;}
+.toast.ok{background:var(--g);color:var(--w);}
+.toast.err{background:#c0392b;color:var(--w);}
+
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.8rem;font-size:.7rem;color:var(--sm);}
+.legend-dot{display:inline-flex;align-items:center;gap:.3rem;}
+.legend-dot::before{content:'';width:10px;height:10px;display:inline-block;border-radius:2px;}
+.legend-dot.segok::before{background:var(--segok);}
+.legend-dot.naegok::before{background:var(--naegok);}
+.legend-dot.jangchung::before{background:var(--jangchung);}
+.legend-dot.yangjae::before{background:var(--yangjae);}
+.legend-dot.other::before{background:var(--other);}
+
+@media(max-width:600px){
+  .wrap{padding:1.5rem .6rem;}
+  .page-title{font-size:1.8rem;}
+  #nav{padding:0 1rem;height:50px;}
+  .nav-title{font-size:.85rem;}
+  .cal-header{padding:.7rem .9rem;}
+  .cal-title{font-size:1rem;letter-spacing:1.2px;}
+  .cal-btn{padding:.4rem .55rem;font-size:.62rem;letter-spacing:.5px;}
+  .cal-grid{padding:.25rem;}
+  .bk-table thead th{font-size:.72rem;padding:.4rem .15rem;}
+  .bk-table thead th:first-child{width:64px;font-size:.6rem;}
+  .bk-table tbody th{font-size:.55rem;padding:.3rem .15rem;letter-spacing:0;}
+  .bk-table td{height:50px;}
+  .bk-cell{min-height:50px;}
+  .bk-slot{padding:.15rem .12rem;}
+  .bk-slot-court{font-size:.66rem;}
+  .bk-slot-who{font-size:.55rem;}
+  .court-lists{grid-template-columns:1fr;gap:.7rem;margin-top:1.2rem;}
+  .court-list{padding:.8rem 1rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .day-bk-item{grid-template-columns:1fr;gap:.3rem;}
+  .bk-actions{justify-self:end;}
+  .modal-body{padding:1rem 1.2rem;}
+  .modal-foot{padding:.8rem 1.2rem;}
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a class="nav-back" href="index.html">홈</a>
+  <div class="nav-title">코트 예약</div>
+</nav>
+
+<div class="wrap">
+  <div class="page-title">Court<br><em>Booking</em></div>
+  <p class="page-sub">기본: 매주 일요일 06:00–08:00 세곡 · 날짜를 클릭하여 추가하거나 수정</p>
+
+  <div class="cal-card">
+    <div class="cal-header">
+      <button class="cal-btn" onclick="changeMonth(-1)">◀ 이전</button>
+      <div class="cal-title" id="cal-title">—</div>
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="goToday()">이번 달</button>
+        <button class="cal-btn" onclick="changeMonth(1)">다음 ▶</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-dot segok">세곡</span>
+    <span class="legend-dot naegok">내곡</span>
+    <span class="legend-dot jangchung">장충</span>
+    <span class="legend-dot yangjae">양재</span>
+    <span class="legend-dot other">기타</span>
+  </div>
+
+  <h2 class="section-title">예약 오픈 <em>안내</em></h2>
+  <p class="section-sub">코트별 예약 가능 시점 · 클릭하면 예약 페이지로 이동</p>
+  <div class="court-lists" id="court-lists"></div>
+</div>
+
+<!-- 날짜 모달 -->
+<div class="modal" id="day-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">예약</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="day-list" class="day-bookings"></div>
+      <div id="form-area">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;color:var(--g3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.6rem;" id="form-title">+ 새 예약 추가</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">코트</label>
+            <select class="form-select" id="f-court" onchange="onCourtChange()">
+              <option value="세곡">세곡</option>
+              <option value="내곡">내곡</option>
+              <option value="장충">장충</option>
+              <option value="양재">양재</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">예약자</label>
+            <select class="form-select" id="f-who"><option value="">선택</option></select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">시간 (1시간 단위 다중 선택)</label>
+            <div class="hour-checks" id="f-hours">
+              <label class="hour-chk"><input type="checkbox" value="6"><span>6-7</span></label>
+              <label class="hour-chk"><input type="checkbox" value="7"><span>7-8</span></label>
+              <label class="hour-chk"><input type="checkbox" value="8"><span>8-9</span></label>
+              <label class="hour-chk"><input type="checkbox" value="9"><span>9-10</span></label>
+              <label class="hour-chk"><input type="checkbox" value="10"><span>10-11</span></label>
+              <label class="hour-chk"><input type="checkbox" value="11"><span>11-12</span></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">코트 번호</label>
+            <input class="form-input" type="text" id="f-courtno" placeholder="7 / 실내c">
+          </div>
+          <div class="form-group">
+            <label class="form-label">상태</label>
+            <select class="form-select" id="f-status">
+              <option value="기본">기본</option>
+              <option value="추가">추가</option>
+              <option value="취소">취소</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">메모 (기타 코트명, 사유 등)</label>
+            <input class="form-input" type="text" id="f-notes" placeholder="88, 시합으로 빠짐 등">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="resetForm()" id="btn-cancel" style="display:none;">취소</button>
+      <button class="btn btn-primary" id="btn-save" onclick="saveBooking()">예약 추가</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
+const AT_BASE='appDtlXaLReCaDeE6';
+const AT=`https://api.airtable.com/v0/${AT_BASE}`;
+const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
+
+async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
+async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
+async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
+async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
+
+let bookings=[], players=[];
+let viewYear, viewMonth; // 현재 보고 있는 월
+let selectedDate=null;
+let editingId=null;
+
+function todayKST(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}).split(' ')[0];}
+function pad(n){return String(n).padStart(2,'0');}
+function ymd(y,m,d){return `${y}-${pad(m)}-${pad(d)}`;}
+const courtCls={'세곡':'segok','내곡':'naegok','장충':'jangchung','양재':'yangjae','기타':'other'};
+const COURT_NO_FIELD='Court Number';
+const COURT_NO_KEY='court Number';
+function displayCourtNo(no){
+  if(no===undefined||no===null||no==='') return '';
+  return /^\d+$/.test(String(no))?String(no)+'번':String(no);
+}
+function onCourtChange(){
+  const court=document.getElementById('f-court').value;
+  const cn=document.getElementById('f-courtno');
+  if(court==='세곡'&&!cn.value) cn.value='1';
+}
+function whoName(who){
+  if(!who) return '';
+  const ids=Array.isArray(who)?who:[who];
+  return ids.map(id=>{
+    const p=players.find(p=>p.id===id);
+    return p?(p.name||id):id;
+  }).join(', ');
+}
+function getSelectedHours(){
+  return Array.from(document.querySelectorAll('#f-hours input:checked')).map(c=>+c.value).sort((a,b)=>a-b);
+}
+function setSelectedHours(hours){
+  document.querySelectorAll('#f-hours input').forEach(c=>{c.checked=hours.includes(+c.value);});
+}
+function timeFromHours(hours){
+  if(!hours.length) return '';
+  const start=hours[0],end=hours[hours.length-1]+1;
+  return `${pad(start)}:00-${pad(end)}:00`;
+}
+function hoursFromTime(t){
+  const r=parseTimeRange(t);
+  if(!r) return [];
+  const out=[];
+  for(let h=r.start;h<r.end;h++) out.push(h);
+  return out;
+}
+
+async function init(){
+  const t=todayKST();
+  const [y,m]=t.split('-').map(Number);
+  viewYear=y; viewMonth=m;
+  try{
+    [bookings,players]=await Promise.all([atGet('Booking'),atGet('Players')]);
+    players.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    const sel=document.getElementById('f-who');
+    players.forEach(p=>{sel.innerHTML+=`<option value="${p.id}">${p.name}</option>`;});
+    renderCal();
+  }catch(e){
+    document.getElementById('cal-grid').innerHTML=`<div style="grid-column:span 7;padding:2rem;text-align:center;color:#c0392b;">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+function parseTimeRange(t){
+  const m=String(t||'').match(/(\d{1,2}):?\d*\s*[-~]\s*(\d{1,2})/);
+  return m?{start:+m[1],end:+m[2]}:null;
+}
+
+function renderCal(){
+  document.getElementById('cal-title').textContent=`${viewYear}.${pad(viewMonth)}`;
+  const grid=document.getElementById('cal-grid');
+  const daysInMonth=new Date(Date.UTC(viewYear,viewMonth,0)).getUTCDate();
+  const sundays=[];
+  for(let d=1;d<=daysInMonth;d++){
+    if(new Date(Date.UTC(viewYear,viewMonth-1,d)).getUTCDay()===0) sundays.push(d);
+  }
+  const today=todayKST();
+  const hours=[6,7,8,9,10,11];
+
+  let html='<table class="bk-table"><thead><tr><th>시간대</th>';
+  sundays.forEach(d=>{
+    const date=ymd(viewYear,viewMonth,d);
+    html+=`<th class="${date===today?'today':''}" onclick="openDay('${date}')">${viewMonth}/${d}</th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  const isFreeAt=(date,hour)=>!bookings.some(b=>{
+    if(String(b.date||'').substring(0,10)!==date) return false;
+    const r=parseTimeRange(b.time);
+    return r&&r.start<=hour&&r.end>hour;
+  });
+
+  const occupied={}; // date -> Set of covered hours
+  hours.forEach(h=>{
+    html+=`<tr><th>${h}:00 ~ ${h+1}:00</th>`;
+    sundays.forEach(d=>{
+      const date=ymd(viewYear,viewMonth,d);
+      if(occupied[date]&&occupied[date].has(h)) return; // covered by an earlier rowspan
+      const startingBks=bookings.filter(b=>{
+        if(String(b.date||'').substring(0,10)!==date) return false;
+        const r=parseTimeRange(b.time);
+        return r&&Math.max(r.start,6)===h&&r.end>h;
+      });
+      if(startingBks.length){
+        let span=1;
+        startingBks.forEach(b=>{
+          const r=parseTimeRange(b.time);
+          span=Math.max(span,Math.min(r.end,12)-h);
+        });
+        if(!occupied[date]) occupied[date]=new Set();
+        for(let i=0;i<span;i++) occupied[date].add(h+i);
+        const slots=startingBks.map(b=>{
+          const cls=courtCls[b.court]||'';
+          const venue=b.court==='기타'?(b.memo||'기타'):(b.court||'-');
+          const no=displayCourtNo(b[COURT_NO_KEY]);
+          const whoText=whoName(b.who);
+          return `<div class="bk-slot ${cls} ${b.status==='취소'?'canceled':''}">
+            <div class="bk-slot-court">${venue}</div>
+            ${no?`<div class="bk-slot-no"><span class="ic">🎾</span>${no}</div>`:''}
+            ${whoText?`<div class="bk-slot-who"><span class="ic">👤</span>${whoText}</div>`:''}
+          </div>`;
+        }).join('');
+        html+=`<td rowspan="${span}" onclick="openDay('${date}')"><div class="bk-cell">${slots}</div></td>`;
+      } else if(h===6&&isFreeAt(date,6)&&isFreeAt(date,7)){
+        // 디폴트: 매주 일요일 06:00-08:00 세곡
+        if(!occupied[date]) occupied[date]=new Set();
+        occupied[date].add(6);occupied[date].add(7);
+        html+=`<td rowspan="2" onclick="openDay('${date}')"><div class="bk-cell">
+          <div class="bk-slot segok default">
+            <div class="bk-slot-court">세곡</div>
+            <div class="bk-slot-no"><span class="ic">🎾</span>1번</div>
+            <div class="bk-slot-who">기본</div>
+          </div>
+        </div></td>`;
+      } else {
+        html+=`<td onclick="openDay('${date}')"></td>`;
+      }
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+
+  grid.innerHTML=html;
+  renderCourtLists();
+}
+
+const COURT_RULES=[
+  {name:'세곡',cls:'segok',when:'클럽 정기',desc:'매주 일요일 06:00–08:00 (1번)',link:''},
+  {name:'내곡',cls:'naegok',when:'매월 10일 09:00',desc:'익월 코트 예약 · 네이버 예약',link:'https://booking.naver.com/'},
+  {name:'장충',cls:'jangchung',when:'매주 월 10:00',desc:'익일 화 ~ 익주 월 사용분',link:'https://yeyak.seoul.go.kr'},
+  {name:'양재',cls:'yangjae',when:'매월 1일 09:00',desc:'매헌 시민의숲 · 네이버 예약',link:'https://booking.naver.com/booking/10/bizes/210031'},
+  {name:'88 (올림픽공원)',cls:'other',when:'사용 7일 전',desc:'올림픽공원 테니스장',link:'https://www.ksponco.or.kr/online/tennis/index.do'},
+];
+
+function renderCourtLists(){
+  const wrap=document.getElementById('court-lists');
+  wrap.innerHTML=COURT_RULES.map(r=>`
+    <div class="court-list ${r.cls}">
+      <h3>${r.name}</h3>
+      <div class="rule-when">${r.when}</div>
+      <div class="rule-desc">${r.desc}</div>
+      ${r.link?`<a class="rule-link" href="${r.link}" target="_blank" rel="noopener">예약하러 가기 →</a>`:''}
+    </div>
+  `).join('');
+}
+
+
+function changeMonth(delta){
+  viewMonth+=delta;
+  if(viewMonth>12){viewMonth=1;viewYear++;}
+  if(viewMonth<1){viewMonth=12;viewYear--;}
+  renderCal();
+}
+function goToday(){
+  const t=todayKST();
+  const [y,m]=t.split('-').map(Number);
+  viewYear=y;viewMonth=m;
+  renderCal();
+}
+
+function openDay(date){
+  selectedDate=date;
+  editingId=null;
+  const [y,m,d]=date.split('-').map(Number);
+  document.getElementById('modal-title').textContent=`${m}월 ${d}일 예약`;
+  renderDayList();
+  resetForm();
+  document.getElementById('day-modal').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('day-modal').classList.remove('open');
+}
+
+function renderDayList(){
+  const list=bookings.filter(b=>String(b.date||'').substring(0,10)===selectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const el=document.getElementById('day-list');
+  if(!list.length){el.innerHTML=`<div class="empty">예약 없음</div>`;return;}
+  el.innerHTML=list.map(b=>{
+    const cls=courtCls[b.court]||'';
+    const venue=b.court==='기타'?`기타${b.memo?' ['+b.memo+']':''}`:(b.court||'-');
+    const no=displayCourtNo(b[COURT_NO_KEY]);
+    const memo=(b.court!=='기타'&&b.memo)?b.memo:'';
+    const whoText=whoName(b.who);
+    return `<div class="day-bk-item ${cls} ${b.status==='취소'?'canceled':''}">
+      <div class="bk-court ${cls}">${venue}</div>
+      <div class="bk-info"><b>${b.time||''}</b>${no?' · 🎾'+no:''}${whoText?' · 👤'+whoText:''}${b.status&&b.status!=='기본'?' · '+b.status:''}${memo?' · '+memo:''}</div>
+      <div class="bk-actions">
+        <button class="btn btn-mini" onclick="editBooking('${b.id}')">수정</button>
+        <button class="btn btn-mini btn-danger" onclick="delBooking('${b.id}')">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function resetForm(){
+  editingId=null;
+  document.getElementById('f-court').value='세곡';
+  setSelectedHours([]);
+  document.getElementById('f-who').value='';
+  document.getElementById('f-status').value='기본';
+  document.getElementById('f-courtno').value='';
+  document.getElementById('f-notes').value='';
+  document.getElementById('form-title').textContent='+ 새 예약 추가';
+  document.getElementById('btn-save').textContent='예약 추가';
+  document.getElementById('btn-cancel').style.display='none';
+}
+
+function editBooking(id){
+  const b=bookings.find(x=>x.id===id);
+  if(!b) return;
+  editingId=id;
+  document.getElementById('f-court').value=b.court||'세곡';
+  setSelectedHours(hoursFromTime(b.time));
+  document.getElementById('f-who').value=Array.isArray(b.who)?(b.who[0]||''):(b.who||'');
+  document.getElementById('f-status').value=b.status||'기본';
+  document.getElementById('f-courtno').value=b[COURT_NO_KEY]||'';
+  document.getElementById('f-notes').value=b.memo||'';
+  document.getElementById('form-title').textContent='✏️ 예약 수정';
+  document.getElementById('btn-save').textContent='수정 저장';
+  document.getElementById('btn-cancel').style.display='inline-block';
+}
+
+async function saveBooking(){
+  const v=id=>document.getElementById(id).value;
+  const hours=getSelectedHours();
+  if(!hours.length){toast('시간을 선택해주세요','err');return;}
+  // 비연속 선택 시 안내 (min~max 범위로 처리)
+  if(hours[hours.length-1]-hours[0]+1!==hours.length){
+    if(!confirm('선택한 시간이 연속되지 않습니다. '+pad(hours[0])+':00 ~ '+pad(hours[hours.length-1]+1)+':00 으로 저장할까요?')) return;
+  }
+  const data={
+    Date:selectedDate,
+    Court:v('f-court'),
+    Time:timeFromHours(hours),
+    Status:v('f-status'),
+    Memo:v('f-notes')
+  };
+  const whoId=v('f-who');
+  if(whoId) data.Who=[whoId];
+  const courtNo=v('f-courtno').trim();
+  if(courtNo) data[COURT_NO_FIELD]=courtNo;
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;btn.textContent=editingId?'저장 중...':'추가 중...';
+  try{
+    const res=editingId?await atUpdate('Booking',editingId,data):await atCreate('Booking',data);
+    if(res.success){
+      toast(editingId?'수정됐습니다 ✓':'추가됐습니다 ✓','ok');
+      bookings=await atGet('Booking');
+      renderDayList();
+      renderCal();
+      resetForm();
+    } else toast('실패: '+res.error,'err');
+  }catch(e){toast('오류: '+e.message,'err');}
+  btn.disabled=false;
+}
+
+async function delBooking(id){
+  if(!confirm('이 예약을 삭제할까요?')) return;
+  try{
+    await atDelete('Booking',id);
+    bookings=bookings.filter(b=>b.id!==id);
+    renderDayList();
+    renderCal();
+    toast('삭제됐습니다','ok');
+  }catch(e){toast('삭제 실패','err');}
+}
+
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=`toast ${type} show`;
+  setTimeout(()=>t.className='toast',2500);
+}
+
+init();
+</script>
+</body>
+</html>
