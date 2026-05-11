@@ -401,7 +401,7 @@ function render(data){
       <div>${genderChip(p.gender)}</div>
       <div class="pod-pts">${p.points||0}</div>
       <div class="pod-pts-l">Points</div>
-      <div class="pod-stat">${p.scheds||0}시합 · ${p.played||0}경기 · ${p.wins||0}승 ${p.draws||0}무 ${p.losses||0}패</div>
+      <div class="pod-stat">${p.scheds||0}대회 · ${p.played||0}경기 · ${p.wins||0}승 ${p.draws||0}무 ${p.losses||0}패</div>
     </div>`;
   });
   document.getElementById('podium').innerHTML=podHtml.join('');
@@ -438,7 +438,7 @@ function render(data){
       <thead><tr>
         <th style="width:50px;">#</th>
         <th>선수</th>
-        <th class="num">시합</th>
+        <th class="num">대회</th>
         <th class="num">출전</th>
         <th class="num">승</th>
         <th class="num">무</th>
