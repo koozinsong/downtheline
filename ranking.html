@@ -291,27 +291,33 @@ function computePairRankings(matches){
       const key=[p1,p2].sort().join('|');
       if(!pairs[key]) pairs[key]={p1:[p1,p2].sort()[0],p2:[p1,p2].sort()[1],w:0,l:0,d:0,gf:0,ga:0,played:0};
     };
+    const schedKey=m.schedule_id||`${m.event||''}|${String(m.date||'').substring(0,10)}`;
     const addTeam=(p1,p2,ourScore,theirScore,won,drew)=>{
       if(!p1||!p2) return;
       if(p1.startsWith('게스트')||p2.startsWith('게스트')) return;
       const key=[p1,p2].sort().join('|');
-      if(!pairs[key]) pairs[key]={p1:[p1,p2].sort()[0],p2:[p1,p2].sort()[1],w:0,l:0,d:0,gf:0,ga:0,played:0};
+      if(!pairs[key]) pairs[key]={p1:[p1,p2].sort()[0],p2:[p1,p2].sort()[1],w:0,l:0,d:0,gf:0,ga:0,played:0,_scheds:new Set()};
       pairs[key].played++;
+      pairs[key]._scheds.add(schedKey);
       pairs[key].gf+=ourScore; pairs[key].ga+=theirScore;
       if(drew) pairs[key].d++; else if(won) pairs[key].w++; else pairs[key].l++;
     };
     addTeam(m.team1_p1,m.team1_p2,s1,s2,w1,draw);
     addTeam(m.team2_p1,m.team2_p2,s2,s1,!w1&&!draw,draw);
   });
-  return Object.values(pairs).map(p=>({
-    ...p,
-    points:p.w*3+p.d,
-    gd:p.gf-p.ga,
-    winrate:p.played>0?Math.round(p.w/p.played*100)+'%':'0%',
-    isFF:femaleSet.has(p.p1)&&femaleSet.has(p.p2),
-    isMM:!femaleSet.has(p.p1)&&!femaleSet.has(p.p2),
-    isMix:(femaleSet.has(p.p1))!==(femaleSet.has(p.p2))
-  })).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
+  return Object.values(pairs).map(p=>{
+    const {_scheds,...rest}=p;
+    return {
+      ...rest,
+      scheds:_scheds.size,
+      points:p.w*3+p.d,
+      gd:p.gf-p.ga,
+      winrate:p.played>0?Math.round(p.w/p.played*100)+'%':'0%',
+      isFF:femaleSet.has(p.p1)&&femaleSet.has(p.p2),
+      isMM:!femaleSet.has(p.p1)&&!femaleSet.has(p.p2),
+      isMix:(femaleSet.has(p.p1))!==(femaleSet.has(p.p2))
+    };
+  }).sort((a,b)=>b.points-a.points||b.gd-a.gd||b.gf-a.gf);
 }
 
 function renderPairRankings(matches){
@@ -336,6 +342,7 @@ function renderPairRankings(matches){
       <td><div class="rank-num ${rankCls}">${rank}</div></td>
       <td><div class="rank-name">${(()=>{const o=orderPair(p.p1,p.p2);return chipFor(o[0])+' + '+chipFor(o[1]);})()}</div></td>
       <td class="num" style="font-size:.7rem;color:${typeColor(p)};font-weight:600;">${typeLabel(p)}</td>
+      <td class="num">${p.scheds||0}</td>
       <td class="num">${p.played}</td>
       <td class="num" style="color:var(--g);font-weight:700;">${p.w}</td>
       <td class="num" style="color:var(--sm2);">${p.d}</td>
@@ -350,6 +357,7 @@ function renderPairRankings(matches){
       <th style="width:50px;">#</th>
       <th>페어</th>
       <th class="num">종목</th>
+      <th class="num">대회</th>
       <th class="num">경기</th>
       <th class="num">승</th>
       <th class="num">무</th>
