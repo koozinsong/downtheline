@@ -968,6 +968,21 @@ function renderConfirmedList(list, allMatches, femaleNames) {
 
       const progress = `${doneMatches}/${totalMatches} 경기 완료`;
 
+      // MVP 선정 UI
+      const schedMatches = (allMatches||[]).filter(m => String(m.schedule_id) === String(s.id));
+      const currentMvp = (schedMatches.find(m => m.mvp) || {}).mvp || '';
+      const participants = [...new Set(sched.flatMap(r => (r.matches||[]).flatMap(m => [...(m.t1||[]), ...(m.t2||[])])).filter(n => n && !String(n).startsWith('게스트')))];
+      const mvpOptions = participants.map(n => `<option value="${n}" ${n===currentMvp?'selected':''}>${n}</option>`).join('');
+      const mvpSection = participants.length ? `
+        <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gd);">⭐ MVP</span>
+          <select class="opt-select" id="mvp-sel-${s.id}" style="flex:1;min-width:140px;font-size:.8rem;">
+            <option value="">— 선정 안 함 —</option>
+            ${mvpOptions}
+          </select>
+          <button class="confirm-btn" onclick="saveMVP('${s.id}')" style="width:auto;padding:.45rem .9rem;font-size:.65rem;">저장</button>
+        </div>` : '';
+
       return `<div class="conf-card">
         <div class="conf-card-head" onclick="toggleConf('${s.id}')">
           <div>
@@ -997,6 +1012,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
             <button class="confirm-btn" onclick="addMatchToSchedule('${s.id}')" style="width:100%;font-size:.62rem;padding:.35rem;">추가</button>
           </div>
           ${scoreTable}
+          ${mvpSection}
           <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
             <button class="confirm-btn" onclick="finishSchedule('${s.id}')" style="width:100%;background:var(--sm2);">일정 완료 (아카이브)</button>
           </div>
@@ -1092,6 +1108,21 @@ async function addMatchToSchedule(schedId) {
     await loadConfirmedSchedules();
     restoreInlineScores(savedScores);
   } catch(e) { alert('추가 실패: ' + e.message); }
+}
+
+async function saveMVP(schedId) {
+  const sel = document.getElementById('mvp-sel-' + schedId);
+  if (!sel) return;
+  const name = sel.value;
+  try {
+    const allM = await atGet('Matches');
+    const targets = allM.filter(m => String(m.schedule_id) === String(schedId));
+    if (!targets.length) { alert('해당 일정에 매치가 없습니다.'); return; }
+    await Promise.all(targets.map(m => atUpdate('Matches', m.id, { mvp: name || '' })));
+    ['getMatches'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    _skipCache = true;
+    await loadConfirmedSchedules();
+  } catch(e) { alert('MVP 저장 실패: ' + e.message); }
 }
 
 async function finishSchedule(schedId) {

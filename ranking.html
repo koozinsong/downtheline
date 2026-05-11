@@ -213,8 +213,15 @@ function computeRankings(players, matches, sortBy) {
     [...t1,...t2].forEach(n=>{if(!n||n.startsWith('게스트'))return;if(!stats[n])stats[n]=mkStat(n);stats[n].played++;stats[n]._scheds.add(schedKey);});
     t1.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].wins++;else stats[n].losses++;stats[n].gf+=s1;stats[n].ga+=s2;});
     t2.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].losses++;else stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
-    if(m.mvp&&stats[m.mvp])stats[m.mvp].mvp++;
   });
+  // MVP는 대회당 1회만 카운트
+  const mvpBySched=new Map();
+  matches.forEach(m=>{
+    if(!m.mvp) return;
+    const k=m.schedule_id||`${m.event||''}|${String(m.date||'').substring(0,10)}`;
+    if(!mvpBySched.has(k)) mvpBySched.set(k,m.mvp);
+  });
+  mvpBySched.forEach(name=>{ if(stats[name]) stats[name].mvp++; });
   const result = Object.values(stats).map(s=>{
     const {_scheds, ...rest}=s;
     return {...rest, scheds:_scheds.size, points:s.wins*3+s.draws+s.mvp, winrate:s.played>0?Math.round(s.wins/s.played*100)+'%':'0%', wr:s.played>0?s.wins/s.played:0, gd:s.gf-s.ga};
