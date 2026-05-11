@@ -580,10 +580,11 @@ async function setMode(mode) {
   document.getElementById('mode-individual').classList.toggle('active', mode === 'individual');
   document.getElementById('mode-team').classList.toggle('active', mode === 'team');
   document.getElementById('mode-pair').classList.toggle('active', mode === 'pair');
-  document.getElementById('player-grid').style.display = mode === 'individual' ? '' : 'none';
+  // 페어전도 참가자 리스트(player-grid) 함께 표시
+  document.getElementById('player-grid').style.display = (mode === 'individual' || mode === 'pair') ? '' : 'none';
   document.getElementById('team-grid').style.display = mode === 'team' ? '' : 'none';
   document.getElementById('pair-grid').style.display = mode === 'pair' ? '' : 'none';
-  document.getElementById('player-section-label').textContent = mode === 'team' ? '팀 편성' : mode === 'pair' ? '페어 편성' : '참가자 선택';
+  document.getElementById('player-section-label').textContent = mode === 'team' ? '팀 편성' : mode === 'pair' ? '참가자 선택 → 페어 편성' : '참가자 선택';
   if (mode === 'pair') {
     if (_pairs.length === 0) _pairs = [['','']]; // start with one empty pair
     renderPairs();
@@ -631,8 +632,11 @@ function pairOptionsFor(idx, slot) {
   const used = new Set();
   _pairs.forEach((pair, i) => pair.forEach((n, s) => { if (n && !(i === idx && s === slot)) used.add(n); }));
   const selected = _pairs[idx][slot] || '';
+  // 참가자(선택된 선수)만 옵션으로
+  const participantNames = new Set([..._selectedFemales, ..._selectedMales]);
+  const participants = _allPlayers.filter(p => participantNames.has(p.name));
   const opts = ['<option value="">— 선택 —</option>'];
-  _allPlayers.forEach(p => {
+  participants.forEach(p => {
     if (used.has(p.name) && p.name !== selected) return;
     const tag = p.gender === 'female' ? '여' : '남';
     opts.push(`<option value="${p.name}" ${p.name === selected ? 'selected' : ''}>${p.name} (${tag})</option>`);
@@ -1547,6 +1551,7 @@ function selectPlayer(gender) {
   if (!selected.includes(name)) selected.push(name);
   dropdown.value = '';
   renderSelectedPlayers();
+  if (_mode === 'pair') renderPairs();
 }
 
 let _guestCount = { female: 0, male: 0 };
@@ -1574,6 +1579,14 @@ function removePlayer(gender, name) {
   if (isGuest(name)) {
     _allPlayers = _allPlayers.filter(p => p.name !== name);
     _guests.delete(name);
+  }
+  // 페어전 모드에서 제거된 선수가 페어에 있으면 해당 슬롯 비우기
+  if (_mode === 'pair') {
+    _pairs.forEach(pair => {
+      if (pair[0] === name) pair[0] = '';
+      if (pair[1] === name) pair[1] = '';
+    });
+    renderPairs();
   }
   renderSelectedPlayers();
 }
