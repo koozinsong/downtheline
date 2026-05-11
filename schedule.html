@@ -1561,6 +1561,8 @@ function addGuest(gender) {
   const selected = gender === 'female' ? _selectedFemales : _selectedMales;
   selected.push(name);
   renderSelectedPlayers();
+  if (_mode === 'pair') renderPairs();
+  if (_mode === 'team') renderTeamPlayers();
 }
 
 function isGuest(name) { return _guests.has(name); }
