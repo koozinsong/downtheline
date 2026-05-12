@@ -84,7 +84,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .court-list .empty{padding:.5rem;font-size:.75rem;text-align:left;}
 .rule-when{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;letter-spacing:.5px;}
 .rule-desc{font-size:.75rem;color:var(--sm);margin-bottom:.6rem;line-height:1.5;}
-.rule-link{display:inline-block;font-size:.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--g3);text-decoration:none;border-top:1px solid var(--ll);padding-top:.5rem;margin-top:.2rem;}
+.rule-link{display:block;font-size:.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--g3);text-decoration:none;padding:.4rem 0;}
+.rule-link:first-of-type{border-top:1px solid var(--ll);margin-top:.3rem;padding-top:.55rem;}
 .rule-link:hover{color:var(--g);}
 
 /* Modal */
@@ -441,7 +442,7 @@ const COURT_RULES=[
   {name:'내곡',cls:'naegok',when:'매월 10일 09:00',desc:'다음 달 예약 오픈 · 네이버 예약',link:'https://m.place.naver.com/place/1257947832/home?entry=pll&bk_query=%EB%82%B4%EA%B3%A1%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5'},
   {name:'장충',cls:'jangchung',when:'매월 10일·25일 10:00',desc:'서울시 공공서비스 예약',link:'https://yeyak.seoul.go.kr'},
   {name:'양재',cls:'yangjae',when:'매월 1일 09:00',desc:'차월 예약 오픈 · 매헌 시민의숲 · 네이버 예약',link:'https://booking.naver.com/booking/10/bizes/210031'},
-  {name:'88 (논현)',cls:'other',when:'문의 필요',desc:'논현동 위치 · 별도 안내',link:''},
+  {name:'88',cls:'other',when:'전화 예약',desc:'서초구 사평대로 335 · 지하1층(실내) / 옥상6층(야외)',phone:'010-2836-8890',link:'https://naver.me/FMcgjCYY',linkLabel:'지도 보기 →'},
 ];
 
 function renderCourtLists(){
@@ -451,7 +452,8 @@ function renderCourtLists(){
       <h3>${r.name}</h3>
       <div class="rule-when">${r.when}</div>
       <div class="rule-desc">${r.desc}</div>
-      ${r.link?`<a class="rule-link" href="${r.link}" target="_blank" rel="noopener">예약하러 가기 →</a>`:''}
+      ${r.phone?`<a class="rule-link" href="tel:${r.phone.replace(/-/g,'')}">📞 ${r.phone}</a>`:''}
+      ${r.link?`<a class="rule-link" href="${r.link}" target="_blank" rel="noopener">${r.linkLabel||'예약하러 가기 →'}</a>`:''}
     </div>
   `).join('');
 }
