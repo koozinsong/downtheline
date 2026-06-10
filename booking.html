@@ -43,10 +43,12 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .bk-table thead th:hover:not(:first-child){background:var(--iv3);}
 .bk-table tbody th{background:var(--iv2);font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--sm);font-size:.72rem;letter-spacing:.5px;padding:.4rem .3rem;}
 .bk-table tbody tr{height:72px;}
-.bk-table td{cursor:pointer;background:var(--iv);transition:filter .15s;padding:0;min-width:72px;}
+.bk-table td{cursor:pointer;background:var(--iv);transition:filter .15s;padding:0;min-width:72px;height:72px;}
 .bk-table td.bk-empty{background:#fbf9f4;}
+.bk-table td.date-end{border-right:3px solid var(--g2);}
 .bk-table thead th{min-width:72px;}
-.bk-table thead th:first-child{min-width:96px;}
+.bk-table thead th:not(:first-child){border-right:3px solid var(--g2);}
+.bk-table thead th:first-child{min-width:96px;border-right:1px solid var(--ll);}
 .bk-table td:hover{filter:brightness(.96);}
 .bk-cell{display:flex;flex-direction:column;height:100%;}
 .bk-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--w);padding:.25rem .2rem;line-height:1.2;gap:.08rem;text-align:center;position:relative;}
@@ -471,7 +473,7 @@ function renderCal(){
       const date=ymd(viewYear,viewMonth,d);
       const lanes=laneCache[date];
       if(!lanes.length){
-        html+=`<td class="bk-empty" onclick="openDay('${date}')"></td>`;
+        html+=`<td class="bk-empty date-end" onclick="openDay('${date}')"></td>`;
         return;
       }
       lanes.forEach((lane,laneIdx)=>{
@@ -483,11 +485,24 @@ function renderCal(){
           const startEff=Math.max(b.range.start,6);
           const endEff=Math.min(b.range.end,12);
           const span=endEff-startEff;
-          if(!occupied[key]) occupied[key]=new Set();
-          for(let i=0;i<span;i++) occupied[key].add(h+i);
-          html+=`<td rowspan="${span}" onclick="openDay('${date}')">${renderSlot(b)}</td>`;
+          // colspan 계산: 오른쪽으로 비어있는 lane이 있으면 확장
+          let colspan=1;
+          for(let i=laneIdx+1;i<lanes.length;i++){
+            const overlaps=lanes[i].some(item=>item.range.start<endEff&&item.range.end>startEff);
+            if(overlaps) break;
+            colspan++;
+          }
+          // 점유 표시 (rowspan × colspan 영역)
+          for(let li=laneIdx;li<laneIdx+colspan;li++){
+            const k=`${date}|${li}`;
+            if(!occupied[k]) occupied[k]=new Set();
+            for(let i=0;i<span;i++) occupied[k].add(h+i);
+          }
+          const isDateEnd=(laneIdx+colspan-1)===lanes.length-1;
+          html+=`<td rowspan="${span}" colspan="${colspan}" class="${isDateEnd?'date-end':''}" onclick="openDay('${date}')">${renderSlot(b)}</td>`;
         } else {
-          html+=`<td class="bk-empty" onclick="openDay('${date}')"></td>`;
+          const isDateEnd=laneIdx===lanes.length-1;
+          html+=`<td class="bk-empty ${isDateEnd?'date-end':''}" onclick="openDay('${date}')"></td>`;
         }
       });
     });
