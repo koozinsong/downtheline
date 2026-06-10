@@ -42,10 +42,10 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .bk-table thead th.today{background:rgba(184,147,58,.18);color:var(--gd);}
 .bk-table thead th:hover:not(:first-child){background:var(--iv3);}
 .bk-table tbody th{background:var(--iv2);font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--sm);font-size:.72rem;letter-spacing:.5px;padding:.4rem .3rem;}
-.bk-table td{cursor:pointer;height:62px;background:var(--iv);transition:filter .15s;padding:0;}
+.bk-table td{cursor:pointer;height:72px;background:var(--iv);transition:filter .15s;padding:0;}
 .bk-table td:hover{filter:brightness(.96);}
-.bk-cell{display:flex;flex-direction:column;height:100%;min-height:62px;}
-.bk-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--w);padding:.25rem .2rem;line-height:1.2;gap:.08rem;text-align:center;}
+.bk-cell{display:flex;flex-direction:column;height:100%;min-height:72px;}
+.bk-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--w);padding:.25rem .2rem;line-height:1.2;gap:.08rem;text-align:center;position:relative;}
 .bk-slot-court{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;}
 .bk-slot-who{font-size:.64rem;font-weight:500;opacity:.95;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .bk-slot-status{font-size:.55rem;background:rgba(0,0,0,.25);padding:.02rem .3rem;border-radius:2px;letter-spacing:.5px;margin-top:.05rem;}
@@ -55,6 +55,12 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .bk-slot.yangjae{background:var(--yangjae);}
 .bk-slot.other{background:var(--other);}
 .bk-slot.canceled{background:var(--sm2);opacity:.65;}
+.bk-slot.tentative{box-shadow:inset 0 0 0 2px rgba(255,255,255,.6);}
+.bk-slot.tentative::after{content:"?";position:absolute;top:.1rem;right:.3rem;font-size:.7rem;font-weight:900;color:rgba(255,255,255,.95);line-height:1;}
+.bk-slot.to-cancel{box-shadow:inset 0 0 0 2px #e74c3c;background:repeating-linear-gradient(45deg,#9a615a,#9a615a 6px,#7a4845 6px,#7a4845 12px)!important;}
+.bk-slot.to-cancel::after{content:"⚠";position:absolute;top:.1rem;right:.3rem;font-size:.72rem;color:#fff;line-height:1;}
+.bk-slot.to-cancel .bk-slot-court{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.85);}
+.bk-slot-time{font-size:.55rem;font-weight:600;opacity:.88;letter-spacing:.3px;line-height:1.1;}
 .bk-slot-no{font-size:.58rem;opacity:.92;font-weight:600;margin-top:.05rem;display:flex;align-items:center;justify-content:center;gap:.15rem;}
 .bk-slot-no .ic,.bk-slot-who .ic{font-size:.62rem;line-height:1;filter:saturate(.4);}
 .bk-slot-who{display:flex;align-items:center;justify-content:center;gap:.15rem;}
@@ -166,8 +172,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   .bk-table thead th{font-size:.72rem;padding:.4rem .15rem;}
   .bk-table thead th:first-child{width:64px;font-size:.6rem;}
   .bk-table tbody th{font-size:.55rem;padding:.3rem .15rem;letter-spacing:0;}
-  .bk-table td{height:50px;}
-  .bk-cell{min-height:50px;}
+  .bk-table td{height:60px;}
+  .bk-cell{min-height:60px;}
   .bk-slot{padding:.15rem .12rem;}
   .bk-slot-court{font-size:.66rem;}
   .bk-slot-who{font-size:.55rem;}
@@ -191,6 +197,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   <div class="page-title">Court<br><em>Booking</em></div>
   <p class="page-sub">기본: 매주 일요일 06:00–08:00 세곡 (2026-06까지) · 날짜를 클릭하여 추가하거나 수정</p>
 
+  <div id="last-updated" style="font-size:.7rem;color:var(--sm);margin-bottom:.5rem;text-align:right;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;"></div>
+
   <div class="cal-card">
     <div class="cal-header">
       <button class="cal-btn" onclick="changeMonth(-1)">◀ 이전</button>
@@ -209,6 +217,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     <span class="legend-dot jangchung">장충</span>
     <span class="legend-dot yangjae">양재</span>
     <span class="legend-dot other">기타</span>
+    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;background:repeating-linear-gradient(45deg,#9a615a,#9a615a 4px,#7a4845 4px,#7a4845 8px);border:1.5px solid #e74c3c;display:inline-block;"></span>⚠ 취소 예정</span>
+    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;background:var(--g3);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7);display:inline-block;"></span>? 미확정</span>
   </div>
 
   <h2 class="section-title">예약 오픈 <em>안내</em></h2>
@@ -287,7 +297,7 @@ const AT_BASE='appDtlXaLReCaDeE6';
 const AT=`https://api.airtable.com/v0/${AT_BASE}`;
 const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
 
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
+async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id,createdTime:rec.createdTime};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
 async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
 async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
@@ -359,7 +369,19 @@ function parseTimeRange(t){
   return m?{start:+m[1],end:+m[2]}:null;
 }
 
+function updateLastUpdated(){
+  const el=document.getElementById('last-updated');
+  if(!el) return;
+  const max=bookings.reduce((m,b)=>b.createdTime&&b.createdTime>m?b.createdTime:m,'');
+  if(max){
+    const d=new Date(max);
+    const s=d.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    el.textContent=`Last updated · ${s}`;
+  } else el.textContent='';
+}
+
 function renderCal(){
+  updateLastUpdated();
   document.getElementById('cal-title').textContent=`${viewYear}.${pad(viewMonth)}`;
   const grid=document.getElementById('cal-grid');
   const daysInMonth=new Date(Date.UTC(viewYear,viewMonth,0)).getUTCDate();
@@ -404,10 +426,19 @@ function renderCal(){
         for(let i=0;i<span;i++) occupied[date].add(h+i);
         const slots=startingBks.map(b=>{
           const cls=courtCls[b.court]||'';
-          const venue=b.court==='기타'?(b.memo||'기타'):(b.court||'-');
+          const memoStr=String(b.memo||'').trim();
+          // 기타 코트는 메모에 코트명을 넣으므로 venue는 memo, 그 외엔 메모에 상태 플래그가 들어감
+          const isTentative=memoStr==='미확정';
+          const isToCancel=memoStr==='취소 예정';
+          const memoIsFlag=isTentative||isToCancel;
+          const venue=b.court==='기타'?(!memoIsFlag&&memoStr?memoStr:'기타'):(b.court||'-');
           const no=displayCourtNo(b[COURT_NO_KEY]);
           const whoText=whoName(b.who);
-          return `<div class="bk-slot ${cls} ${b.status==='취소'?'canceled':''}">
+          const r=parseTimeRange(b.time);
+          const timeShort=r?`${r.start}-${r.end}시`:'';
+          const stateCls=b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':''));
+          return `<div class="bk-slot ${cls} ${stateCls}">
+            ${timeShort?`<div class="bk-slot-time">${timeShort}</div>`:''}
             <div class="bk-slot-court">${venue}</div>
             ${no?`<div class="bk-slot-no"><span class="ic">🎾</span>${no}</div>`:''}
             ${whoText?`<div class="bk-slot-who"><span class="ic">👤</span>${whoText}</div>`:''}
