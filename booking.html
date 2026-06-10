@@ -189,7 +189,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 <div class="wrap">
   <div class="page-title">Court<br><em>Booking</em></div>
-  <p class="page-sub">기본: 매주 일요일 06:00–08:00 세곡 · 날짜를 클릭하여 추가하거나 수정</p>
+  <p class="page-sub">기본: 매주 일요일 06:00–08:00 세곡 (2026-06까지) · 날짜를 클릭하여 추가하거나 수정</p>
 
   <div class="cal-card">
     <div class="cal-header">
@@ -414,8 +414,8 @@ function renderCal(){
           </div>`;
         }).join('');
         html+=`<td rowspan="${span}" onclick="openDay('${date}')"><div class="bk-cell">${slots}</div></td>`;
-      } else if(h===6&&isFreeAt(date,6)&&isFreeAt(date,7)){
-        // 디폴트: 매주 일요일 06:00-08:00 세곡
+      } else if(h===6&&date<'2026-07-01'&&isFreeAt(date,6)&&isFreeAt(date,7)){
+        // 디폴트: 매주 일요일 06:00-08:00 세곡 (2026-06까지)
         if(!occupied[date]) occupied[date]=new Set();
         occupied[date].add(6);occupied[date].add(7);
         html+=`<td rowspan="2" onclick="openDay('${date}')"><div class="bk-cell">
@@ -438,7 +438,7 @@ function renderCal(){
 }
 
 const COURT_RULES=[
-  {name:'세곡',cls:'segok',when:'클럽 정기',desc:'매주 일요일 06:00–08:00 (1번)',link:''},
+  {name:'세곡',cls:'segok',when:'2026-06 종료',desc:'매주 일요일 06:00–08:00 정기 예약 (1번) — 7월부터 종료',link:''},
   {name:'내곡',cls:'naegok',when:'매월 10일 09:00',desc:'다음 달 예약 오픈 · 네이버 예약',link:'https://m.place.naver.com/place/1257947832/home?entry=pll&bk_query=%EB%82%B4%EA%B3%A1%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5'},
   {name:'장충',cls:'jangchung',when:'매월 10일·25일 10:00',desc:'서울시 공공서비스 예약',link:'https://yeyak.seoul.go.kr'},
   {name:'양재',cls:'yangjae',when:'매월 1일 09:00',desc:'차월 예약 오픈 · 매헌 시민의숲 · 네이버 예약',link:'https://booking.naver.com/booking/10/bizes/210031'},
@@ -488,15 +488,16 @@ function closeModal(){
 function renderDayList(){
   const realList=bookings.filter(b=>String(b.date||'').substring(0,10)===selectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   const el=document.getElementById('day-list');
-  // 일요일이고 6시 또는 7시를 덮는 세곡 예약이 없으면 가상 기본 세곡 항목 추가
+  // 일요일이고 6시 또는 7시를 덮는 세곡 예약이 없으면 가상 기본 세곡 항목 추가 (2026-06까지)
   const [yy,mm,dd]=selectedDate.split('-').map(Number);
   const isSunday=new Date(Date.UTC(yy,mm-1,dd)).getUTCDay()===0;
+  const inDefaultPeriod=selectedDate<'2026-07-01';
   const segokCovers6=realList.some(b=>{
     if(b.court!=='세곡') return false;
     const r=parseTimeRange(b.time);
     return r&&r.start<=6&&r.end>6;
   });
-  const items=(isSunday&&!segokCovers6)?[{_default:true,court:'세곡',time:'06:00-08:00',status:'기본'},...realList]:realList;
+  const items=(isSunday&&inDefaultPeriod&&!segokCovers6)?[{_default:true,court:'세곡',time:'06:00-08:00',status:'기본'},...realList]:realList;
   if(!items.length){el.innerHTML=`<div class="empty">예약 없음</div>`;return;}
   el.innerHTML=items.map(b=>{
     const cls=courtCls[b.court]||'';
