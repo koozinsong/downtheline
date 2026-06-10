@@ -220,8 +220,8 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
 .cal-title{color:#fff;font-size:1.45rem;letter-spacing:2.8px;}
 .cal-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;color:#fff;padding:.48rem .85rem;}
 .cal-btn:hover{background:rgba(233,255,111,.2);border-color:rgba(233,255,111,.5);}
-.cal-grid{background:rgba(255,255,255,.35);padding:.65rem;display:none;}
-.mobile-agenda{display:block;padding:.85rem;background:rgba(255,255,255,.35);}
+.cal-grid{background:rgba(255,255,255,.35);padding:.65rem;}
+.mobile-agenda{display:none;}
 .agenda-day{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:18px;padding:.95rem;box-shadow:0 12px 30px rgba(43,111,135,.07);cursor:pointer;}
 .agenda-day + .agenda-day{margin-top:.7rem;}
 .agenda-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.75rem;}
@@ -294,8 +294,8 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
 .toast.ok{background:var(--g);}.toast.err{background:#c0392b;}
 
 @media(min-width:760px){
-  .cal-card{max-width:390px;margin-left:auto;margin-right:0;}
-  .legend{max-width:390px;margin-left:auto;margin-right:0;}
+  .cal-grid{display:block;}
+  .mobile-agenda{display:none;}
 }
 
 @media(max-width:600px){
