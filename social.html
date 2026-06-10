@@ -65,6 +65,48 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   .spot-arrow{display:none;}
   .spot-photo{flex:0 0 160px;height:110px;}
 }
+/* v0.2 A theme: mobile-first operations */
+:root{
+  --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
+  --iv:#fbfbf7;--iv2:#eef7f8;--iv3:#ddeff3;
+  --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
+  --gd:#ff7a59;--gdl:#e9ff6f;--w:#ffffff;
+  --ll:rgba(16,24,32,.09);
+}
+body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
+#nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;}
+.nav-back{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.42rem .72rem;border-radius:999px;letter-spacing:1.5px;}
+.nav-title{color:var(--ink);}
+.wrap{max-width:1040px;padding:2rem 1.2rem 3.5rem;}
+.page-title{font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-.5px;}
+.page-title em{color:var(--g);}
+.page-sub{font-weight:400;margin-bottom:1.4rem;}
+#map{border:1px solid rgba(16,24,32,.08);border-radius:22px;box-shadow:0 18px 44px rgba(43,111,135,.1);overflow:hidden;}
+.spot-card{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(43,111,135,.07);}
+.spot-card:hover{border-color:rgba(43,111,135,.32);}
+.spot-num{background:#101820;color:var(--gdl);}
+.spot-type,.spot-label,.spot-val a{color:var(--g);}
+.spot-tag{border-radius:999px;background:#eef7f8;}
+.spot-tag.fav{background:rgba(233,255,111,.55);color:#101820;}
+@media(max-width:600px){
+  html,body{max-width:100%;overflow-x:hidden;}
+  #nav{height:58px;padding:0 .8rem;gap:.45rem;overflow:hidden;}
+  .nav-back{font-size:.62rem;padding:.34rem .52rem;flex:0 0 auto;}
+  .nav-title{font-size:.78rem;letter-spacing:1.4px;white-space:nowrap;}
+  .wrap{padding:1.15rem .75rem 3rem;max-width:100%;}
+  .page-title{font-size:2.35rem;margin-bottom:.35rem;}
+  .page-sub{font-size:.78rem;line-height:1.6;margin-bottom:1rem;}
+  #map{height:260px;border-radius:18px;margin-bottom:1rem;}
+  .spot-card{border-radius:18px;margin-bottom:.75rem;}
+  .spot-head{flex-direction:row;align-items:stretch;}
+  .spot-num{min-width:46px;padding:0;font-size:1.1rem;}
+  .spot-info{padding:.85rem .9rem;min-width:0;}
+  .spot-name{font-size:1rem;white-space:normal;}
+  .spot-addr{word-break:keep-all;}
+  .spot-detail{padding:1rem;}
+  .spot-meta{grid-template-columns:1fr;gap:.18rem;}
+  .spot-photos{max-width:100%;}
+}
 </style>
 </head>
 <body>

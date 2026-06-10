@@ -9,20 +9,24 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --g:    #2c4a35;
-  --g2:   #3a5c44;
-  --g3:   #4e7a5a;
-  --glt:  #7aab87;
-  --iv:   #f7f3ed;
-  --iv2:  #ede8e0;
-  --iv3:  #e2dbd0;
+  --g:    #276348;
+  --g2:   #34775a;
+  --g3:   #4a936d;
+  --glt:  #8fcaa0;
+  --iv:   #fbfaf5;
+  --iv2:  #f1eee4;
+  --iv3:  #e6dfd2;
   --ink:  #1a1f1c;
   --ink2: #2e3530;
   --sm:   #6b7570;
   --sm2:  #9aa49e;
-  --gd:   #b8933a;
-  --gdl:  #d4b36a;
+  --gd:   #d98b4a;
+  --gdl:  #f1c46d;
   --w:    #ffffff;
+  --sky:  #b9d8dc;
+  --mint: #dfeee6;
+  --clay: #d9895b;
+  --lime: #d9ec83;
   --ll:   rgba(26,31,28,.1);
   --ld:   rgba(255,255,255,.08);
 }
@@ -42,7 +46,7 @@ a,button,.hov{cursor:none;}
 
 /* ── NAV ── */
 #nav{position:fixed;top:0;left:0;right:0;z-index:500;height:64px;display:flex;align-items:stretch;transition:background .35s,box-shadow .35s;}
-#nav.scrolled{background:rgba(247,243,237,.97);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--ll);}
+#nav.scrolled{background:rgba(251,250,245,.95);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(26,31,28,.08);}
 .nav-brand{display:flex;align-items:center;gap:.9rem;padding:0 2.2rem;text-decoration:none;}
 .nav-mark{width:36px;height:36px;border:1.5px solid var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800;color:var(--g);position:relative;overflow:hidden;}
 .nav-mark::after{content:'';position:absolute;width:100%;height:1.5px;background:var(--g);opacity:.25;}
@@ -51,50 +55,63 @@ a,button,.hov{cursor:none;}
 .nav-sub{font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--sm);}
 .nav-mid{flex:1;display:flex;align-items:center;justify-content:center;}
 nav ul{list-style:none;display:flex;}
-nav ul li a{display:flex;align-items:center;height:64px;padding:0 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+nav ul li a{display:flex;align-items:center;height:64px;padding:0 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;white-space:nowrap;}
 nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
 .nav-divider{width:1px;background:var(--ll);margin:0 .5rem;align-self:stretch;}
-.nav-play{color:var(--gd) !important;opacity:.8;}
+.nav-play{color:var(--clay) !important;opacity:.9;}
 .nav-play:hover{opacity:1;border-bottom-color:var(--gd) !important;}
 .nav-right{display:flex;align-items:center;gap:1.5rem;padding:0 1.8rem;}
 .nav-ig{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm2);text-decoration:none;transition:color .2s;}
 .nav-ig:hover{color:var(--g);}
-.nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--w);background:var(--g);padding:.55rem 1.5rem;text-decoration:none;transition:background .2s;white-space:nowrap;}
-.nav-btn:hover{background:var(--g2);}
+.nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);background:var(--lime);padding:.55rem 1.5rem;text-decoration:none;transition:background .2s,transform .2s;white-space:nowrap;border:1px solid rgba(26,31,28,.08);}
+.nav-btn:hover{background:#edf6a8;transform:translateY(-1px);}
 
 /* ── HERO ── */
-.hero{height:100vh;min-height:700px;background:var(--g);position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;}
+.hero{height:100vh;min-height:700px;background:linear-gradient(135deg,#34775a 0%,#276348 54%,#3f8a65 100%);position:relative;overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr;}
 
 /* left: court SVG */
 .hero-court{position:relative;overflow:hidden;}
 .hero-court svg{position:absolute;inset:0;width:100%;height:100%;}
-.hero-court::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(44,74,53,0) 60%,rgba(44,74,53,1) 100%);}
+.hero-court::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(36,69,51,0) 58%,rgba(36,69,51,.82) 88%,rgba(251,250,245,.95) 100%);}
 
 /* right: text */
-.hero-txt{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;padding:8rem 4.5rem 5rem 2.5rem;}
+.hero-txt{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;padding:8rem 4.5rem 5rem 3rem;}
 .h-eye{display:flex;align-items:center;gap:.9rem;margin-bottom:2.2rem;opacity:0;animation:fup .8s ease .3s forwards;}
-.h-eye-ln{width:32px;height:2px;background:var(--gd);}
-.h-eye-tx{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--gdl);}
+.h-eye-ln{width:32px;height:2px;background:var(--clay);}
+.h-eye-tx{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--clay);}
 .h-title{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;line-height:.86;margin-bottom:2.4rem;opacity:0;animation:fup 1s ease .5s forwards;}
-.ht-a{display:block;font-size:clamp(4.5rem,9vw,8.5rem);font-weight:900;color:var(--w);letter-spacing:-2px;}
-.ht-b{display:block;font-size:clamp(4.5rem,9vw,8.5rem);font-weight:200;font-style:italic;color:transparent;-webkit-text-stroke:1.5px var(--glt);letter-spacing:-1px;}
-.ht-ko{display:block;margin-top:.9rem;font-family:'Noto Sans KR',sans-serif;font-size:clamp(1rem,2vw,1.5rem);font-weight:300;letter-spacing:7px;color:rgba(255,255,255,.38);-webkit-text-stroke:0;}
-.h-rule{width:50px;height:2px;background:var(--gd);margin-bottom:2rem;opacity:0;animation:fup .7s ease .8s forwards;}
-.h-desc{font-size:.9rem;color:rgba(255,255,255,.5);line-height:1.95;font-weight:300;max-width:380px;margin-bottom:2.6rem;opacity:0;animation:fup .7s ease .95s forwards;}
+.ht-a{display:block;font-size:clamp(4.3rem,8.5vw,8rem);font-weight:900;color:#f8fbf5;letter-spacing:-2px;}
+.ht-b{display:block;font-size:clamp(4.3rem,8.5vw,8rem);font-weight:200;font-style:italic;color:transparent;-webkit-text-stroke:1.4px rgba(217,236,131,.72);letter-spacing:-1px;}
+.ht-ko{display:block;margin-top:.9rem;font-family:'Noto Sans KR',sans-serif;font-size:clamp(1rem,2vw,1.35rem);font-weight:400;letter-spacing:5px;color:rgba(255,255,255,.58);-webkit-text-stroke:0;}
+.h-rule{width:50px;height:2px;background:var(--lime);margin-bottom:2rem;opacity:0;animation:fup .7s ease .8s forwards;}
+.h-desc{font-size:.95rem;color:rgba(255,255,255,.72);line-height:1.9;font-weight:300;max-width:420px;margin-bottom:1.6rem;opacity:0;animation:fup .7s ease .95s forwards;}
 .h-btns{display:flex;gap:1rem;align-items:center;opacity:0;animation:fup .7s ease 1.1s forwards;}
-.btn-gd{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g);background:var(--gd);padding:.9rem 2.3rem;text-decoration:none;transition:background .2s,transform .15s;display:inline-block;}
-.btn-gd:hover{background:var(--gdl);transform:translateY(-1px);}
-.btn-gh{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;display:flex;align-items:center;gap:.7rem;transition:color .2s;}
+.btn-gd{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#213c2d;background:var(--lime);padding:.9rem 2.3rem;text-decoration:none;transition:background .2s,transform .15s;display:inline-block;box-shadow:0 12px 34px rgba(9,25,18,.18);}
+.btn-gd:hover{background:#edf6a8;transform:translateY(-1px);}
+.btn-gh{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.72);text-decoration:none;display:flex;align-items:center;gap:.7rem;transition:color .2s;}
 .btn-gh::after{content:'→';transition:transform .2s;}
 .btn-gh:hover{color:var(--w);}
 .btn-gh:hover::after{transform:translateX(4px);}
 
 /* stats bar */
-.h-stats{position:absolute;bottom:0;left:0;right:50%;display:flex;z-index:2;opacity:0;animation:fin 1s ease 1.4s forwards;}
-.h-st{flex:1;padding:1.2rem 1.5rem;background:rgba(20,32,24,.7);border-right:1px solid rgba(255,255,255,.06);backdrop-filter:blur(10px);}
+.h-stats{display:none;}
+.h-st{flex:1;padding:1.2rem 1.5rem;background:rgba(18,42,29,.72);border-right:1px solid rgba(255,255,255,.09);backdrop-filter:blur(10px);}
 .h-st:last-child{border-right:none;}
-.h-stn{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:var(--gdl);line-height:1;display:block;}
+.h-stn{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:var(--lime);line-height:1;display:block;}
 .h-stl{font-size:.58rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:.2rem;display:block;}
+
+.hero-panel{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;max-width:430px;margin-bottom:1.8rem;opacity:0;animation:fup .7s ease 1.05s forwards;}
+.hp-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:.85rem 1rem;backdrop-filter:blur(12px);}
+.hp-item[href]{display:block;text-decoration:none;}
+.hp-k{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:var(--lime);margin-bottom:.35rem;}
+.hp-v{font-size:.82rem;color:rgba(255,255,255,.84);line-height:1.45;font-weight:400;}
+.hp-v span{color:var(--sky);}
+.hp-list{display:flex;flex-direction:column;gap:.32rem;max-height:82px;overflow:hidden;}
+.hp-row{display:flex;align-items:baseline;justify-content:space-between;gap:.7rem;font-size:.8rem;color:var(--dawn-ink);line-height:1.3;}
+.hp-row strong{font-weight:700;white-space:nowrap;}
+.hp-row span{color:#55717c;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hp-more{font-size:.7rem;color:#55717c;margin-top:.35rem;}
+.mobile-shortcuts{display:none;}
 
 /* scroll */
 .h-scroll{position:absolute;bottom:2.2rem;right:3rem;z-index:2;display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;animation:fin 1s ease 1.9s forwards;}
@@ -134,7 +151,7 @@ nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
 .courts-h2{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2.5rem,4.5vw,4rem);font-weight:800;text-transform:uppercase;line-height:.9;letter-spacing:-1px;}
 .courts-h2 em{font-style:italic;color:var(--gdl);font-weight:300;}
 .courts-copy{font-size:.88rem;color:rgba(255,255,255,.45);line-height:2;font-weight:300;border-left:2px solid var(--gd);padding-left:1.4rem;}
-.courts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--ld);}
+.courts-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--ld);}
 .cc{padding:2.5rem 2rem;border-right:1px solid var(--ld);border-top:3px solid transparent;transition:background .25s;}
 .cc:last-child{border-right:none;}
 .cc:hover{background:rgba(255,255,255,.03);}
@@ -403,6 +420,143 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 .mob-ig:hover{color:var(--g);}
 .mob-btn{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.7rem 2rem;border:1.5px solid var(--g);color:var(--g);text-decoration:none;transition:background .2s,color .2s;}
 .mob-btn:hover{background:var(--g);color:var(--w);}
+
+/* v0.2 tone pass: brighter private-club operating home */
+#nav{background:rgba(251,250,245,.76);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(26,31,28,.06);}
+.nav-mark{background:#fff;border-color:rgba(44,74,53,.26);box-shadow:0 8px 24px rgba(31,57,42,.08);}
+nav ul li a{color:#56645b;}
+.nav-play{background:rgba(217,139,74,.08);padding-left:1.05rem;padding-right:1.05rem;margin:0 .15rem;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 86% 18%,rgba(185,216,220,.18),transparent 25%),radial-gradient(circle at 76% 72%,rgba(217,236,131,.14),transparent 28%);pointer-events:none;}
+.hero-court svg rect[width="700"]{filter:saturate(1.06) brightness(1.08);}
+.ticker{background:#244533;}
+.ti{color:rgba(255,255,255,.62);}
+.ts{color:var(--lime);opacity:.75;}
+.about{background:linear-gradient(180deg,#fbfaf5 0%,#f4f1e8 100%);}
+.about-lede{border-left-color:var(--clay);background:rgba(255,255,255,.56);padding:1.1rem 1.3rem;}
+.pillar{background:rgba(255,255,255,.42);}
+.courts{background:linear-gradient(135deg,#244533 0%,#2f6046 100%);}
+.courts-copy{border-left-color:var(--lime);color:rgba(255,255,255,.66);}
+.cc-badge{background:var(--lime);color:#244533;}
+.ct-dot{background:var(--lime);}
+.ct-tx,.cc-loc{color:var(--lime);}
+.acts{background:#eef5ef;}
+.act{border-radius:8px;}
+.events{background:#fbfaf5;}
+.evt-card{background:#fff;border-radius:8px;border-left:none;box-shadow:0 1px 0 rgba(26,31,28,.08);}
+.evt-card:hover{background:#f4f8f2;transform:translateY(-1px);}
+.mem{background:#f2efe6;}
+.mc{background:#fff;border-color:rgba(26,31,28,.08);}
+.mc.feat{background:linear-gradient(180deg,#244533 0%,#315840 100%);}
+.mc-badge,.eff-tag{background:var(--lime);color:#244533;}
+.join{background:linear-gradient(135deg,#244533 0%,#315840 58%,#d9895b 160%);}
+footer{background:#17271f;border-top-color:var(--lime);}
+
+/* v0.2 A theme: Seoul Dawn Court */
+:root{
+  --dawn-bg:#fbfbf7;
+  --dawn-sky:#e9f5f8;
+  --dawn-blue:#2b6f87;
+  --dawn-coral:#ff7a59;
+  --dawn-yellow:#e9ff6f;
+  --dawn-ink:#101820;
+  --dawn-muted:#60707a;
+}
+body{background:var(--dawn-bg);color:var(--dawn-ink);}
+#nav{background:rgba(255,255,255,.76);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);}
+.nav-mark{background:var(--dawn-yellow);border-color:rgba(16,24,32,.08);color:var(--dawn-ink);}
+.nav-mark::after{background:var(--dawn-ink);opacity:.12;}
+.nav-name{color:var(--dawn-ink);}
+.nav-sub{color:#7b878b;}
+nav ul li a{color:#59666d;}
+nav ul li a:hover{color:var(--dawn-blue);border-bottom-color:var(--dawn-yellow);}
+.nav-play{color:var(--dawn-coral)!important;background:rgba(255,122,89,.08);}
+.nav-play:hover{border-bottom-color:var(--dawn-coral)!important;}
+.nav-btn{background:var(--dawn-yellow);color:var(--dawn-ink);box-shadow:0 8px 24px rgba(43,111,135,.08);}
+.hero{height:100vh;min-height:640px;background:linear-gradient(135deg,#fbfbf7 0%,#fbfbf7 44%,#e9f5f8 100%);grid-template-columns:.9fr 1.1fr;color:var(--dawn-ink);}
+.hero::before{background:radial-gradient(circle at 84% 20%,rgba(233,255,111,.55),transparent 19%),radial-gradient(circle at 80% 74%,rgba(43,111,135,.13),transparent 28%);}
+.hero-court{order:2;color:var(--dawn-blue);}
+.hero-court svg{opacity:.2;transform:rotate(8deg) scale(.94);left:8%;width:112%;}
+.hero-court::after{background:linear-gradient(to right,rgba(251,251,247,.72) 0%,rgba(233,245,248,.2) 45%,rgba(233,245,248,.88) 100%);}
+.hero-txt{order:1;padding:6.5rem 2.5rem 3rem 5rem;color:var(--dawn-ink);}
+.h-eye-ln{background:var(--dawn-coral);}
+.h-eye-tx{color:var(--dawn-coral);}
+.ht-a{color:var(--dawn-ink);}
+.ht-b{color:var(--dawn-blue);-webkit-text-stroke:0;}
+.ht-ko{color:#2d4654;font-weight:700;}
+.h-rule{background:var(--dawn-yellow);}
+.h-desc{color:var(--dawn-muted);font-weight:400;}
+.hp-item{background:rgba(255,255,255,.7);border:1px solid rgba(16,24,32,.08);box-shadow:0 12px 30px rgba(43,111,135,.08);}
+.hp-k{color:var(--dawn-coral);}
+.hp-v{color:var(--dawn-ink);}
+.hp-v span{color:#55717c;}
+.btn-gd{background:var(--dawn-yellow);color:var(--dawn-ink);box-shadow:0 14px 34px rgba(43,111,135,.12);}
+.btn-gd:hover{background:#f0ff8d;}
+.btn-gh{color:var(--dawn-ink);border:1px solid rgba(16,24,32,.1);padding:.9rem 1.4rem;background:rgba(255,255,255,.62);}
+.btn-gh:hover{color:var(--dawn-blue);}
+.h-scroll span{color:rgba(16,24,32,.3);}
+.h-scroll-bar{background:linear-gradient(to bottom,var(--dawn-coral),transparent);}
+.ticker{background:var(--dawn-ink);}
+.ti{color:rgba(255,255,255,.62);}
+.ts{color:var(--dawn-yellow);}
+.about{background:linear-gradient(180deg,#fbfbf7 0%,#eef8f8 100%);}
+.about-lede{border-left-color:var(--dawn-coral);background:rgba(255,255,255,.72);}
+.ey,.sec-h2 em,.sec-h2sm em,.sec-lk,.ec-label,.em-key{color:var(--dawn-blue);}
+.ey::before{background:var(--dawn-blue);}
+.courts{background:linear-gradient(135deg,#101820 0%,#173247 100%);}
+.courts-h2 em,.cc-loc,.ct-tx{color:var(--dawn-yellow);}
+.cc-badge,.mc-badge,.eff-tag{background:var(--dawn-yellow);color:var(--dawn-ink);}
+.ct-dot{background:var(--dawn-coral);}
+.acts{background:#eef8f8;}
+.events{background:#fbfbf7;}
+.mem{background:#eef8f8;}
+.mc.feat{background:linear-gradient(180deg,#101820 0%,#173247 100%);}
+.join{background:linear-gradient(135deg,#101820 0%,#173247 62%,#2b6f87 100%);}
+footer{background:#101820;border-top-color:var(--dawn-yellow);}
+
+@media(max-width:1024px){
+  .hero{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
+  .hero-court{order:0;}
+  .hero-court::after{background:linear-gradient(to bottom,rgba(251,251,247,.08) 0%,rgba(251,251,247,.84) 92%);}
+  .hero-txt{background:transparent;}
+}
+
+@media(max-width:600px){
+  .hero{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--dawn-ink);}
+  .hero-court{height:22vh;min-height:160px;color:var(--dawn-blue);}
+  .hero-court svg{opacity:.16;transform:rotate(11deg) scale(.9);left:23%;top:-10%;width:110%;height:125%;}
+  .hero-court::after{background:linear-gradient(to bottom,rgba(251,251,247,.06) 0%,rgba(251,251,247,.88) 94%);}
+  .hero-txt{flex:1;padding:.85rem 1rem 1.1rem;justify-content:flex-start;}
+  .h-eye{margin-bottom:.75rem;gap:.55rem;}
+  .h-eye-ln{width:22px;}
+  .h-eye-tx{font-size:.58rem;letter-spacing:3px;}
+  .h-title{margin-bottom:.75rem;line-height:.9;}
+  .h-title .ht-a,.h-title .ht-b{font-size:2.9rem;}
+  .h-title .ht-ko{font-size:.78rem;letter-spacing:3px;margin-top:.45rem;}
+  .h-rule{width:42px;margin-bottom:.9rem;}
+  .h-desc{font-size:.82rem;line-height:1.75;margin-bottom:.9rem;}
+  .hero-panel{grid-template-columns:1fr;gap:.45rem;margin-bottom:.8rem;}
+  .hp-item{padding:.65rem .7rem;min-height:74px;}
+  .hp-k{font-size:.5rem;letter-spacing:1.8px;margin-bottom:.28rem;}
+  .hp-v{font-size:.74rem;line-height:1.45;}
+  .h-btns{display:none;}
+  .btn-gd{font-size:.7rem;padding:.72rem .8rem;}
+  .btn-gh{justify-content:center;border:1px solid rgba(255,255,255,.18);padding:.72rem .8rem;font-size:.68rem;}
+  .mobile-shortcuts{display:grid;grid-template-columns:1fr;gap:.55rem;opacity:0;animation:fup .7s ease 1.2s forwards;}
+  .mobile-shortcuts a{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:.68rem .75rem;background:rgba(255,255,255,.74);border:1px solid rgba(16,24,32,.08);border-radius:14px;color:var(--dawn-ink);text-decoration:none;font-size:.76rem;font-weight:700;box-shadow:0 8px 22px rgba(43,111,135,.06);}
+  .mobile-shortcuts a::after{content:'→';font-family:'Barlow Condensed',sans-serif;color:var(--dawn-blue);}
+  .h-stats{display:none;}
+  .hp-item{background:rgba(255,255,255,.74);}
+  .btn-gh{justify-content:center;padding:.72rem .8rem;background:rgba(255,255,255,.74);}
+  .acts{padding-left:0;padding-right:0;}
+  .acts-head{padding:0 1rem;margin-bottom:1.2rem;display:block;}
+  .acts-head .sec-lk{margin-top:.7rem;}
+  .acts-row{display:grid;grid-template-columns:1fr;gap:.65rem;padding:0 1rem;overflow:visible;}
+  .act{width:100%;max-width:100%;flex:none;aspect-ratio:auto;min-height:150px;border-radius:18px;}
+  .act-ct{padding:1.1rem 1.15rem;}
+  .act-name{font-size:1.35rem;}
+  .act-desc{max-height:none;font-size:.74rem;line-height:1.55;color:rgba(255,255,255,.62);}
+  .act-num{font-size:3.2rem;top:.85rem;right:.9rem;}
+}
 </style>
 </head>
 <body>
@@ -419,11 +573,11 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
   </a>
   <div class="nav-mid">
     <ul>
-      <li><a href="#about"        class="hov">클럽 소개</a></li>
+      <li><a href="#about"        class="hov">운영 홈</a></li>
       <li><a href="#courts"       class="hov">활동 코트</a></li>
-      <li><a href="#acts"         class="hov">활동</a></li>
+      <li><a href="#acts"         class="hov">클럽 생활</a></li>
       <li><a href="#events"       class="hov">이벤트</a></li>
-      <li><a href="#mem"          class="hov">멤버십</a></li>
+      <li><a href="#mem"          class="hov">멤버 안내</a></li>
       <li class="nav-divider"></li>
       <li><a href="schedule.html" class="hov nav-play">시합 일정</a></li>
       <li><a href="booking.html"  class="hov nav-play">코트 예약</a></li>
@@ -434,8 +588,8 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
     <span></span><span></span><span></span>
   </button>
   <div class="nav-right">
-    <a class="nav-ig hov" href="#">Instagram</a>
-    <a class="nav-btn hov" href="#mem">Join the Club</a>
+    <a class="nav-ig hov" href="travel.html">Travel Notes</a>
+    <a class="nav-btn hov" href="booking.html">이번 주 보기</a>
   </div>
 </nav>
 
@@ -443,11 +597,11 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 <div class="mob-menu" id="mobMenu">
   <div class="mob-menu-inner">
     <ul class="mob-nav">
-      <li><a href="#about">클럽 소개</a></li>
+      <li><a href="#about">운영 홈</a></li>
       <li><a href="#courts">활동 코트</a></li>
-      <li><a href="#acts">활동</a></li>
+      <li><a href="#acts">클럽 생활</a></li>
       <li><a href="#events">이벤트</a></li>
-      <li><a href="#mem">멤버십</a></li>
+      <li><a href="#mem">멤버 안내</a></li>
     </ul>
     <div class="mob-divider"></div>
     <ul class="mob-nav mob-nav-play">
@@ -456,8 +610,8 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
       <li><a href="travel.html">원정 이벤트</a></li>
     </ul>
     <div class="mob-bottom">
-      <a class="mob-ig" href="#">Instagram</a>
-      <a class="mob-btn" href="#mem">Join the Club</a>
+      <a class="mob-ig" href="travel.html">Travel Notes</a>
+      <a class="mob-btn" href="booking.html">이번 주 보기</a>
     </div>
   </div>
 </div>
@@ -468,8 +622,8 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
     <svg viewBox="0 0 700 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="cg" cx="50%" cy="75%" r="80%">
-          <stop offset="0%"   stop-color="#3a5c44"/>
-          <stop offset="100%" stop-color="#1e3328"/>
+          <stop offset="0%"   stop-color="#3f7e5e"/>
+          <stop offset="100%" stop-color="#24563d"/>
         </radialGradient>
         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="4" result="b"/>
@@ -484,12 +638,12 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
           <stop offset="100%" stop-color="#c8b840"/>
         </radialGradient>
         <linearGradient id="df" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#1e3328" stop-opacity=".7"/>
-          <stop offset="100%" stop-color="#1e3328" stop-opacity="0"/>
+          <stop offset="0%"   stop-color="#24563d" stop-opacity=".62"/>
+          <stop offset="100%" stop-color="#24563d" stop-opacity="0"/>
         </linearGradient>
         <linearGradient id="bf" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#2c4a35" stop-opacity="0"/>
-          <stop offset="100%" stop-color="#2c4a35" stop-opacity=".5"/>
+          <stop offset="0%"   stop-color="#276348" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#276348" stop-opacity=".42"/>
         </linearGradient>
       </defs>
       <rect width="700" height="900" fill="url(#cg)"/>
@@ -533,24 +687,35 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
   </div>
 
   <div class="hero-txt">
-    <div class="h-eye"><div class="h-eye-ln"></div><div class="h-eye-tx">Seoul · Est. 2026</div></div>
+    <div class="h-eye"><div class="h-eye-ln"></div><div class="h-eye-tx">Sunday Club · Seoul</div></div>
     <div class="h-title">
       <span class="ht-a">Down</span>
       <span class="ht-b">the Line</span>
-      <span class="ht-ko">테니스 소셜 클럽</span>
+      <span class="ht-ko">새벽 코트 운영 노트</span>
     </div>
     <div class="h-rule"></div>
-    <p class="h-desc">테니스를 사랑하는 사람들이 코트 안팎에서 함께 성장하는 공간. 스포츠와 라이프스타일이 만나는 서울의 프리미엄 테니스 소셜 클럽.</p>
+    <p class="h-desc">매주 일요일 새벽, 코트 예약과 시합 운영을 한눈에 확인하는 Down the Line 멤버 홈.</p>
+    <div class="hero-panel">
+      <a class="hp-item" href="booking.html">
+        <div class="hp-k">This Sunday</div>
+        <div class="hp-v" id="this-sunday-bookings">예약 정보를 불러오는 중...</div>
+      </a>
+    </div>
     <div class="h-btns">
-      <a href="#mem"   class="btn-gd hov">클럽 합류하기</a>
-      <a href="#about" class="btn-gh hov">클럽 소개</a>
+      <a href="booking.html" class="btn-gd hov">코트 예약 보기</a>
+      <a href="schedule.html" class="btn-gh hov">시합 일정 만들기</a>
+    </div>
+    <div class="mobile-shortcuts">
+      <a href="schedule.html">시합 일정 만들기</a>
+      <a href="travel.html">원정 정보</a>
+      <a href="social.html">소셜 스팟</a>
     </div>
   </div>
 
   <div class="h-stats">
-    <div class="h-st"><span class="h-stn">6</span><span class="h-stl">Members</span></div>
-    <div class="h-st"><span class="h-stn">1</span><span class="h-stl">Year</span></div>
-    <div class="h-st"><span class="h-stn">일요일</span><span class="h-stl">새벽</span></div>
+    <div class="h-st"><span class="h-stn">06:00</span><span class="h-stl">Sunday Start</span></div>
+    <div class="h-st"><span class="h-stn">세곡</span><span class="h-stl">Home Court</span></div>
+    <div class="h-st"><span class="h-stn">운영중</span><span class="h-stl">Member Notes</span></div>
   </div>
   <div class="h-scroll"><span>Scroll</span><div class="h-scroll-bar"></div></div>
 </section>
@@ -559,13 +724,13 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 <div class="ticker">
   <div class="ticker-t">
     <span class="ti">Down the Line</span><span class="ti ts">✦</span>
-    <span class="ti">세곡 · 내곡 · 장충</span><span class="ti ts">✦</span>
+    <span class="ti">세곡 · 내곡 · 장충 · 양재</span><span class="ti ts">✦</span>
     <span class="ti">매주 일요일 새벽</span><span class="ti ts">✦</span>
     <span class="ti">Tennis Social Club</span><span class="ti ts">✦</span>
     <span class="ti">Seoul Korea</span><span class="ti ts">✦</span>
     <span class="ti">Est. 2026</span><span class="ti ts">✦</span>
     <span class="ti">Down the Line</span><span class="ti ts">✦</span>
-    <span class="ti">세곡 · 내곡 · 장충</span><span class="ti ts">✦</span>
+    <span class="ti">세곡 · 내곡 · 장충 · 양재</span><span class="ti ts">✦</span>
     <span class="ti">매주 일요일 새벽</span><span class="ti ts">✦</span>
     <span class="ti">Tennis Social Club</span><span class="ti ts">✦</span>
     <span class="ti">Seoul Korea</span><span class="ti ts">✦</span>
@@ -605,7 +770,7 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
         <div class="ey" style="color:var(--gdl)"><span style="background:var(--gd);width:24px;height:2px;display:inline-block;margin-right:.8rem;"></span>Where We Play</div>
         <div class="courts-h2">Our<br><em>Courts</em></div>
       </div>
-      <p class="courts-copy">매주 일요일 새벽, 세곡을 기점으로 서울 곳곳의 코트에서 운동합니다.</p>
+      <p class="courts-copy">매주 일요일 새벽, 세곡을 기점으로 내곡, 장충, 양재 등 서울 곳곳의 코트에서 운동합니다.</p>
     </div>
     <div class="courts-grid rv" style="transition-delay:.15s">
       <div class="cc main hov">
@@ -626,6 +791,12 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
         <div class="cc-loc">장충테니스장 · 중구</div>
         <div class="cc-info">도심 속 역사 깊은 코트. 특별 이벤트 및 토너먼트 개최 장소.</div>
         <div class="cc-time"><div class="ct-dot"></div><div class="ct-tx">특별 이벤트 시</div></div>
+      </div>
+      <div class="cc hov">
+        <div class="cc-name">양재</div>
+        <div class="cc-loc">양재 시민의숲 인근 · 서초구</div>
+        <div class="cc-info">예약 오픈 일정에 맞춰 보조 코트로 활용하는 접근성 좋은 서초권 코트.</div>
+        <div class="cc-time"><div class="ct-dot"></div><div class="ct-tx">예약 가능 시</div></div>
       </div>
     </div>
   </div>
@@ -868,6 +1039,7 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
         <a href="#courts">세곡 (Home)</a>
         <a href="#courts">내곡</a>
         <a href="#courts">장충</a>
+        <a href="#courts">양재</a>
       </div>
     </div>
     <div>
@@ -908,6 +1080,81 @@ mobMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
   mobMenu.classList.remove('open');
   document.body.style.overflow='';
 }));
+
+// This Sunday booking summary
+const HOME_AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
+const HOME_AT_BASE='appDtlXaLReCaDeE6';
+const HOME_AT=`https://api.airtable.com/v0/${HOME_AT_BASE}`;
+const HOME_AT_H={'Authorization':`Bearer ${HOME_AT_TOKEN}`,'Content-Type':'application/json'};
+const HOME_COURT_NO_KEY='court Number';
+
+function homePad(n){return String(n).padStart(2,'0');}
+function homeTodayKST(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}).split(' ')[0];}
+function homeNextSunday(){
+  const today=homeTodayKST();
+  const [y,m,d]=today.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d));
+  const day=dt.getUTCDay();
+  dt.setUTCDate(dt.getUTCDate()+(day===0?0:7-day));
+  return dt.toISOString().split('T')[0];
+}
+function homeParseTimeRange(t){
+  const m=String(t||'').match(/(\d{1,2}):?\d*\s*[-~]\s*(\d{1,2})/);
+  return m?{start:+m[1],end:+m[2]}:null;
+}
+function homeDisplayCourtNo(no){
+  if(no===undefined||no===null||no==='') return '';
+  return /^\d+$/.test(String(no))?String(no)+'번':String(no);
+}
+async function homeAtGet(table){
+  let all=[],offset=null;
+  do{
+    const url=`${HOME_AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;
+    const r=await fetch(url,{headers:HOME_AT_H});
+    const d=await r.json();
+    all.push(...(d.records||[]).map(rec=>{
+      const o={id:rec.id,createdTime:rec.createdTime};
+      Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});
+      return o;
+    }));
+    offset=d.offset;
+  }while(offset);
+  return all;
+}
+function homeBookingLabel(b){
+  const range=homeParseTimeRange(b.time);
+  const time=range?`${homePad(range.start)}-${homePad(range.end)}시`:String(b.time||'시간 미정');
+  const court=b.court||'코트';
+  const no=b._default?'1번':homeDisplayCourtNo(b[HOME_COURT_NO_KEY]);
+  const memo=String(b.memo||'').trim();
+  const status=b.status==='취소'?'취소':(memo==='취소 예정'?'취소 예정':(memo==='미확정'?'미확정':''));
+  return {time,court,detail:[no,status].filter(Boolean).join(' · ')};
+}
+function homeRenderBookingSummary(items,date){
+  const el=document.getElementById('this-sunday-bookings');
+  if(!el) return;
+  const sorted=items.slice().sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));
+  const visible=sorted.slice(0,3).map(homeBookingLabel);
+  el.innerHTML=`<div class="hp-list">${visible.map(x=>`<div class="hp-row"><strong>${x.time}</strong><span>${x.court}${x.detail?' · '+x.detail:''}</span></div>`).join('')}</div>${sorted.length>3?`<div class="hp-more">+ ${sorted.length-3}개 예약 더 보기</div>`:`<div class="hp-more">${date.replace(/-/g,'.')} 예약 현황</div>`}`;
+}
+async function homeLoadSundayBookings(){
+  const date=homeNextSunday();
+  try{
+    const bookings=await homeAtGet('Booking');
+    const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date);
+    const coversSegok=real.some(b=>{
+      const r=homeParseTimeRange(b.time);
+      return b.court==='세곡'&&r&&r.start<=6&&r.end>6;
+    });
+    const items=(date<'2026-07-01'&&!coversSegok)
+      ? [{_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'},...real]
+      : real;
+    homeRenderBookingSummary(items.length?items:[{court:'예약 없음',time:'-',memo:''}],date);
+  }catch(e){
+    homeRenderBookingSummary([{_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'}],date);
+  }
+}
+homeLoadSundayBookings();
 </script>
 </body>
 </html>

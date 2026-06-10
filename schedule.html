@@ -269,6 +269,67 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   /* 버튼 */
   .gen-btn,.confirm-btn,.copy-btn{font-size:.72rem;padding:.8rem;}
 }
+/* v0.2 A theme: mobile-first operations */
+:root{
+  --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
+  --iv:#fbfbf7;--iv2:#eef7f8;--iv3:#ddeff3;
+  --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
+  --gd:#ff7a59;--gdl:#e9ff6f;--w:#ffffff;
+  --ll:rgba(16,24,32,.09);--ld:rgba(255,255,255,.08);
+  --female:#c9577f;--female-bg:#fdebf1;--male:#2b6f87;--male-bg:#e6f4f7;
+}
+body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
+#nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;}
+.nav-back{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.42rem .72rem;border-radius:999px;letter-spacing:1.5px;}
+.nav-title{color:var(--ink);}
+.nav-link{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);border-radius:999px;}
+.nav-link:hover,.nav-link.active{color:var(--ink);background:var(--gdl);border-color:var(--gdl);}
+.wrap{max-width:1040px;padding:2rem 1.2rem 3.5rem;}
+.page-title{font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-.5px;}
+.page-title em{color:var(--g);}
+.page-sub{font-weight:400;margin-bottom:2rem;}
+.setup-card,.stat-card,.conf-card,.match-row{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(43,111,135,.07);overflow:hidden;}
+.setup-label,.stat-card-title,.conf-round-label,.conf-result-link{color:var(--g);}
+.setup-label::before{background:var(--g);}
+.player-row input,.opt-select,.opt-input,.inline-score{background:#fbfbf7;border-color:rgba(16,24,32,.1);border-radius:10px;}
+.add-btn,.copy-btn,.confirm-btn,.gen-btn,.conf-action-btn{border-radius:999px;}
+.gen-btn,.confirm-btn{background:var(--g);}
+.gen-btn:hover,.confirm-btn:hover{background:var(--g2);}
+.cond-item,.fmt-item,.selected-player,.sum-card{border-radius:12px;}
+.cond-item.active,.fmt-item.active{border-color:var(--g);background:#eef7f8;}
+.round-head{background:#101820;border-radius:18px 18px 0 0;}
+.player-chip,.fmt-badge{border-radius:999px;}
+@media(max-width:600px){
+  html,body{max-width:100%;overflow-x:hidden;}
+  #nav{height:58px;padding:0 .8rem;gap:.45rem;overflow:hidden;}
+  .nav-back{font-size:.62rem;padding:.34rem .52rem;flex:0 0 auto;}
+  .nav-title{font-size:.78rem;letter-spacing:1.4px;white-space:nowrap;}
+  .nav-links{display:none;}
+  .wrap{padding:1.15rem .75rem 3rem;max-width:100%;}
+  .page-title{font-size:2.35rem;margin-bottom:.35rem;}
+  .page-sub{font-size:.78rem;line-height:1.6;margin-bottom:1.2rem;}
+  .setup-card{border-radius:18px;padding:1rem;}
+  .setup-section{margin-bottom:1.35rem;}
+  .options-row,.format-grid,.summary-row{grid-template-columns:1fr 1fr;}
+  .player-grid,.cond-grid,.stats-grid{grid-template-columns:1fr;}
+  .player-row{gap:.45rem;}
+  .conf-card{border-radius:18px;}
+  .conf-body{padding:.7rem;}
+  .conf-match-row{display:grid!important;grid-template-columns:1fr!important;gap:.45rem;background:#fbfbf7!important;border:1px solid rgba(16,24,32,.07);border-radius:14px;margin-bottom:.55rem;padding:.7rem!important;text-align:center;overflow:hidden;}
+  .conf-round-label{text-align:left;min-width:0;}
+  .conf-team{justify-content:center;flex-wrap:wrap;min-width:0;}
+  .conf-score-block{min-width:0;}
+  .conf-match-actions{justify-content:center;flex-wrap:wrap;}
+  .match-row{grid-template-columns:1fr!important;gap:.55rem;padding:.8rem!important;border-radius:14px;margin-bottom:.5rem;}
+  .match-row .team,.match-row .team.right{justify-content:center;min-width:0;}
+  .stat-card[style*="grid-column"]{grid-column:auto!important;}
+  .stat-table{table-layout:fixed;width:100%;}
+  .stat-table td,.stat-table th{word-break:keep-all;overflow:hidden;text-overflow:ellipsis;}
+  div[style*="grid-template-columns:32px 1fr auto 1fr auto"],
+  div[style*="grid-template-columns:1fr auto 1fr"],
+  div[style*="grid-template-columns:1fr 1fr 1fr 1fr"]{grid-template-columns:1fr!important;max-width:100%!important;}
+  select,input,button{max-width:100%;}
+}
 </style>
 </head>
 <body>

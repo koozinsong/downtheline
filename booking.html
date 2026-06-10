@@ -34,7 +34,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .cal-nav{display:flex;gap:.4rem;align-items:center;}
 .cal-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--w);font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:.4rem .8rem;cursor:pointer;transition:background .15s;}
 .cal-btn:hover{background:rgba(255,255,255,.2);}
-.cal-grid{padding:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+	.cal-grid{padding:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+	.mobile-agenda{display:none;}
 .bk-table{width:100%;border-collapse:collapse;}
 .bk-table th,.bk-table td{border:1px solid var(--ll);text-align:center;font-size:.78rem;vertical-align:middle;}
 .bk-table thead th{background:var(--iv2);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;color:#c0392b;cursor:pointer;padding:.55rem .3rem;font-size:.9rem;}
@@ -167,7 +168,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .legend-dot.naegok::before{background:var(--naegok);}
 .legend-dot.jangchung::before{background:var(--jangchung);}
 .legend-dot.yangjae::before{background:var(--yangjae);}
-.legend-dot.other::before{background:var(--other);}
+	.legend-dot.other::before{background:var(--other);}
 
 @media(max-width:600px){
   .wrap{padding:1.5rem .6rem;}
@@ -194,6 +195,131 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   .modal-body{padding:1rem 1.2rem;}
   .modal-foot{padding:.8rem 1.2rem;}
 }
+
+/* v0.2 A theme: Seoul Dawn Court for booking */
+:root{
+  --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
+  --iv:#fbfbf7;--iv2:#eef7f8;--iv3:#ddeff3;
+  --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
+  --gd:#ff7a59;--gdl:#e9ff6f;--w:#ffffff;
+  --ll:rgba(16,24,32,.09);
+  --segok:#163253;--naegok:#2b6f87;--jangchung:#d46b4b;--yangjae:#7864d9;--other:#e7a23f;
+}
+body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink);}
+#nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;}
+.nav-back{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.42rem .72rem;border-radius:999px;letter-spacing:1.5px;}
+.nav-back:hover{color:var(--g);background:#f7fbfb;}
+.nav-title{color:var(--ink);letter-spacing:3px;}
+.wrap{max-width:1120px;padding:2rem 1.2rem 3.5rem;}
+.page-title{font-size:clamp(2.2rem,5vw,3.4rem);color:var(--ink);letter-spacing:-.5px;}
+.page-title em{color:var(--g);font-weight:300;}
+.page-sub{max-width:680px;color:var(--sm);font-size:.88rem;font-weight:400;margin-bottom:1rem;}
+#last-updated{color:#7b878b!important;margin:.2rem 0 .65rem!important;}
+.cal-card{background:rgba(255,255,255,.72);border:1px solid rgba(16,24,32,.08);border-radius:24px;box-shadow:0 24px 70px rgba(43,111,135,.11);overflow:hidden;}
+.cal-header{background:linear-gradient(135deg,#101820 0%,#173247 100%);padding:1rem 1.2rem;color:#fff;}
+.cal-title{color:#fff;font-size:1.45rem;letter-spacing:2.8px;}
+.cal-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;color:#fff;padding:.48rem .85rem;}
+.cal-btn:hover{background:rgba(233,255,111,.2);border-color:rgba(233,255,111,.5);}
+.cal-grid{background:rgba(255,255,255,.35);padding:.65rem;}
+.mobile-agenda{display:none;}
+.agenda-day{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:18px;padding:.95rem;box-shadow:0 12px 30px rgba(43,111,135,.07);cursor:pointer;}
+.agenda-day + .agenda-day{margin-top:.7rem;}
+.agenda-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.75rem;}
+.agenda-date{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:1.6px;color:var(--ink);text-transform:uppercase;}
+.agenda-count{font-size:.72rem;color:var(--sm);white-space:nowrap;}
+.agenda-table{display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:repeat(6,64px);border:1px solid rgba(16,24,32,.07);border-radius:16px;overflow:hidden;background:#fbfbf7;}
+.agenda-time{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:800;color:#70828b;background:#f1f8f9;padding:.5rem;border-bottom:1px solid rgba(16,24,32,.06);display:flex;align-items:center;justify-content:center;}
+.agenda-time:last-of-type{border-bottom:none;}
+.agenda-lanes{grid-column:2;grid-row:1 / span 6;display:grid;grid-template-rows:repeat(6,64px);grid-template-columns:repeat(var(--lane-count,1),minmax(0,1fr));gap:0 .28rem;padding:.35rem .42rem;background:repeating-linear-gradient(to bottom,transparent 0,transparent 63px,rgba(16,24,32,.06) 63px,rgba(16,24,32,.06) 64px);}
+.agenda-empty-row{display:flex;align-items:center;font-size:.78rem;color:var(--sm);padding:.35rem .2rem;}
+.agenda-pill{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:.14rem;width:100%;height:calc(100% - .12rem);min-width:0;padding:.32rem .44rem;border-radius:10px;border:1px solid rgba(16,24,32,.07);font-size:.72rem;font-weight:800;color:#fff;box-shadow:0 8px 20px rgba(16,24,32,.1);line-height:1.05;overflow:hidden;align-self:start;}
+.agenda-pill.segok{background:linear-gradient(135deg,#101820,#223b58);}
+.agenda-pill.naegok{background:linear-gradient(135deg,#2b6f87,#58a4bc);}
+.agenda-pill.jangchung{background:linear-gradient(135deg,#b95a3f,#e18463);}
+.agenda-pill.yangjae{background:linear-gradient(135deg,#6657c8,#9c8df0);}
+.agenda-pill.other{background:linear-gradient(135deg,#d98b4a,#f0b769);}
+.agenda-pill.to-cancel{border:2px dashed rgba(255,255,255,.9);box-shadow:0 8px 20px rgba(16,24,32,.1),inset 0 0 0 1px rgba(231,70,54,.72);}
+.agenda-pill.canceled{opacity:.62;text-decoration:line-through;}
+.agenda-pill.tentative{box-shadow:0 8px 20px rgba(16,24,32,.1),inset 0 0 0 2px rgba(233,255,111,.86);}
+.agenda-court-name{display:block;width:100%;font-size:.76rem;font-weight:900;letter-spacing:.2px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.agenda-court-no{display:block;width:100%;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:900;letter-spacing:.7px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.agenda-meta-line{display:flex;align-items:center;gap:.24rem;width:100%;min-width:0;}
+.agenda-booker{display:block;flex:1;min-width:0;color:rgba(255,255,255,.88);font-size:.66rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.agenda-state{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid rgba(255,255,255,.56);background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:.08rem .28rem;font-size:.52rem;font-weight:900;line-height:1;white-space:nowrap;}
+.agenda-state.need-check{position:absolute;top:.24rem;right:.24rem;background:var(--gdl);border-color:var(--gdl);color:var(--ink);box-shadow:0 4px 10px rgba(16,24,32,.12);}
+.agenda-state.to-cancel{position:absolute;top:.24rem;right:.24rem;background:#fff;border-color:rgba(255,255,255,.72);color:#c0392b;box-shadow:0 4px 10px rgba(16,24,32,.12);}
+.agenda-status{font-size:.62rem;font-weight:800;color:var(--g);background:#eef7f8;border-radius:999px;padding:.2rem .48rem;white-space:nowrap;}
+.bk-table{border-collapse:separate;border-spacing:0;overflow:hidden;}
+.bk-table th,.bk-table td{border-color:rgba(16,24,32,.08);}
+.bk-table thead th{background:#f7fbfb;color:var(--g);font-size:.88rem;}
+.bk-table thead th:first-child{color:#7b878b;background:#fbfbf7;}
+.bk-table thead th.today{background:var(--gdl);color:var(--ink);}
+.bk-table tbody th{background:#fbfbf7;color:#73838b;}
+.bk-table td{background:rgba(251,251,247,.82);}
+.bk-table td.bk-empty{background:rgba(255,255,255,.58);}
+.bk-table td.date-end,.bk-table thead th:not(:first-child){border-right-color:rgba(16,24,32,.16);}
+.bk-slot{border-radius:10px;margin:2px;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
+.bk-slot.segok{background:linear-gradient(135deg,#101820,#223b58);}
+.bk-slot.naegok{background:linear-gradient(135deg,#2b6f87,#58a4bc);}
+.bk-slot.jangchung{background:linear-gradient(135deg,#b95a3f,#e18463);}
+.bk-slot.yangjae{background:linear-gradient(135deg,#6657c8,#9c8df0);}
+.bk-slot.other{background:linear-gradient(135deg,#d98b4a,#f0b769);}
+.bk-slot-flag{border-radius:999px;}
+.legend{background:rgba(255,255,255,.62);border:1px solid rgba(16,24,32,.07);border-radius:18px;padding:.7rem .85rem;margin-top:.9rem;}
+.section-title{color:var(--ink);margin-top:2.2rem;}
+.section-title em{color:var(--g);}
+.section-sub{color:var(--sm);font-weight:400;}
+.court-list{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;border-top:0;padding:1.1rem 1.2rem;box-shadow:0 14px 34px rgba(43,111,135,.07);position:relative;overflow:hidden;}
+.court-list::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:var(--g);}
+.court-list.naegok::before{background:var(--naegok);}
+.court-list.jangchung::before{background:var(--jangchung);}
+.court-list.yangjae::before{background:var(--yangjae);}
+.court-list.other::before{background:var(--other);}
+.court-list h3{color:var(--ink);}
+.court-list.naegok h3{color:var(--naegok);}
+.court-list.jangchung h3{color:var(--jangchung);}
+.court-list.yangjae h3{color:var(--yangjae);}
+.court-date-item{border-radius:10px;}
+.court-date-item:hover{background:#eef7f8;}
+.rule-link{color:var(--g);}
+.modal{background:rgba(16,24,32,.46);backdrop-filter:blur(10px);}
+.modal-box{border-radius:24px;box-shadow:0 30px 80px rgba(16,24,32,.24);}
+.modal-head{background:#fbfbf7;}
+.form-input,.form-select,.hour-chk span{background:#fbfbf7;border-color:rgba(16,24,32,.1);border-radius:10px;}
+.form-input:focus,.form-select:focus{border-color:var(--g);}
+.hour-chk input:checked + span{background:var(--g);border-color:var(--g);color:#fff;}
+.btn{border-radius:999px;background:#fff;}
+.btn-primary{background:var(--gdl);color:var(--ink);border-color:var(--gdl);}
+.btn-primary:hover{background:#f1ff91;}
+.toast.ok{background:var(--g);}.toast.err{background:#c0392b;}
+
+@media(max-width:600px){
+  #nav{height:58px;padding:0 .9rem;}
+  .nav-back{font-size:.66rem;padding:.36rem .62rem;}
+  .nav-title{font-size:.86rem;}
+  .wrap{padding:1.15rem .75rem 3rem;}
+  .page-title{font-size:2.4rem;margin-bottom:.35rem;}
+  .page-sub{font-size:.78rem;line-height:1.6;margin-bottom:.8rem;}
+  #last-updated{text-align:left!important;font-size:.64rem!important;}
+  .cal-card{border-radius:20px;margin-left:-.25rem;margin-right:-.25rem;}
+  .cal-header{padding:.76rem .72rem;gap:.45rem;}
+  .cal-title{font-size:1.08rem;letter-spacing:1.8px;white-space:nowrap;}
+  .cal-nav{gap:.28rem;}
+  .cal-btn{font-size:.58rem;padding:.38rem .48rem;letter-spacing:.4px;}
+  .mobile-agenda{display:block;padding:.75rem;background:rgba(255,255,255,.35);}
+  .cal-grid{padding:.32rem;overflow-x:auto;display:none;}
+  .bk-table{min-width:700px;}
+  .bk-table thead th{font-size:.74rem;}
+  .bk-table tbody th{font-size:.58rem;}
+  .bk-table td{height:64px;}
+  .bk-slot{border-radius:8px;margin:1px;}
+  .legend{border-radius:16px;gap:.55rem;font-size:.66rem;line-height:1.4;}
+  .agenda-time{font-size:.84rem;}
+  .section-title{font-size:1.55rem;margin-top:1.8rem;}
+  .court-list{border-radius:18px;}
+  .modal{align-items:flex-end;padding:.5rem;}
+  .modal-box{border-radius:22px 22px 16px 16px;max-height:92vh;}
+}
 </style>
 </head>
 <body>
@@ -217,6 +343,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
         <button class="cal-btn" onclick="changeMonth(1)">다음 ▶</button>
       </div>
     </div>
+    <div class="mobile-agenda" id="mobile-agenda"></div>
     <div class="cal-grid" id="cal-grid"></div>
   </div>
 
@@ -226,8 +353,8 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
     <span class="legend-dot jangchung">장충</span>
     <span class="legend-dot yangjae">양재</span>
     <span class="legend-dot other">기타</span>
-    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;background:repeating-linear-gradient(45deg,#9a615a,#9a615a 4px,#7a4845 4px,#7a4845 8px);border:1.5px solid #e74c3c;display:inline-block;"></span>⚠ 취소 예정</span>
-    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;background:var(--g3);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7);display:inline-block;"></span>? 미확정</span>
+    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;border:2px dashed #e74c3c;border-radius:3px;display:inline-block;"></span><span style="border:1px solid rgba(192,57,43,.32);background:#fff;color:#c0392b;border-radius:999px;padding:.08rem .28rem;font-size:.52rem;font-weight:900;line-height:1;">취소 예정</span></span>
+    <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="border:1px solid var(--gdl);background:var(--gdl);color:var(--ink);border-radius:999px;padding:.08rem .28rem;font-size:.52rem;font-weight:900;line-height:1;">확인 필요</span>미확정</span>
   </div>
 
   <h2 class="section-title">예약 오픈 <em>안내</em></h2>
@@ -511,7 +638,71 @@ function renderCal(){
   html+='</tbody></table>';
 
   grid.innerHTML=html;
+  renderMobileAgenda(sundays);
   renderCourtLists();
+}
+
+function agendaBookingLabel(b){
+  const r=b.range||parseTimeRange(b.time)||{};
+  const time=r.start!==undefined?`${pad(r.start)}-${pad(r.end)}시`:String(b.time||'시간 미정');
+  const cls=courtCls[b.court]||'other';
+  const memoStr=String(b.memo||'').trim();
+  const isTentative=memoStr==='미확정';
+  const isToCancel=memoStr==='취소 예정';
+  const venue=b.court==='기타'?(memoStr&&!isTentative&&!isToCancel?memoStr:'기타'):(b.court||'-');
+  const no=b._default?'1번':displayCourtNo(b[COURT_NO_KEY]);
+  const status=b.status==='취소'?'취소':(isToCancel?'취소 예정':(isTentative?'미확정':(b.status&&b.status!=='기본'?b.status:'')));
+  const stateCls=b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':''));
+  const who=whoName(b.who);
+  return {time,cls,venue,no,status,who,isTentative,isToCancel,stateCls};
+}
+
+function renderMobileAgenda(sundays){
+  const wrap=document.getElementById('mobile-agenda');
+  if(!wrap) return;
+  const hours=[6,7,8,9,10,11];
+  wrap.innerHTML=sundays.map(d=>{
+    const date=ymd(viewYear,viewMonth,d);
+    const list=getDateBookings(date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const lanes=assignLanes(list);
+    const laneCount=Math.max(1,lanes.length);
+    const [yy,mm,dd]=date.split('-').map(Number);
+    const dateLabel=`${mm}/${dd} 일`;
+    const timeRows=hours.map((h,i)=>`<div class="agenda-time" style="grid-row:${i+1}">${h}-${h+1}</div>`).join('');
+    const emptyRows=hours.filter(h=>!list.some(b=>{
+      const r=b.range||parseTimeRange(b.time);
+      return r&&r.start<=h&&r.end>h;
+    })).map(h=>`<div class="agenda-empty-row" style="grid-row:${h-5};grid-column:1 / -1;">비어 있음</div>`).join('');
+    const blocks=lanes.map((lane,laneIdx)=>lane.map(b=>{
+      const r=b.range||parseTimeRange(b.time);
+      if(!r) return '';
+      const start=Math.max(r.start,6);
+      const end=Math.min(r.end,12);
+      if(end<=start) return '';
+      let colSpan=1;
+      for(let i=laneIdx+1;i<lanes.length;i++){
+        const overlaps=lanes[i].some(item=>item.range.start<end&&item.range.end>start);
+        if(overlaps) break;
+        colSpan++;
+      }
+      const x=agendaBookingLabel(b);
+      const booker=b._default?'클럽 정기':(x.who||'예약자 미정');
+      const metaBadge=!x.isTentative&&!x.isToCancel&&x.status?`<span class="agenda-state">${x.status}</span>`:'';
+      const cornerBadge=x.isTentative
+        ? '<span class="agenda-state need-check">확인 필요</span>'
+        : (x.isToCancel?'<span class="agenda-state to-cancel">취소 예정</span>':'');
+      return `<span class="agenda-pill ${x.cls} ${x.stateCls}" style="grid-row:${start-5} / span ${end-start};grid-column:${laneIdx+1} / span ${colSpan};">
+        ${cornerBadge}
+        <span class="agenda-court-name">${x.venue}</span>
+        ${x.no?`<span class="agenda-court-no">${x.no}</span>`:''}
+        <span class="agenda-meta-line"><span class="agenda-booker">${booker}</span>${metaBadge}</span>
+      </span>`;
+    }).join('')).join('');
+    return `<div class="agenda-day" onclick="openDay('${date}')">
+      <div class="agenda-head"><div class="agenda-date">${dateLabel}</div><div class="agenda-count">${list.length?list.length+'개 예약':'예약 없음'}</div></div>
+      <div class="agenda-table">${timeRows}<div class="agenda-lanes" style="--lane-count:${laneCount};">${emptyRows}${blocks}</div></div>
+    </div>`;
+  }).join('');
 }
 
 const COURT_RULES=[
