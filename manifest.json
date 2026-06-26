@@ -1,0 +1,26 @@
+{
+  "name": "Down the Line",
+  "short_name": "DTL",
+  "description": "테니스 소셜 클럽 — 시합 일정, 코트 예약, 랭킹",
+  "start_url": "/downtheline/index.html",
+  "scope": "/downtheline/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f3ed",
+  "theme_color": "#2c4a35",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
