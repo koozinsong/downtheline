@@ -20,7 +20,7 @@
   --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
   --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
   --ll:rgba(26,31,28,.1);
-  --segok:#2c4a35;--naegok:#3a7da5;--jangchung:#a55c3a;--yangjae:#9b7dc4;--other:#d97f3a;
+  --segok:#2c4a35;--naegok:#3a7da5;--jangchung:#a55c3a;--yangjae:#9b7dc4;--other:#d97f3a;--achasan:#4d7a6a;
 }
 body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);min-height:100vh;}
 #nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
@@ -67,6 +67,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .bk-slot.jangchung{background:var(--jangchung);}
 .bk-slot.yangjae{background:var(--yangjae);}
 .bk-slot.other{background:var(--other);}
+.bk-slot.achasan{background:var(--achasan);}
 .bk-slot.canceled{background:var(--sm2);opacity:.65;}
 .bk-slot.tentative{box-shadow:inset 0 0 0 2px #e8b54a;}
 .bk-slot.to-cancel{box-shadow:inset 0 0 0 2px #e74c3c;background:repeating-linear-gradient(45deg,#9a615a,#9a615a 6px,#7a4845 6px,#7a4845 12px)!important;}
@@ -92,11 +93,14 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .court-list.jangchung{border-top-color:var(--jangchung);}
 .court-list.yangjae{border-top-color:var(--yangjae);}
 .court-list.other{border-top-color:var(--other);}
+.court-list.achasan{border-top-color:var(--achasan);}
 .court-list h3{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem;}
 .court-list.naegok h3{color:var(--naegok);}
 .court-list.jangchung h3{color:var(--jangchung);}
 .court-list.yangjae h3{color:var(--yangjae);}
 .court-list.c88 h3{color:var(--c88);}
+.court-list.achasan h3{color:var(--achasan);}
+.court-list.other h3{color:var(--other);}
 .court-dates{display:flex;flex-direction:column;gap:.35rem;}
 .court-date-item{font-size:.78rem;color:var(--ink2);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;cursor:pointer;padding:.25rem .4rem;border-radius:2px;transition:background .15s;}
 .court-date-item:hover{background:var(--iv2);}
@@ -175,6 +179,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .legend-dot.jangchung::before{background:var(--jangchung);}
 .legend-dot.yangjae::before{background:var(--yangjae);}
 	.legend-dot.other::before{background:var(--other);}
+.legend-dot.achasan::before{background:var(--achasan);}
 
 @media(max-width:600px){
   .wrap{padding:1.5rem .6rem;}
@@ -363,6 +368,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
     <span class="legend-dot naegok">내곡</span>
     <span class="legend-dot jangchung">장충</span>
     <span class="legend-dot yangjae">양재</span>
+    <span class="legend-dot achasan">아차산</span>
     <span class="legend-dot other">기타</span>
     <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="width:14px;height:10px;border:2px dashed #e74c3c;border-radius:3px;display:inline-block;"></span><span style="border:1px solid rgba(192,57,43,.32);background:#fff;color:#c0392b;border-radius:999px;padding:.08rem .28rem;font-size:.52rem;font-weight:900;line-height:1;">취소 예정</span></span>
     <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--sm);"><span style="border:1px solid var(--gdl);background:var(--gdl);color:var(--ink);border-radius:999px;padding:.08rem .28rem;font-size:.52rem;font-weight:900;line-height:1;">확인 필요</span>미확정</span>
@@ -392,6 +398,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
               <option value="내곡">내곡</option>
               <option value="장충">장충</option>
               <option value="양재">양재</option>
+              <option value="아차산">아차산</option>
               <option value="기타">기타</option>
             </select>
           </div>
@@ -457,7 +464,7 @@ let editingId=null;
 function todayKST(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}).split(' ')[0];}
 function pad(n){return String(n).padStart(2,'0');}
 function ymd(y,m,d){return `${y}-${pad(m)}-${pad(d)}`;}
-const courtCls={'세곡':'segok','내곡':'naegok','장충':'jangchung','양재':'yangjae','기타':'other'};
+const courtCls={'세곡':'segok','내곡':'naegok','장충':'jangchung','양재':'yangjae','기타':'other','아차산':'achasan'};
 const COURT_NO_FIELD='Court Number';
 const COURT_NO_KEY='court Number';
 function displayCourtNo(no){
@@ -534,7 +541,7 @@ function renderSlot(b){
   const isToCancel=memoStr==='취소 예정';
   const memoIsFlag=isTentative||isToCancel;
   const venue=b.court==='기타'?(!memoIsFlag&&memoStr?memoStr:'기타'):(b.court||'-');
-  const no=b._default?'1번':displayCourtNo(b[COURT_NO_KEY]);
+  const no=b._default?(b.court==='세곡'?'1번':''):displayCourtNo(b[COURT_NO_KEY]);
   const whoText=b._default?'기본':whoName(b.who);
   const timeShort=b.range?`${b.range.start}-${b.range.end}시`:'';
   const stateCls=(b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':'')))+(b._default?' default':'');
@@ -552,10 +559,17 @@ function getDateBookings(date){
   const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date).map(b=>({...b,range:parseTimeRange(b.time)})).filter(b=>b.range);
   const [yy,mm,dd]=date.split('-').map(Number);
   const isSunday=new Date(Date.UTC(yy,mm-1,dd)).getUTCDay()===0;
-  const inDefaultPeriod=date<'2026-07-01';
+  // 세곡 정기: 2026-06까지
+  const segokPeriod=date<'2026-07-01';
   const segokCovers6=real.some(b=>b.court==='세곡'&&b.range.start<=6&&b.range.end>6);
-  if(isSunday&&inDefaultPeriod&&!segokCovers6){
+  if(isSunday&&segokPeriod&&!segokCovers6){
     real.unshift({_default:true,court:'세곡',time:'06:00-08:00',range:{start:6,end:8},status:'기본',[COURT_NO_KEY]:'1'});
+  }
+  // 아차산 정기: 2026-07-12부터 (하반기 메인 코트)
+  const achasanPeriod=date>='2026-07-12';
+  const achasanCovers=real.some(b=>b.court==='아차산'&&b.range.start<10&&b.range.end>6);
+  if(isSunday&&achasanPeriod&&!achasanCovers){
+    real.unshift({_default:true,court:'아차산',time:'06:00-10:00',range:{start:6,end:10},status:'기본'});
   }
   return real;
 }
@@ -661,7 +675,7 @@ function agendaBookingLabel(b){
   const isTentative=memoStr==='미확정';
   const isToCancel=memoStr==='취소 예정';
   const venue=b.court==='기타'?(memoStr&&!isTentative&&!isToCancel?memoStr:'기타'):(b.court||'-');
-  const no=b._default?'1번':displayCourtNo(b[COURT_NO_KEY]);
+  const no=b._default?(b.court==='세곡'?'1번':''):displayCourtNo(b[COURT_NO_KEY]);
   const status=b.status==='취소'?'취소':(isToCancel?'취소 예정':(isTentative?'미확정':(b.status&&b.status!=='기본'?b.status:'')));
   const stateCls=b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':''));
   const who=whoName(b.who);
@@ -718,6 +732,7 @@ function renderMobileAgenda(sundays){
 
 const COURT_RULES=[
   {name:'세곡',cls:'segok',when:'2026-06 종료',desc:'매주 일요일 06:00–08:00 정기 예약 (1번) — 7월부터 종료',link:''},
+  {name:'아차산',cls:'achasan',when:'하반기 메인',desc:'2026-07-12부터 매주 일요일 06:00–10:00 정기 예약',link:''},
   {name:'내곡',cls:'naegok',when:'매월 10일 09:00',desc:'다음 달 예약 오픈 · 네이버 예약',link:'https://m.place.naver.com/place/1257947832/home?entry=pll&bk_query=%EB%82%B4%EA%B3%A1%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5'},
   {name:'장충',cls:'jangchung',when:'매월 10일·25일 10:00',desc:'서울시 공공서비스 예약',link:'https://yeyak.seoul.go.kr'},
   {name:'양재',cls:'yangjae',when:'매월 1일 09:00',desc:'차월 예약 오픈 · 매헌 시민의숲 · 네이버 예약',link:'https://booking.naver.com/booking/10/bizes/210031'},
