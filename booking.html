@@ -545,7 +545,7 @@ function renderSlot(b){
   const whoText=b._default?'기본':whoName(b.who);
   const timeShort=b.range?`${b.range.start}-${b.range.end}시`:'';
   const stateCls=(b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':'')))+(b._default?' default':'');
-  const stateLabel=b.status==='취소'?'취소':(isToCancel?'취소 예정':(isTentative?'미확정':''));
+  const stateLabel=b.status==='취소'?(memoStr==='미확보'?'미확보':'취소'):(isToCancel?'취소 예정':(isTentative?'미확정':''));
   return `<div class="bk-cell"><div class="bk-slot ${cls} ${stateCls}">
     ${stateLabel?`<div class="bk-slot-flag">${stateLabel}</div>`:''}
     ${timeShort?`<div class="bk-slot-time">${timeShort}</div>`:''}
