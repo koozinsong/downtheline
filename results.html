@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DTL">
-<meta name="theme-color" content="#2c4a35">
+<meta name="theme-color" content="#fbfbf7">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -226,7 +226,7 @@ async function init(){
     players.sort((a,b)=>a.name.localeCompare(b.name));
     // 이벤트 필터 채우기
     const evSel=document.getElementById('filter-event');
-    events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+    events.forEach(ev=>{evSel.innerHTML+=`<option value="${escapeHtml(ev.name)}">${escapeHtml(ev.name)}</option>`;});
     renderMatches();
   }catch(e){
     document.getElementById('matches-list').innerHTML=`<div class="state-msg"><div class="state-icon">⚠️</div><div class="state-text">불러오기 실패</div></div>`;
@@ -242,7 +242,7 @@ function isFemale(name){ const p=players.find(pl=>pl.name===name); return p&&p.g
 function chip(name){
   if(!name)return'';
   const cls=isFemale(name)?'chip-f':'chip-m';
-  return `<span class="chip ${cls}">${name}</span>`;
+  return `<span class="chip ${cls}">${escapeHtml(name)}</span>`;
 }
 function sortFemaleFirst(a,b){ return (isFemale(b)?1:0)-(isFemale(a)?1:0); }
 function teamChips(p1,p2){ return [p1,p2].sort(sortFemaleFirst).map(chip).join(' '); }
@@ -307,8 +307,8 @@ function renderMatches(){
     const gid='rg_'+gi;
     return `<tr class="rg-row" onclick="document.getElementById('${gid}').style.display=document.getElementById('${gid}').style.display==='none'?'table-row':'none'">
       <td style="white-space:nowrap;font-size:.78rem;">${date}</td>
-      <td style="font-size:.78rem;">${g.event||'-'}</td>
-      <td style="font-size:.75rem;color:var(--sm);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pSummary}</td>
+      <td style="font-size:.78rem;">${escapeHtml(g.event||'-')}</td>
+      <td style="font-size:.75rem;color:var(--sm);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(pSummary)}</td>
       <td style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;color:var(--g3);">${total}경기 ▾</td>
       <td style="text-align:right;">
         <button class="del-btn" onclick="event.stopPropagation();delScheduleMatches('${g.schedule_id}',${JSON.stringify(g.matches.map(m=>m.id)).replace(/"/g,'&quot;')})" style="font-size:.55rem;padding:.25rem .5rem;border:1px solid rgba(192,57,43,.2);">삭제</button>

@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DTL">
-<meta name="theme-color" content="#2c4a35">
+<meta name="theme-color" content="#fbfbf7">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -489,7 +489,7 @@ async function init(){
     [bookings,players]=await Promise.all([atGet('Booking'),atGet('Players')]);
     players.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     const sel=document.getElementById('f-who');
-    players.forEach(p=>{sel.innerHTML+=`<option value="${p.id}">${p.name}</option>`;});
+    players.forEach(p=>{sel.innerHTML+=`<option value="${p.id}">${escapeHtml(p.name)}</option>`;});
     renderCal();
   }catch(e){
     document.getElementById('cal-grid').innerHTML=`<div style="grid-column:span 7;padding:2rem;text-align:center;color:#c0392b;">불러오기 실패: ${e.message}</div>`;
@@ -520,11 +520,11 @@ function renderSlot(b){
   const stateCls=(b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':'')))+(b._default?' default':'');
   const stateLabel=b.status==='취소'?(memoStr==='미확보'?'미확보':'취소'):(isToCancel?'취소 예정':(isTentative?'미확정':''));
   return `<div class="bk-cell"><div class="bk-slot ${cls} ${stateCls}">
-    ${stateLabel?`<div class="bk-slot-flag">${stateLabel}</div>`:''}
+    ${stateLabel?`<div class="bk-slot-flag">${escapeHtml(stateLabel)}</div>`:''}
     ${timeShort?`<div class="bk-slot-time">${timeShort}</div>`:''}
-    <div class="bk-slot-court">${venue}</div>
-    ${no?`<div class="bk-slot-no"><span class="ic">🎾</span>${no}</div>`:''}
-    ${whoText?`<div class="bk-slot-who"><span class="ic">👤</span>${whoText}</div>`:''}
+    <div class="bk-slot-court">${escapeHtml(venue)}</div>
+    ${no?`<div class="bk-slot-no"><span class="ic">🎾</span>${escapeHtml(no)}</div>`:''}
+    ${whoText?`<div class="bk-slot-who"><span class="ic">👤</span>${escapeHtml(whoText)}</div>`:''}
   </div></div>`;
 }
 
@@ -652,7 +652,8 @@ function agendaBookingLabel(b){
   const status=b.status==='취소'?'취소':(isToCancel?'취소 예정':(isTentative?'미확정':(b.status&&b.status!=='기본'?b.status:'')));
   const stateCls=b.status==='취소'?'canceled':(isToCancel?'to-cancel':(isTentative?'tentative':''));
   const who=whoName(b.who);
-  return {time,cls,venue,no,status,who,isTentative,isToCancel,stateCls};
+  // venue/no/status/who는 innerHTML 삽입용이므로 여기서 이스케이프
+  return {time,cls,venue:escapeHtml(venue),no:escapeHtml(no),status:escapeHtml(status),who:escapeHtml(who),isTentative,isToCancel,stateCls};
 }
 
 function renderMobileAgenda(sundays){
@@ -770,8 +771,8 @@ function renderDayList(){
       : `<button class="btn btn-mini" onclick="editBooking('${b.id}')">수정</button>
          <button class="btn btn-mini btn-danger" onclick="delBooking('${b.id}')">삭제</button>`;
     return `<div class="day-bk-item ${cls} ${b.status==='취소'?'canceled':''} ${b._default?'is-default':''}">
-      <div class="bk-court ${cls}">${venue}</div>
-      <div class="bk-info"><b>${b.time||''}</b>${no?' · 🎾'+no:''}${whoText?' · 👤'+whoText:''}${b._default?' · 기본':(b.status&&b.status!=='기본'?' · '+b.status:'')}${memo?' · '+memo:''}</div>
+      <div class="bk-court ${cls}">${escapeHtml(venue)}</div>
+      <div class="bk-info"><b>${escapeHtml(b.time||'')}</b>${no?' · 🎾'+escapeHtml(no):''}${whoText?' · 👤'+escapeHtml(whoText):''}${b._default?' · 기본':(b.status&&b.status!=='기본'?' · '+escapeHtml(b.status):'')}${memo?' · '+escapeHtml(memo):''}</div>
       <div class="bk-actions">${actions}</div>
     </div>`;
   }).join('');

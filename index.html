@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DTL">
-<meta name="theme-color" content="#2c4a35">
+<meta name="theme-color" content="#fbfbf7">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700;1,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -1111,7 +1111,7 @@ function homeRenderBookingSummary(items,date){
   if(!el) return;
   const sorted=items.slice().sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));
   const visible=sorted.slice(0,3).map(homeBookingLabel);
-  el.innerHTML=`<div class="hp-list">${visible.map(x=>`<div class="hp-row"><strong>${x.time}</strong><span>${x.court}${x.detail?' · '+x.detail:''}</span></div>`).join('')}</div>${sorted.length>3?`<div class="hp-more">+ ${sorted.length-3}개 예약 더 보기</div>`:`<div class="hp-more">${date.replace(/-/g,'.')} 예약 현황</div>`}`;
+  el.innerHTML=`<div class="hp-list">${visible.map(x=>`<div class="hp-row"><strong>${escapeHtml(x.time)}</strong><span>${escapeHtml(x.court)}${x.detail?' · '+escapeHtml(x.detail):''}</span></div>`).join('')}</div>${sorted.length>3?`<div class="hp-more">+ ${sorted.length-3}개 예약 더 보기</div>`:`<div class="hp-more">${date.replace(/-/g,'.')} 예약 현황</div>`}`;
 }
 // booking.html의 getDateBookings()와 동일한 정기 예약 규칙 (변경 시 함께 수정)
 function homeDefaultBookings(date,real){

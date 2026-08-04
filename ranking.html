@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DTL">
-<meta name="theme-color" content="#2c4a35">
+<meta name="theme-color" content="#fbfbf7">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -292,7 +292,7 @@ function fillEventOptions(){
   const evSel=document.getElementById('filter-event');
   const cur=evSel.value;
   evSel.innerHTML='<option value="">전체 이벤트</option>';
-  _events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+  _events.forEach(ev=>{evSel.innerHTML+=`<option value="${escapeHtml(ev.name)}">${escapeHtml(ev.name)}</option>`;});
   evSel.value=cur;
 }
 
@@ -389,7 +389,7 @@ function renderPairRankings(matches){
   if(!data.length){el.innerHTML=`<div class="no-data"><div class="no-data-text">페어 데이터가 없습니다</div></div>`;return;}
   const femaleSet=new Set((_players||[]).filter(p=>p.gender==='female').map(p=>p.name));
   const isFemale=n=>femaleSet.has(n);
-  const chipFor=n=>isFemale(n)?`<span class="chip chip-f">${n}</span>`:`<span class="chip chip-m">${n}</span>`;
+  const chipFor=n=>isFemale(n)?`<span class="chip chip-f">${escapeHtml(n)}</span>`:`<span class="chip chip-m">${escapeHtml(n)}</span>`;
   const orderPair=(a,b)=>{
     // 혼복: 여자 먼저
     if(isFemale(a)!==isFemale(b)) return isFemale(a)?[a,b]:[b,a];
@@ -468,7 +468,7 @@ function render(data){
     return `<div class="pod-card ${rank===1?'first':''}">
       <div class="pod-rank">${rank}</div>
       <div class="pod-crown">${medals[rank-1]}</div>
-      <div class="pod-name">${p.name}</div>
+      <div class="pod-name">${escapeHtml(p.name)}</div>
       <div>${genderChip(p.gender)}</div>
       <div class="pod-pts">${p.points||0}</div>
       <div class="pod-pts-l">Points</div>
@@ -485,7 +485,7 @@ function render(data){
     const gd=parseInt(p.gd||0);
     return `<tr>
       <td><div class="rank-num ${rankCls}">${rank}</div></td>
-      <td><div class="rank-name">${genderChip(p.gender)}${p.name}</div></td>
+      <td><div class="rank-name">${genderChip(p.gender)}${escapeHtml(p.name)}</div></td>
       <td class="num">${p.scheds||0}</td>
       <td class="num">${p.played||0}</td>
       <td class="num" style="color:var(--g);font-weight:700;">${p.wins||0}</td>
