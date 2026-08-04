@@ -3,6 +3,9 @@
  *
  * Airtable 토큰은 Cloudflare Worker(proxy/cloudflare-worker.js)의
  * 환경변수에만 존재한다. 이 저장소에 토큰을 다시 넣지 말 것 (SECURITY.md 참고).
+ *
+ * 이 파일을 수정하면 각 HTML의 <script src="js/api.js?v=N">의 N을 올려서
+ * 브라우저/페이지 캐시(10분)로 인한 구버전 로드를 방지할 것.
  */
 const AT_PROXY = 'https://dlt-api.koozin.workers.dev';
 
