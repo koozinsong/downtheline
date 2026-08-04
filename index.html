@@ -67,7 +67,8 @@ nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
 .nav-play{color:var(--clay) !important;opacity:.9;}
 .nav-play:hover{opacity:1;border-bottom-color:var(--gd) !important;}
 .nav-right{display:flex;align-items:center;gap:1.5rem;padding:0 1.8rem;}
-.nav-ig{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sm2);text-decoration:none;transition:color .2s;}
+.nav-ig{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sm);text-decoration:none;transition:all .2s;border:1px solid var(--ld);border-radius:999px;padding:.45rem .85rem;}
+.nav-ig:hover{color:var(--ink);border-color:var(--ink);}
 .nav-ig:hover{color:var(--g);}
 .nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);background:var(--lime);padding:.55rem 1.5rem;text-decoration:none;transition:background .2s,transform .2s;white-space:nowrap;border:1px solid rgba(26,31,28,.08);}
 .nav-btn:hover{background:#edf6a8;transform:translateY(-1px);}
@@ -328,6 +329,12 @@ footer{background:var(--ink);border-top:3px solid var(--g3);}
 .nav-hamburger.active span:nth-child(2){opacity:0;}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
 @media(max-width:1024px){.nav-hamburger{display:flex;}}
+/* 네비 항목이 늘어나 1280px 이하에서는 햄버거 메뉴로 전환 (우측 버튼과 겹침 방지) */
+@media(max-width:1280px){
+  nav ul{display:none;}
+  .nav-right{display:none;}
+  .nav-hamburger{display:flex;}
+}
 
 @media(max-width:600px){
   /* 히어로 */
