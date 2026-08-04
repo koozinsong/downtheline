@@ -1113,28 +1113,16 @@ function homeRenderBookingSummary(items,date){
   const visible=sorted.slice(0,3).map(homeBookingLabel);
   el.innerHTML=`<div class="hp-list">${visible.map(x=>`<div class="hp-row"><strong>${escapeHtml(x.time)}</strong><span>${escapeHtml(x.court)}${x.detail?' · '+escapeHtml(x.detail):''}</span></div>`).join('')}</div>${sorted.length>3?`<div class="hp-more">+ ${sorted.length-3}개 예약 더 보기</div>`:`<div class="hp-more">${date.replace(/-/g,'.')} 예약 현황</div>`}`;
 }
-// booking.html의 getDateBookings()와 동일한 정기 예약 규칙 (변경 시 함께 수정)
-function homeDefaultBookings(date,real){
-  const defaults=[];
-  const covers=(court,from,to)=>real.some(b=>{
-    const r=parseTimeRange(b.time);
-    return b.court===court&&r&&r.start<to&&r.end>from;
-  });
-  if(date<'2026-07-01'&&!covers('세곡',6,7))
-    defaults.push({_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[COURT_NO_KEY]:'1'});
-  if(date>='2026-07-12'&&!covers('아차산',6,10))
-    defaults.push({_default:true,court:'아차산',time:'06:00-10:00',status:'기본'});
-  return defaults;
-}
+// 정기 예약 규칙은 js/api.js의 defaultBookingsFor()에서 공유
 async function homeLoadSundayBookings(){
   const date=nextSundayKST();
   try{
     const bookings=await atGet('Booking');
     const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date);
-    const items=[...homeDefaultBookings(date,real),...real];
+    const items=[...defaultBookingsFor(date,real),...real.filter(b=>!isDefaultCancel(b))];
     homeRenderBookingSummary(items.length?items:[{court:'예약 없음',time:'-',memo:''}],date);
   }catch(e){
-    const fallback=homeDefaultBookings(date,[]);
+    const fallback=defaultBookingsFor(date,[]);
     homeRenderBookingSummary(fallback.length?fallback:[{court:'예약 없음',time:'-',memo:''}],date);
   }
 }

@@ -530,21 +530,9 @@ function renderSlot(b){
 
 function getDateBookings(date){
   const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date).map(b=>({...b,range:parseTimeRange(b.time)})).filter(b=>b.range);
-  const [yy,mm,dd]=date.split('-').map(Number);
-  const isSunday=new Date(Date.UTC(yy,mm-1,dd)).getUTCDay()===0;
-  // 세곡 정기: 2026-06까지
-  const segokPeriod=date<'2026-07-01';
-  const segokCovers6=real.some(b=>b.court==='세곡'&&b.range.start<=6&&b.range.end>6);
-  if(isSunday&&segokPeriod&&!segokCovers6){
-    real.unshift({_default:true,court:'세곡',time:'06:00-08:00',range:{start:6,end:8},status:'기본',[COURT_NO_KEY]:'1'});
-  }
-  // 아차산 정기: 2026-07-12부터 (하반기 메인 코트)
-  const achasanPeriod=date>='2026-07-12';
-  const achasanCovers=real.some(b=>b.court==='아차산'&&b.range.start<10&&b.range.end>6);
-  if(isSunday&&achasanPeriod&&!achasanCovers){
-    real.unshift({_default:true,court:'아차산',time:'06:00-10:00',range:{start:6,end:10},status:'기본'});
-  }
-  return real;
+  real.unshift(...defaultBookingsFor(date,real));
+  // 정기 예약을 끄는 용도의 취소 레코드는 캘린더/아젠다에서 숨김 (날짜 모달에는 표시되어 삭제로 복구 가능)
+  return real.filter(b=>!isDefaultCancel(b));
 }
 
 function assignLanes(items){

@@ -86,6 +86,45 @@ function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// ── 정기(기본) 예약 규칙 — booking 캘린더와 index 히어로가 공유 ──
+// 규칙이 바뀌면 여기 한 곳만 수정
+const DEFAULT_BOOKING_RULES = [
+  { court: '세곡', from: '', to: '2026-07-01', start: 6, end: 8, extra: { [COURT_NO_KEY]: '1' } },
+  { court: '아차산', from: '2026-07-12', to: '', start: 6, end: 10, extra: {} },
+];
+
+// 해당 날짜(일요일)에 실제 예약이 덮지 않는 정기 예약을 가상 항목으로 생성
+function defaultBookingsFor(date, real) {
+  const [y, m, d] = date.split('-').map(Number);
+  if (new Date(Date.UTC(y, m - 1, d)).getUTCDay() !== 0) return [];
+  const covers = (court, from, to) => real.some(b => {
+    const r = b.range || parseTimeRange(b.time);
+    return b.court === court && r && r.start < to && r.end > from;
+  });
+  return DEFAULT_BOOKING_RULES
+    .filter(rule => (!rule.from || date >= rule.from) && (!rule.to || date < rule.to))
+    .filter(rule => !covers(rule.court, rule.start, rule.end))
+    .map(rule => ({
+      _default: true, court: rule.court, status: '기본',
+      time: `${pad(rule.start)}:00-${pad(rule.end)}:00`,
+      range: { start: rule.start, end: rule.end },
+      ...rule.extra,
+    }));
+}
+
+// 정기 예약을 끄기 위해 넣은 취소 레코드(메모 없음)인지 판별 — 목록/캘린더 표시에서 숨김
+// 메모가 있는 취소(예: '미확보')는 정보성이므로 계속 표시한다
+function isDefaultCancel(b) {
+  if (b.status !== '취소' || String(b.memo || '').trim()) return false;
+  const r = b.range || parseTimeRange(b.time);
+  if (!r) return false;
+  const date = String(b.date || '').substring(0, 10);
+  return DEFAULT_BOOKING_RULES.some(rule =>
+    b.court === rule.court &&
+    (!rule.from || date >= rule.from) && (!rule.to || date < rule.to) &&
+    r.start === rule.start && r.end === rule.end);
+}
+
 // ── PWA 서비스 워커 등록 ──
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
