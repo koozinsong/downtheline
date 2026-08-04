@@ -1,20 +1,13 @@
 /* DTL 공용 레이어 — Airtable API + 캐시 + 공통 유틸
  * 모든 페이지가 이 파일 하나로 Airtable에 접근한다.
  *
- * ── 프록시 전환 (SECURITY.md 참고) ──
- * proxy/cloudflare-worker.js 배포 후 AT_PROXY에 Worker URL을 넣으면
- * 토큰 없이 프록시를 통해 호출한다. 전환 후 AT_TOKEN 줄은 삭제할 것.
+ * Airtable 토큰은 Cloudflare Worker(proxy/cloudflare-worker.js)의
+ * 환경변수에만 존재한다. 이 저장소에 토큰을 다시 넣지 말 것 (SECURITY.md 참고).
  */
-const AT_PROXY = ''; // 예: 'https://dtl-api.<계정>.workers.dev'
+const AT_PROXY = 'https://dlt-api.koozin.workers.dev';
 
-// AT_PROXY가 비어 있는 동안의 폴백(직접 호출)
-const AT_TOKEN = 'patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const AT_BASE = 'appDtlXaLReCaDeE6';
-
-const AT = AT_PROXY ? `${AT_PROXY}/v0` : `https://api.airtable.com/v0/${AT_BASE}`;
-const AT_H = AT_PROXY
-  ? { 'Content-Type': 'application/json' }
-  : { 'Authorization': `Bearer ${AT_TOKEN}`, 'Content-Type': 'application/json' };
+const AT = `${AT_PROXY}/v0`;
+const AT_H = { 'Content-Type': 'application/json' };
 
 // Airtable 필드명은 첫 글자만 소문자화해서 쓴다 (예: 'Court' → 'court')
 const COURT_NO_FIELD = 'Court Number';

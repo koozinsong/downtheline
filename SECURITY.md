@@ -1,5 +1,10 @@
 # 보안 조치 안내 (2026-08-04)
 
+> **상태 (2026-08-04): 조치 완료.**
+> 기존 토큰 폐기·재발급 완료, 프록시 `https://dlt-api.koozin.workers.dev` 배포 완료,
+> `js/api.js`가 프록시 경유로 전환되어 저장소에 토큰이 더 이상 없다.
+> 남은 선택 사항: git 히스토리의 옛 토큰 문자열 정리(아래 3번 — revoke됐으므로 필수 아님).
+
 ## 무엇이 문제였나
 
 쓰기 권한이 있는 Airtable Personal Access Token(`patzqAMF1KGaHm2dz.…c100`)이
