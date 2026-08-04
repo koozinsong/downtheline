@@ -39,7 +39,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:linear-gradient(1
 .btn-primary:hover{background:var(--g);color:#fff;}
 .btn-ghost{background:#fff;color:var(--ink);border:1px solid rgba(16,24,32,.12);}
 .btn-ghost:hover{background:var(--gdl);border-color:var(--gdl);}
-.sec{margin-bottom:2.6rem;}
+.sec{margin-bottom:2.6rem;scroll-margin-top:120px;}
 .sec-title{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem;}
 .sec-title::before{content:'';width:18px;height:2px;background:var(--g);}
 .card{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(43,111,135,.07);padding:1.6rem 1.8rem;}
@@ -58,11 +58,14 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:linear-gradient(1
 .ko-note p{font-size:.85rem;color:var(--ink2);font-weight:300;line-height:1.75;}
 footer{padding:2rem 1.4rem;text-align:center;font-size:.72rem;color:var(--sm2);}
 footer a{color:var(--sm);}
-@media(max-width:600px){
+@media(max-width:700px){
   .wrap{padding:2rem .9rem 3rem;}
   .grid2,.steps{grid-template-columns:1fr;}
-  .nav-links{gap:.3rem;}
-  .nav-link{font-size:.6rem;padding:.3rem .55rem;letter-spacing:1px;}
+  /* 네비: 한 줄에 안 들어가면 두 줄로 예쁘게 감싸기 */
+  #nav{height:auto;min-height:56px;flex-wrap:wrap;padding:.65rem .8rem;row-gap:.45rem;}
+  .nav-title{font-size:.85rem;letter-spacing:2px;}
+  .nav-links{margin-left:0;width:100%;flex-wrap:wrap;gap:.35rem;}
+  .nav-link{font-size:.62rem;padding:.32rem .6rem;letter-spacing:1px;}
 }
 </style>
 </head>
@@ -72,7 +75,7 @@ footer a{color:var(--sm);}
   <a class="nav-back" href="en.html">DTL</a>
   <div class="nav-title">Global Exchange</div>
   <div class="nav-links">
-    <a class="nav-link" href="travel.html">Travel Notes</a>
+    <a class="nav-link" href="travel.html">Travel Notes · KR</a>
     <a class="nav-link" href="mailto:downtheline2026@gmail.com">Contact</a>
     <a class="nav-link" href="index.html">한국어</a>
   </div>
