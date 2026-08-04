@@ -14,13 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
-  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
-  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
-  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
-  --ll:rgba(26,31,28,.1);
-}
 html{scroll-behavior:smooth;}
 body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);}
 #nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
@@ -398,85 +391,23 @@ const clubs = {
 
 let map, markers = [];
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 35.6762, lng: 139.6503 },
-    zoom: 11,
-    styles: [
-      { featureType:'all', elementType:'labels.text.fill', stylers:[{color:'#2c4a35'}] },
-      { featureType:'water', stylers:[{color:'#d4e4da'}] },
-      { featureType:'landscape', stylers:[{color:'#f0ebe3'}] }
-    ]
-  });
-  selectCountry('japan', document.querySelector('.country-tab.active'));
-}
-
-function selectCountry(country, btn) {
-  document.querySelectorAll('.country-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderClubs(clubs[country] || []);
-}
-
-function renderClubs(list) {
-  // Clear markers
-  markers.forEach(m => m.setMap(null));
-  markers = [];
-
-  const el = document.getElementById('club-list');
-  el.innerHTML = list.map((c, i) => {
-    // Add marker
-    if (map) {
-      const marker = new google.maps.Marker({
-        position: { lat: c.lat, lng: c.lng },
-        map,
-        title: c.name,
-        label: { text: String(i + 1), color: '#fff', fontSize: '11px', fontWeight: '700' }
-      });
-      marker.addListener('click', () => {
-        document.getElementById('club-' + i).scrollIntoView({ behavior: 'smooth', block: 'center' });
-        toggleClub(i);
-      });
-      markers.push(marker);
-    }
-
-    return `<div class="club-card" id="club-${i}">
-      <div class="club-head" onclick="toggleClub(${i});panTo(${c.lat},${c.lng})">
-        <div>
-          <div class="club-name"><span style="color:var(--gd);margin-right:.4rem;">${i+1}.</span> ${c.name}</div>
-          <div class="club-name-jp">${c.nameJp}</div>
-        </div>
-        <div class="club-area">${c.area}</div>
-      </div>
-      <div class="club-body" id="cb-${i}">
-        <p style="font-size:.82rem;color:var(--ink2);line-height:1.7;margin-bottom:.8rem;">${c.desc}</p>
-        <div class="club-info">
-          <span class="club-label">주소</span><span class="club-val">${c.address}</span>
-          <span class="club-label">가격</span><span class="club-val">${c.price}</span>
-          <span class="club-label">웹사이트</span><span class="club-val"><a href="${c.url}" target="_blank">${c.url.replace('https://','').replace('http://','').split('/')[0]}</a></span>
-        </div>
-        <div class="club-tags">
-          ${c.features.map(f => `<span class="club-tag ${f.includes('영어')||f.includes('비지터')||f.includes('5성급')||f.includes('최고급')?'highlight':''}">${f}</span>`).join('')}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 function toggleClub(i) {
   const el = document.getElementById('cb-' + i);
   el.classList.toggle('open');
 }
-
-function panTo(lat, lng) {
-  if (map) map.panTo({ lat, lng });
-}
-
-// Google Maps fallback (no API key)
-window.initMap = initMap;
 </script>
 <script>
-// Leaflet 대체 (무료, API 키 불필요)
+// Leaflet 지도 (무료, API 키 불필요)
 (function(){
+  let currentCountry = 'japan';
+
+  // 탭 onclick에서 즉시 호출 가능해야 하므로 Leaflet 로드 전에 정의
+  window.selectCountry = function(country, btn) {
+    document.querySelectorAll('.country-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCountry = country;
+    if (map) renderClubsLeaflet(clubs[country] || [], country);
+  };
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
@@ -490,7 +421,7 @@ window.initMap = initMap;
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    renderClubsLeaflet(clubs.japan, 'japan');
+    renderClubsLeaflet(clubs[currentCountry] || [], currentCountry);
   };
   document.body.appendChild(script);
 
@@ -538,12 +469,6 @@ window.initMap = initMap;
     }).join('');
   }
 
-  // Override selectCountry for Leaflet
-  window.selectCountry = function(country, btn) {
-    document.querySelectorAll('.country-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderClubsLeaflet(clubs[country] || [], country);
-  };
 })();
 </script>
 </body>

@@ -14,16 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --g:#2c4a35; --g2:#3a5c44; --g3:#4e7a5a; --glt:#7aab87;
-  --iv:#f7f3ed; --iv2:#ede8e0; --iv3:#e2dbd0;
-  --ink:#1a1f1c; --ink2:#2e3530; --sm:#6b7570; --sm2:#9aa49e;
-  --gd:#b8933a; --gdl:#d4b36a;
-  --w:#ffffff;
-  --ll:rgba(26,31,28,.1); --ld:rgba(255,255,255,.08);
-  --female:#9b3d5a; --female-bg:#fde8ed;
-  --male:#2a4a80; --male-bg:#e6f0ff;
-}
 html{scroll-behavior:smooth;}
 body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);min-height:100vh;}
 
@@ -1149,90 +1139,9 @@ async function finishSchedule(schedId) {
   try {
     await atDelete('Schedules', schedId);
     cacheDrop(['getMatches','getSchedules','getPlayers']);
-    cacheDrop(['getMatches','getSchedules','getPlayers']);
     _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) { alert('실패: ' + e.message); }
-}
-
-// ── 완료된 시합 결과 표시 ──
-async function loadFinishedResults() {
-  const el = document.getElementById('finished-results');
-  if (!el) return;
-  try {
-    const [allMatches, playerRes] = await Promise.all([atGet('Matches'), cachedFetch('getPlayers')]);
-    if (!allMatches.length) { el.innerHTML = ''; return; }
-    const _fn = new Set((playerRes||[]).filter(p=>p.gender==='female').map(p=>p.name));
-    const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${name}</span>`;
-    const sortFF = arr => [...arr].sort((a,b) => (_fn.has(b)?1:0) - (_fn.has(a)?1:0));
-
-    // schedule_id로 그룹핑
-    const groups = {};
-    allMatches.forEach(m => {
-      const key = m.schedule_id || m.event || m.id;
-      if (!groups[key]) groups[key] = { date:m.date, event:m.event, matches:[], schedule_id:m.schedule_id };
-      groups[key].matches.push(m);
-    });
-    // notes(R1,R2..)로 정렬
-    Object.values(groups).forEach(g => {
-      g.matches.sort((a,b) => {
-        const ra = parseInt((a.notes||'').replace(/\D/g,''))||999;
-        const rb = parseInt((b.notes||'').replace(/\D/g,''))||999;
-        return ra - rb;
-      });
-    });
-    const sorted = Object.values(groups).sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
-
-    el.innerHTML = `
-      <div style="background:var(--g);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gdl);">Match Results</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem;">시합 결과</div>
-        </div>
-      </div>
-      <div style="padding:1rem 1.5rem;">
-      ${sorted.map((g, gi) => {
-        const date = String(g.date||'').substring(0,10);
-        const total = g.matches.length;
-        const ids = g.matches.map(m=>m.id);
-        const gid = 'fr_'+gi;
-        return `<div style="border:1px solid var(--ll);margin-bottom:.5rem;background:var(--w);">
-          <div style="display:flex;align-items:center;padding:.8rem 1rem;cursor:pointer;transition:background .15s;" onclick="document.getElementById('${gid}').style.display=document.getElementById('${gid}').style.display==='none'?'block':'none'">
-            <div style="flex:1;">
-              <div style="font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;text-transform:uppercase;">${g.event||'시합'}</div>
-              <div style="font-size:.68rem;color:var(--sm2);">${date} · ${total}경기</div>
-            </div>
-            <span style="font-size:.75rem;color:var(--sm2);">▾</span>
-          </div>
-          <div id="${gid}" style="display:none;border-top:1px solid var(--ll);padding:.5rem 1rem;">
-            ${g.matches.map(m => {
-              const s1=parseInt(m.score1)||0, s2=parseInt(m.score2)||0;
-              const w1=s1>s2;
-              const rnd = m.notes || '';
-              return `<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid rgba(26,31,28,.04);flex-wrap:wrap;">
-                ${rnd?`<span style="font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;color:var(--g3);min-width:25px;">${rnd}</span>`:''}
-                <div style="display:flex;gap:.2rem;">${sortFF([m.team1_p1,m.team1_p2]).map(pChip).join('')}</div>
-                <span style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;min-width:50px;text-align:center;"><span style="color:${w1?'var(--g)':'var(--sm2)'}">${s1}</span>:<span style="color:${w1?'var(--sm2)':'var(--g)'}">${s2}</span></span>
-                <div style="display:flex;gap:.2rem;">${sortFF([m.team2_p1,m.team2_p2]).map(pChip).join('')}</div>
-              </div>`;
-            }).join('')}
-            <div style="margin-top:.5rem;text-align:right;">
-              <button class="conf-del-btn" style="color:#c0392b;border:1px solid rgba(192,57,43,.3);padding:.3rem .6rem;font-size:.6rem;" onclick="delFinishedGroup(${JSON.stringify(ids).replace(/"/g,'&quot;')})">전체 삭제</button>
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
-      </div>`;
-  } catch(e) { el.innerHTML = `<div style="padding:.8rem;color:red;font-size:.82rem;">오류: ${e.message}</div>`; }
-}
-
-async function delFinishedGroup(ids) {
-  if (!confirm('이 시합 결과를 모두 삭제할까요?')) return;
-  try {
-    await Promise.all(ids.map(id => atDelete('Matches', id)));
-    cacheDrop(['getMatches']);
-    await loadFinishedResults();
-  } catch(e) { alert('삭제 실패: ' + e.message); }
 }
 
 // ── 스코어 즉시 저장 ──
@@ -1665,8 +1574,6 @@ function checkAvailability() {
   warn.style.display = unavail.length ? 'block' : 'none';
 }
 
-// 예전 validateFormats 참조 호환
-const validateFormats = checkAvailability;
 
 // ── 랭킹 계산 (Matches 기반) ──
 function computePlayerRankings(allMatches, maleList, femaleList) {

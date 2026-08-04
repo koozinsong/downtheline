@@ -14,14 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --g:#2c4a35;--g2:#3a5c44;--g3:#4e7a5a;--glt:#7aab87;
-  --iv:#f7f3ed;--iv2:#ede8e0;--iv3:#e2dbd0;
-  --ink:#1a1f1c;--ink2:#2e3530;--sm:#6b7570;--sm2:#9aa49e;
-  --gd:#b8933a;--gdl:#d4b36a;--w:#ffffff;
-  --ll:rgba(26,31,28,.1);
-  --segok:#2c4a35;--naegok:#3a7da5;--jangchung:#a55c3a;--yangjae:#9b7dc4;--other:#d97f3a;--achasan:#4d7a6a;
-}
 body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:var(--ink);min-height:100vh;}
 #nav{background:var(--g);height:56px;display:flex;align-items:center;padding:0 2rem;gap:1.5rem;position:sticky;top:0;z-index:100;}
 .nav-back{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
@@ -98,7 +90,6 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 .court-list.naegok h3{color:var(--naegok);}
 .court-list.jangchung h3{color:var(--jangchung);}
 .court-list.yangjae h3{color:var(--yangjae);}
-.court-list.c88 h3{color:var(--c88);}
 .court-list.achasan h3{color:var(--achasan);}
 .court-list.other h3{color:var(--other);}
 .court-dates{display:flex;flex-direction:column;gap:.35rem;}
@@ -211,6 +202,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 
 /* v0.2 A theme: Seoul Dawn Court for booking */
 :root{
+  --achasan:#4d7a6a;
   --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
   --iv:#fbfbf7;--iv2:#eef7f8;--iv3:#ddeff3;
   --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
