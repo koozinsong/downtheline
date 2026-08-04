@@ -563,10 +563,28 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
   .act-desc{max-height:none;font-size:.74rem;line-height:1.55;color:rgba(255,255,255,.62);}
   .act-num{font-size:3.2rem;top:.85rem;right:.9rem;}
 }
+
+/* Global exchange banner */
+.notice-bar{display:flex;align-items:center;justify-content:center;gap:.55rem;background:#101820;color:#e9ff6f;padding:.6rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;transition:background .2s;}
+.notice-bar:hover{background:#1d2b36;}
+.notice-bar .nb-ko{color:#fff;}
+.notice-bar .nb-sep{opacity:.4;}
+.notice-bar .nb-arrow{transition:transform .2s;}
+.notice-bar:hover .nb-arrow{transform:translateX(4px);}
+@media(max-width:900px){.notice-bar .nb-en,.notice-bar .nb-sep{display:none;}}
 </style>
 </head>
 <body>
 <div id="cur"></div>
+
+<!-- GLOBAL EXCHANGE BANNER -->
+<a class="notice-bar hov" href="global.html">
+  <span class="nb-globe">🌏</span>
+  <span class="nb-ko">해외 클럽과의 교류전을 상시 환영합니다</span>
+  <span class="nb-sep">·</span>
+  <span class="nb-en">We welcome inter-club friendlies — visiting clubs, come play us in Seoul</span>
+  <span class="nb-arrow">→</span>
+</a>
 
 <!-- NAV -->
 <nav id="nav">
@@ -588,13 +606,14 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
       <li><a href="schedule.html" class="hov nav-play">시합 일정</a></li>
       <li><a href="booking.html"  class="hov nav-play">코트 예약</a></li>
       <li><a href="travel.html"   class="hov nav-play">원정 이벤트</a></li>
+      <li><a href="global.html"   class="hov nav-play">글로벌 교류</a></li>
     </ul>
   </div>
   <button class="nav-hamburger hov" id="navHamburger" aria-label="메뉴 열기">
     <span></span><span></span><span></span>
   </button>
   <div class="nav-right">
-    <a class="nav-ig hov" href="travel.html">Travel Notes</a>
+    <a class="nav-ig hov" href="en.html">EN</a>
     <a class="nav-btn hov" href="booking.html">이번 주 보기</a>
   </div>
 </nav>
@@ -614,9 +633,10 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
       <li><a href="schedule.html">시합 일정</a></li>
       <li><a href="booking.html">코트 예약</a></li>
       <li><a href="travel.html">원정 이벤트</a></li>
+      <li><a href="global.html">글로벌 교류</a></li>
     </ul>
     <div class="mob-bottom">
-      <a class="mob-ig" href="travel.html">Travel Notes</a>
+      <a class="mob-ig" href="en.html">English</a>
       <a class="mob-btn" href="booking.html">이번 주 보기</a>
     </div>
   </div>
@@ -825,11 +845,11 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
     <a href="#mem" class="sec-lk hov">멤버십 보기</a>
   </div>
   <div class="acts-row rv" style="transition-delay:.15s">
-    <div class="act hov">
-      <div class="act-bg" style="background:var(--g)"><svg viewBox="0 0 260 347" fill="none"><rect x="15" y="15" width="230" height="317" stroke="white" stroke-width="2.5"/><line x1="130" y1="15" x2="130" y2="332" stroke="white" stroke-width="2"/><line x1="15" y1="173" x2="245" y2="173" stroke="white" stroke-width="2.5"/><line x1="60" y1="15" x2="60" y2="332" stroke="white" stroke-width="1"/><line x1="200" y1="15" x2="200" y2="332" stroke="white" stroke-width="1"/><circle cx="130" cy="173" r="30" stroke="white" stroke-width="1.5"/></svg></div>
+    <a href="global.html" class="act hov" style="text-decoration:none;color:inherit;">
+      <div class="act-bg" style="background:var(--g)"><svg viewBox="0 0 260 347" fill="none"><circle cx="130" cy="173" r="110" stroke="white" stroke-width="2.5"/><ellipse cx="130" cy="173" rx="50" ry="110" stroke="white" stroke-width="1.5"/><ellipse cx="130" cy="173" rx="110" ry="45" stroke="white" stroke-width="1.5"/><line x1="20" y1="173" x2="240" y2="173" stroke="white" stroke-width="1"/><line x1="130" y1="63" x2="130" y2="283" stroke="white" stroke-width="1"/><circle cx="185" cy="115" r="12" fill="white" opacity=".85"/></svg></div>
       <div class="act-ov"></div><div class="act-num">01</div>
-      <div class="act-ct"><div class="act-tag">Weekly · Sunday</div><div class="act-name">정기<br>매치</div><div class="act-desc">매주 일요일 새벽 세곡 기점. 다양한 파트너 조합으로 즐기는 정기전.</div></div>
-    </div>
+      <div class="act-ct"><div class="act-tag">International</div><div class="act-name">글로벌<br>프렌들리</div><div class="act-desc">해외 클럽과의 인터클럽 교류전. 서울에서 호스팅하고, 세계로 원정 갑니다.</div></div>
+    </a>
     <div class="act hov">
       <div class="act-bg" style="background:#1e2d24"><svg viewBox="0 0 260 347" fill="none"><circle cx="130" cy="173" r="120" stroke="white" stroke-width="2.5"/><circle cx="130" cy="173" r="75" stroke="white" stroke-width="1.5"/><circle cx="130" cy="173" r="35" stroke="white" stroke-width="2"/><line x1="10" y1="173" x2="250" y2="173" stroke="white" stroke-width="1"/><line x1="130" y1="53" x2="130" y2="293" stroke="white" stroke-width="1"/></svg></div>
       <div class="act-ov"></div><div class="act-num">02</div>
@@ -866,7 +886,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
         <div class="ey">Upcoming Events</div>
         <div class="sec-h2sm">What's <em>On</em></div>
       </div>
-      <a href="#" class="sec-lk hov">모든 이벤트</a>
+      <a href="schedule.html" class="sec-lk hov">모든 이벤트</a>
     </div>
 
     <!-- Featured: TBD -->
@@ -980,7 +1000,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
           <li class="no">소셜 이벤트 우선 예약</li>
           <li class="no">원정 이벤트 참가</li>
         </ul>
-        <a href="#" class="mc-cta mc-out hov">문의하기</a>
+        <a href="mailto:downtheline2026@gmail.com?subject=[DTL] Court Pass 문의" class="mc-cta mc-out hov">문의하기</a>
       </div>
       <div class="mc feat">
         <div class="mc-badge">Most Popular</div>
@@ -995,7 +1015,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
           <li>멤버 전용 채널 이용</li>
           <li class="no">원정 이벤트 참가</li>
         </ul>
-        <a href="#" class="mc-cta mc-fill hov">지금 가입하기</a>
+        <a href="mailto:downtheline2026@gmail.com?subject=[DTL] 멤버 가입 문의" class="mc-cta mc-fill hov">지금 가입하기</a>
       </div>
       <div class="mc">
         <div class="mc-tier">Premium</div>
@@ -1009,7 +1029,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
           <li>파트너 브랜드 혜택</li>
           <li>전담 매니저 배정</li>
         </ul>
-        <a href="#" class="mc-cta mc-out hov">문의하기</a>
+        <a href="mailto:downtheline2026@gmail.com?subject=[DTL] Social Elite 문의" class="mc-cta mc-out hov">문의하기</a>
       </div>
     </div>
   </div>
@@ -1020,11 +1040,11 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
   <div class="jl">
     <div class="jl-label">Ready to play?</div>
     <div class="jl-title">Join<br><span>Down the Line</span></div>
-    <p class="jl-copy">카카오톡 오픈채팅으로 문의하시거나 인스타그램 DM을 보내주세요. 다음 일요일 새벽, 세곡에서 함께해요.</p>
+    <p class="jl-copy">이메일로 문의를 남겨주세요. 다음 일요일 새벽, 코트에서 함께해요.<br>For international club exchanges, reach us in English anytime.</p>
   </div>
   <div class="jr">
-    <a href="#" class="btn-jw hov">KakaoTalk 문의</a>
-    <a href="#" class="btn-jo hov">Instagram 팔로우</a>
+    <a href="mailto:downtheline2026@gmail.com?subject=[DTL] 가입/문의" class="btn-jw hov">이메일 문의</a>
+    <a href="global.html" class="btn-jo hov">Global Exchange</a>
   </div>
 </div>
 
@@ -1058,7 +1078,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
     </div>
     <div>
       <div class="ft-hd">Contact</div>
-      <div class="ft-ct">KakaoTalk<br><a href="#">오픈채팅 문의</a><br><br>Instagram<br><a href="#">@downtheline</a><br><br>서울특별시</div>
+      <div class="ft-ct">Email<br><a href="mailto:downtheline2026@gmail.com">downtheline2026@gmail.com</a><br><br>Global Exchange<br><a href="global.html">인터클럽 교류전 안내</a><br><br>서울특별시</div>
     </div>
   </div>
   <div class="ft-bar">

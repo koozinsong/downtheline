@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Down the Line — Tennis Social Club, Seoul</title>
+<meta name="description" content="Down the Line is a Seoul-based tennis social club. Sunday morning tennis, club tournaments, and international inter-club friendlies. Visiting clubs welcome.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.svg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#fbfbf7">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900&family=Barlow:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
+  --iv:#fbfbf7;--iv2:#eef7f8;--iv3:#ddeff3;
+  --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
+  --gd:#ff7a59;--gdl:#e9ff6f;--w:#ffffff;
+  --ll:rgba(16,24,32,.09);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink);}
+#nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ink);}
+.nav-links{margin-left:auto;display:flex;gap:.5rem;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#53636b;text-decoration:none;transition:all .2s;padding:.4rem .9rem;background:#fff;border:1px solid rgba(16,24,32,.08);border-radius:999px;}
+.nav-link:hover,.nav-link.active{color:var(--ink);background:var(--gdl);border-color:var(--gdl);}
+.wrap{max-width:960px;margin:0 auto;padding:3rem 1.2rem 3.5rem;}
+.hero-label{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--gd);margin-bottom:.8rem;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2.6rem,7vw,4.2rem);font-weight:800;text-transform:uppercase;line-height:.92;letter-spacing:-.5px;color:var(--ink);margin-bottom:1rem;}
+.page-title em{font-style:italic;color:var(--g);font-weight:300;}
+.lead{font-size:1rem;color:var(--ink2);font-weight:300;line-height:1.8;max-width:620px;margin-bottom:1.6rem;}
+.cta-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:3rem;}
+.btn{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;padding:.75rem 1.6rem;border-radius:999px;transition:all .2s;}
+.btn-primary{background:var(--ink);color:var(--gdl);}
+.btn-primary:hover{background:var(--g);color:#fff;}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid rgba(16,24,32,.12);}
+.btn-ghost:hover{background:var(--gdl);border-color:var(--gdl);}
+.sec{margin-bottom:2.6rem;}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem;}
+.sec-title::before{content:'';width:18px;height:2px;background:var(--g);}
+.card{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(43,111,135,.07);padding:1.6rem 1.8rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.fact{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:18px;padding:1.2rem 1.4rem;}
+.fact-n{font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;font-weight:900;color:var(--g);line-height:1;}
+.fact-l{font-size:.72rem;color:var(--sm);letter-spacing:1px;text-transform:uppercase;margin-top:.35rem;}
+.card h3{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:.5rem;}
+.card p,.card li{font-size:.88rem;color:var(--ink2);font-weight:300;line-height:1.75;}
+.card ul{padding-left:1.1rem;}
+.tag{display:inline-block;font-size:.68rem;font-weight:600;padding:.2rem .6rem;border-radius:999px;background:var(--iv2);color:var(--g);margin:.15rem .15rem 0 0;}
+.contact-box{background:var(--ink);border-radius:22px;padding:2.4rem 2rem;text-align:center;color:#fff;}
+.contact-box .big{font-family:'Barlow Condensed',sans-serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem;}
+.contact-box p{color:rgba(255,255,255,.65);font-size:.88rem;font-weight:300;margin-bottom:1.4rem;}
+footer{padding:2rem 1.4rem;text-align:center;font-size:.72rem;color:var(--sm2);}
+footer a{color:var(--sm);}
+@media(max-width:600px){
+  .wrap{padding:2rem .9rem 3rem;}
+  .grid2,.grid3{grid-template-columns:1fr;}
+  .nav-links{gap:.3rem;}
+  .nav-link{font-size:.6rem;padding:.3rem .55rem;letter-spacing:1px;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-title">Down the Line</div>
+  <div class="nav-links">
+    <a class="nav-link" href="#about">About</a>
+    <a class="nav-link" href="#courts">Courts</a>
+    <a class="nav-link" href="global.html">Global Exchange</a>
+    <a class="nav-link" href="mailto:downtheline2026@gmail.com">Contact</a>
+    <a class="nav-link" href="index.html">한국어</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="hero-label">Tennis Social Club · Seoul, Korea · Since 2026</div>
+  <div class="page-title">Down<br><em>the Line</em></div>
+  <p class="lead">We are a Seoul-based tennis social club. Every Sunday at dawn, we take over a court in the city, play doubles until the morning warms up, and finish with breakfast together. We host club tournaments, travel for tennis — and we love meeting clubs from around the world.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="global.html">🌏 Play us — Global Exchange</a>
+    <a class="btn btn-ghost" href="mailto:downtheline2026@gmail.com?subject=[DTL]%20Hello%20from%20abroad">Email the club</a>
+  </div>
+
+  <div class="sec grid3">
+    <div class="fact"><div class="fact-n">Sunday</div><div class="fact-l">6–10 AM, every week</div></div>
+    <div class="fact"><div class="fact-n">Doubles</div><div class="fact-l">Round-robin &amp; team match</div></div>
+    <div class="fact"><div class="fact-n">Seoul</div><div class="fact-l">5 courts across the city</div></div>
+  </div>
+
+  <div class="sec" id="about">
+    <div class="sec-title">Who We Are</div>
+    <div class="card">
+      <p>Down the Line (DTL) is a members' tennis community founded in 2026. We keep it simple: consistent Sunday-morning tennis, a friendly-but-competitive club ranking, quarterly tournaments, and an after-social culture — the meal after the match matters as much as the match.</p>
+      <p style="margin-top:.6rem;">We track every match and publish our own club rankings, run our own match scheduler, and organize tennis trips — from resort courts in Korea to Bali and Tokyo.</p>
+      <div style="margin-top:.8rem;">
+        <span class="tag">Weekly doubles</span><span class="tag">Club ranking</span><span class="tag">Quarterly tournaments</span><span class="tag">After-social</span><span class="tag">Tennis travel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" id="courts">
+    <div class="sec-title">Where We Play</div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Achasan — Main Court</h3>
+        <p>Our home for the second half of 2026. Every Sunday, 6–10 AM. East Seoul, next to the Han River trails.</p>
+      </div>
+      <div class="card">
+        <h3>Around the City</h3>
+        <p>Segok (Gangnam), Naegok (Seocho), Jangchung (historic downtown courts), and Yangjae. We book by the season and the occasion.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Visiting Seoul?</div>
+    <div class="card">
+      <h3>Come play with us</h3>
+      <p>If your club — or just you and a partner — are visiting Seoul, join a Sunday session. We'll arrange the court, balls, and the after-breakfast. If you're bringing a team, we'll set up a proper inter-club friendly: team format, scoreboard, photos, the whole thing.</p>
+      <p style="margin-top:.6rem;">See <a href="global.html" style="color:var(--g);font-weight:500;">Global Exchange</a> for how our friendlies work.</p>
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <div class="big">Let's rally</div>
+    <p>One email is all it takes. Tell us who you are, where you play, and when you're around.</p>
+    <a class="btn btn-primary" style="background:var(--gdl);color:var(--ink);" href="mailto:downtheline2026@gmail.com?subject=[DTL]%20Inter-club%20friendly">downtheline2026@gmail.com</a>
+  </div>
+</div>
+
+<footer>
+  © 2026 Down the Line Tennis Social Club · Seoul, Korea · <a href="index.html">한국어 홈</a> · <a href="global.html">Global Exchange</a>
+</footer>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
