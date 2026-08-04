@@ -448,32 +448,15 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
 
 <div class="toast" id="toast"></div>
 
+<script src="js/api.js"></script>
 <script>
-const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const AT_BASE='appDtlXaLReCaDeE6';
-const AT=`https://api.airtable.com/v0/${AT_BASE}`;
-const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
-
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id,createdTime:rec.createdTime};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
-async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
-async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
-async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
-
 let bookings=[], players=[];
 let viewYear, viewMonth; // 현재 보고 있는 월
 let selectedDate=null;
 let editingId=null;
 
-function todayKST(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}).split(' ')[0];}
-function pad(n){return String(n).padStart(2,'0');}
 function ymd(y,m,d){return `${y}-${pad(m)}-${pad(d)}`;}
 const courtCls={'세곡':'segok','내곡':'naegok','장충':'jangchung','양재':'yangjae','기타':'other','아차산':'achasan'};
-const COURT_NO_FIELD='Court Number';
-const COURT_NO_KEY='court Number';
-function displayCourtNo(no){
-  if(no===undefined||no===null||no==='') return '';
-  return /^\d+$/.test(String(no))?String(no)+'번':String(no);
-}
 function onCourtChange(){
   const court=document.getElementById('f-court').value;
   const cn=document.getElementById('f-courtno');
@@ -519,11 +502,6 @@ async function init(){
   }catch(e){
     document.getElementById('cal-grid').innerHTML=`<div style="grid-column:span 7;padding:2rem;text-align:center;color:#c0392b;">불러오기 실패: ${e.message}</div>`;
   }
-}
-
-function parseTimeRange(t){
-  const m=String(t||'').match(/(\d{1,2}):?\d*\s*[-~]\s*(\d{1,2})/);
-  return m?{start:+m[1],end:+m[2]}:null;
 }
 
 function updateLastUpdated(){

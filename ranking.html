@@ -257,14 +257,8 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
   </div>
 </div>
 
+<script src="js/api.js"></script>
 <script>
-// ── Airtable API ──
-const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const AT_BASE='appDtlXaLReCaDeE6';
-const AT=`https://api.airtable.com/v0/${AT_BASE}`;
-const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
-
 function computeRankings(players, matches, sortBy) {
   const stats={};
   const mkStat=(name,gender)=>({name,gender:gender||'',played:0,wins:0,losses:0,draws:0,mvp:0,gf:0,ga:0,_scheds:new Set()});
@@ -303,14 +297,23 @@ function computeRankings(players, matches, sortBy) {
 
 let _players=[], _matches=[], _events=[];
 
+function fillEventOptions(){
+  const evSel=document.getElementById('filter-event');
+  const cur=evSel.value;
+  evSel.innerHTML='<option value="">전체 이벤트</option>';
+  _events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+  evSel.value=cur;
+}
+
 async function load(){
   document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><span class="spin"></span></div>`;
   try{
-    [_players, _matches, _events]=await Promise.all([atGet('Players'),atGet('Matches'),atGet('Events')]);
-    // 이벤트 필터 드롭다운 채우기
-    const evSel=document.getElementById('filter-event');
-    evSel.innerHTML='<option value="">전체 이벤트</option>';
-    _events.forEach(ev=>{evSel.innerHTML+=`<option value="${ev.name}">${ev.name}</option>`;});
+    [_players, _matches, _events]=await Promise.all([
+      cachedFetch('getPlayers',d=>{_players=d;applyFilter();}),
+      cachedFetch('getMatches',d=>{_matches=d;applyFilter();}),
+      cachedFetch('getEvents',d=>{_events=d;fillEventOptions();applyFilter();})
+    ]);
+    fillEventOptions();
     applyFilter();
   }catch(e){
     document.getElementById('rank-table-wrap').innerHTML=`<div class="no-data"><div class="no-data-icon">⚠️</div><div class="no-data-text">불러오기 실패</div></div>`;

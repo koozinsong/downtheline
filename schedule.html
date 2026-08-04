@@ -581,61 +581,9 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
 
 </div> <!-- end wrap -->
 
+<script src="js/api.js"></script>
 <script>
-// ── Airtable API ──
-const AT_TOKEN = 'patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const AT_BASE = 'appDtlXaLReCaDeE6';
-const AT = `https://api.airtable.com/v0/${AT_BASE}`;
-const AT_H = { 'Authorization': `Bearer ${AT_TOKEN}`, 'Content-Type': 'application/json' };
 let _lastScheduleData = null;
-
-async function atGet(table) {
-  let all = [], offset = null;
-  do {
-    const url = `${AT}/${encodeURIComponent(table)}${offset ? '?offset='+offset : ''}`;
-    const r = await fetch(url, { headers: AT_H });
-    const d = await r.json();
-    all.push(...(d.records||[]).map(rec => {
-      const o = { id:rec.id };
-      Object.entries(rec.fields||{}).forEach(([k,v]) => { o[k.charAt(0).toLowerCase()+k.slice(1)] = v; });
-      return o;
-    }));
-    offset = d.offset;
-  } while (offset);
-  return all;
-}
-async function atCreate(table, fields) {
-  const r = await fetch(`${AT}/${encodeURIComponent(table)}`, { method:'POST', headers:AT_H, body:JSON.stringify({fields}) });
-  const d = await r.json();
-  return d.error ? { success:false, error:d.error.message } : { success:true, id:d.id };
-}
-async function atDelete(table, id) {
-  await fetch(`${AT}/${encodeURIComponent(table)}/${id}`, { method:'DELETE', headers:AT_H });
-  return { success:true };
-}
-async function atUpdate(table, id, fields) {
-  const r = await fetch(`${AT}/${encodeURIComponent(table)}/${id}`, { method:'PATCH', headers:AT_H, body:JSON.stringify({fields}) });
-  const d = await r.json();
-  return d.error ? { success:false, error:d.error.message } : { success:true, id:d.id };
-}
-
-const CACHE_TTL = 60 * 1000; // 1분
-const CACHE_VER = 'v3';
-function cacheGet(k) { try { const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k); if(!r)return null; const{data,ts}=JSON.parse(r); return Date.now()-ts>CACHE_TTL?null:data; } catch(e){return null;} }
-function cacheSet(k, d) { try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){} }
-let _skipCache = false;
-const _tbl = { getPlayers:'Players', getEvents:'Events', getMatches:'Matches', getSchedules:'Schedules' };
-async function cachedFetch(action) {
-  const cached = _skipCache ? null : cacheGet(action);
-  const table = _tbl[action];
-  if (!table) return cached || [];
-  const fetched = atGet(table).then(d => { cacheSet(action, d); return d; });
-  if (cached) { fetched.catch(()=>{}); return cached; }
-  return fetched;
-}
-
-const defaultFemales = ['여1', '여2', '여3'];
-const defaultMales   = ['남1', '남2', '남3', '남4'];
 
 // ── 경기 모드 ──
 let _mode = 'individual'; // 'individual' | 'team' | 'pair'
@@ -1190,7 +1138,7 @@ async function saveMVP(schedId) {
     const targets = allM.filter(m => String(m.schedule_id) === String(schedId));
     if (!targets.length) { alert('해당 일정에 매치가 없습니다.'); return; }
     await Promise.all(targets.map(m => atUpdate('Matches', m.id, { mvp: name || '' })));
-    ['getMatches'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    cacheDrop(['getMatches']);
     _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) { alert('MVP 저장 실패: ' + e.message); }
@@ -1200,8 +1148,8 @@ async function finishSchedule(schedId) {
   if (!confirm('이 일정을 완료 처리할까요?\n(경기 기록은 유지됩니다)')) return;
   try {
     await atDelete('Schedules', schedId);
-    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
-    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    cacheDrop(['getMatches','getSchedules','getPlayers']);
+    cacheDrop(['getMatches','getSchedules','getPlayers']);
     _skipCache = true;
     await loadConfirmedSchedules();
   } catch(e) { alert('실패: ' + e.message); }
@@ -1282,7 +1230,7 @@ async function delFinishedGroup(ids) {
   if (!confirm('이 시합 결과를 모두 삭제할까요?')) return;
   try {
     await Promise.all(ids.map(id => atDelete('Matches', id)));
-    ['getMatches'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    cacheDrop(['getMatches']);
     await loadFinishedResults();
   } catch(e) { alert('삭제 실패: ' + e.message); }
 }
@@ -1383,7 +1331,7 @@ async function removeMatchFromSchedule(schedId, ri, mi) {
     }
     const newJson = Array.isArray(raw) ? rounds : { ...raw, rounds };
     await atUpdate('Schedules', schedId, { schedule_json: JSON.stringify(newJson) });
-    ['getMatches','getSchedules'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    cacheDrop(['getMatches','getSchedules']);
     _skipCache = true;
     await loadConfirmedSchedules();
     restoreInlineScores(savedScores);
@@ -1449,7 +1397,7 @@ async function saveAllScores(schedId) {
     }));
     const ok = results.filter(r => r.success).length;
     // 다른 페이지 캐시도 무효화
-    ['getMatches','getSchedules','getPlayers'].forEach(k=>localStorage.removeItem('dtl_'+CACHE_VER+'_'+k));
+    cacheDrop(['getMatches','getSchedules','getPlayers']);
     if (ok === toSave.length) {
       await atDelete('Schedules', schedId);
       alert(`${ok}건 저장 완료 — 경기결과에서 확인하세요.`);

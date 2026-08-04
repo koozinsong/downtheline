@@ -289,25 +289,8 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="js/api.js"></script>
 <script>
-// ── Airtable API ──
-const AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const AT_BASE='appDtlXaLReCaDeE6';
-const AT=`https://api.airtable.com/v0/${AT_BASE}`;
-const AT_H={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
-
-async function atGet(table){let all=[],offset=null;do{const url=`${AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;const r=await fetch(url,{headers:AT_H});const d=await r.json();all.push(...(d.records||[]).map(rec=>{const o={id:rec.id};Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});return o;}));offset=d.offset;}while(offset);return all;}
-async function atCreate(table,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}`,{method:'POST',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
-async function atUpdate(table,id,fields){const r=await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'PATCH',headers:AT_H,body:JSON.stringify({fields})});const d=await r.json();return d.error?{success:false,error:d.error.message}:{success:true,id:d.id};}
-async function atDelete(table,id){await fetch(`${AT}/${encodeURIComponent(table)}/${id}`,{method:'DELETE',headers:AT_H});return{success:true};}
-
-const CACHE_TTL=60*1000;const CACHE_VER='v3';
-function cacheGet(k){try{const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
-function cacheSet(k,d){try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
-const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSchedules:'Schedules'};
-// 캐시가 있으면 즉시 반환하되, 백그라운드 fetch 결과가 다르면 onFresh로 화면 갱신
-async function cachedFetch(action,onFresh){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.then(d=>{if(onFresh&&JSON.stringify(d)!==JSON.stringify(c))onFresh(d);}).catch(()=>{});return c;}return f;}
-
 let players=[],events=[],matches=[];
 
 async function init(){
@@ -486,7 +469,7 @@ async function delScheduleMatches(schedId, ids){
   if(!confirm('이 일정의 모든 경기 기록을 삭제할까요?')) return;
   try{
     await Promise.all(ids.map(id=>atDelete('Matches',id)));
-    localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
+    cacheDrop(['getMatches']);
     matches=matches.filter(m=>!ids.includes(m.id));
     renderMatches();
     toast(ids.length+'건 삭제됨','ok');
@@ -506,7 +489,7 @@ async function updateScore(id){
       if(m){m.score1=s1;m.score2=s2;}
       s1El.setAttribute('data-orig',s1);
       s2El.setAttribute('data-orig',s2);
-      localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
+      cacheDrop(['getMatches']);
       toast('수정됨 ✓','ok');
     } else toast('수정 실패','err');
   }catch(e){toast('수정 실패','err');}
@@ -517,7 +500,7 @@ async function delMatch(id){
   try{
     const res=await atDelete('Matches',id);
     if(res.success){
-      localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
+      cacheDrop(['getMatches']);
       matches=matches.filter(m=>m.id!==id);
       renderMatches();
       toast('삭제됐습니다','ok');

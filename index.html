@@ -1067,6 +1067,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
   </div>
 </footer>
 
+<script src="js/api.js"></script>
 <script>
 const cur=document.getElementById('cur');
 let mx=0,my=0,cx=0,cy=0;
@@ -1095,51 +1096,12 @@ mobMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
   document.body.style.overflow='';
 }));
 
-// This Sunday booking summary
-const HOME_AT_TOKEN='patzqAMF1KGaHm2dz.5153b2df955449d550f431abdd1c6ed561f1b5e2f9a3b9e4a8f6162e2bc7c100';
-const HOME_AT_BASE='appDtlXaLReCaDeE6';
-const HOME_AT=`https://api.airtable.com/v0/${HOME_AT_BASE}`;
-const HOME_AT_H={'Authorization':`Bearer ${HOME_AT_TOKEN}`,'Content-Type':'application/json'};
-const HOME_COURT_NO_KEY='court Number';
-
-function homePad(n){return String(n).padStart(2,'0');}
-function homeTodayKST(){return new Date().toLocaleString('sv-SE',{timeZone:'Asia/Seoul'}).split(' ')[0];}
-function homeNextSunday(){
-  const today=homeTodayKST();
-  const [y,m,d]=today.split('-').map(Number);
-  const dt=new Date(Date.UTC(y,m-1,d));
-  const day=dt.getUTCDay();
-  dt.setUTCDate(dt.getUTCDate()+(day===0?0:7-day));
-  return dt.toISOString().split('T')[0];
-}
-function homeParseTimeRange(t){
-  const m=String(t||'').match(/(\d{1,2}):?\d*\s*[-~]\s*(\d{1,2})/);
-  return m?{start:+m[1],end:+m[2]}:null;
-}
-function homeDisplayCourtNo(no){
-  if(no===undefined||no===null||no==='') return '';
-  return /^\d+$/.test(String(no))?String(no)+'번':String(no);
-}
-async function homeAtGet(table){
-  let all=[],offset=null;
-  do{
-    const url=`${HOME_AT}/${encodeURIComponent(table)}${offset?'?offset='+offset:''}`;
-    const r=await fetch(url,{headers:HOME_AT_H});
-    const d=await r.json();
-    all.push(...(d.records||[]).map(rec=>{
-      const o={id:rec.id,createdTime:rec.createdTime};
-      Object.entries(rec.fields||{}).forEach(([k,v])=>{o[k.charAt(0).toLowerCase()+k.slice(1)]=v;});
-      return o;
-    }));
-    offset=d.offset;
-  }while(offset);
-  return all;
-}
+// This Sunday booking summary (공용 API/유틸은 js/api.js)
 function homeBookingLabel(b){
-  const range=homeParseTimeRange(b.time);
-  const time=range?`${homePad(range.start)}-${homePad(range.end)}시`:String(b.time||'시간 미정');
+  const range=parseTimeRange(b.time);
+  const time=range?`${pad(range.start)}-${pad(range.end)}시`:String(b.time||'시간 미정');
   const court=b.court||'코트';
-  const no=homeDisplayCourtNo(b[HOME_COURT_NO_KEY]);
+  const no=displayCourtNo(b[COURT_NO_KEY]);
   const memo=String(b.memo||'').trim();
   const status=b.status==='취소'?'취소':(memo==='취소 예정'?'취소 예정':(memo==='미확정'?'미확정':''));
   return {time,court,detail:[no,status].filter(Boolean).join(' · ')};
@@ -1155,19 +1117,19 @@ function homeRenderBookingSummary(items,date){
 function homeDefaultBookings(date,real){
   const defaults=[];
   const covers=(court,from,to)=>real.some(b=>{
-    const r=homeParseTimeRange(b.time);
+    const r=parseTimeRange(b.time);
     return b.court===court&&r&&r.start<to&&r.end>from;
   });
   if(date<'2026-07-01'&&!covers('세곡',6,7))
-    defaults.push({_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'});
+    defaults.push({_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[COURT_NO_KEY]:'1'});
   if(date>='2026-07-12'&&!covers('아차산',6,10))
     defaults.push({_default:true,court:'아차산',time:'06:00-10:00',status:'기본'});
   return defaults;
 }
 async function homeLoadSundayBookings(){
-  const date=homeNextSunday();
+  const date=nextSundayKST();
   try{
-    const bookings=await homeAtGet('Booking');
+    const bookings=await atGet('Booking');
     const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date);
     const items=[...homeDefaultBookings(date,real),...real];
     homeRenderBookingSummary(items.length?items:[{court:'예약 없음',time:'-',memo:''}],date);
