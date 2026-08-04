@@ -305,15 +305,16 @@ const CACHE_TTL=60*1000;const CACHE_VER='v3';
 function cacheGet(k){try{const r=localStorage.getItem('dtl_'+CACHE_VER+'_'+k);if(!r)return null;const{data,ts}=JSON.parse(r);return Date.now()-ts>CACHE_TTL?null:data;}catch(e){return null;}}
 function cacheSet(k,d){try{localStorage.setItem('dtl_'+CACHE_VER+'_'+k,JSON.stringify({data:d,ts:Date.now()}));}catch(e){}}
 const _tbl={getPlayers:'Players',getEvents:'Events',getMatches:'Matches',getSchedules:'Schedules'};
-async function cachedFetch(action){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.catch(()=>{});return c;}return f;}
+// 캐시가 있으면 즉시 반환하되, 백그라운드 fetch 결과가 다르면 onFresh로 화면 갱신
+async function cachedFetch(action,onFresh){const c=cacheGet(action);const table=_tbl[action];if(!table)return c||[];const f=atGet(table).then(d=>{cacheSet(action,d);return d;});if(c){f.then(d=>{if(onFresh&&JSON.stringify(d)!==JSON.stringify(c))onFresh(d);}).catch(()=>{});return c;}return f;}
 
 let players=[],events=[],matches=[];
 
 async function init(){
   try{
     [players, matches, events] = await Promise.all([
-      cachedFetch('getPlayers'),
-      cachedFetch('getMatches'),
+      cachedFetch('getPlayers',d=>{players=d;players.sort((a,b)=>a.name.localeCompare(b.name));renderMatches();}),
+      cachedFetch('getMatches',d=>{matches=d;renderMatches();}),
       cachedFetch('getEvents')
     ]);
     players.sort((a,b)=>a.name.localeCompare(b.name));
@@ -519,7 +520,6 @@ async function delMatch(id){
       localStorage.removeItem('dtl_'+CACHE_VER+'_getMatches');
       matches=matches.filter(m=>m.id!==id);
       renderMatches();
-      closeDetail();
       toast('삭제됐습니다','ok');
     }
   }catch(e){toast('삭제 실패','err');}

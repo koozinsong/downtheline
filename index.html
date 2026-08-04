@@ -157,7 +157,7 @@ nav ul li a:hover{color:var(--g);border-bottom-color:var(--g3);}
 .courts-h2{font-family:'Barlow Condensed',sans-serif;font-size:clamp(2.5rem,4.5vw,4rem);font-weight:800;text-transform:uppercase;line-height:.9;letter-spacing:-1px;}
 .courts-h2 em{font-style:italic;color:var(--gdl);font-weight:300;}
 .courts-copy{font-size:.88rem;color:rgba(255,255,255,.45);line-height:2;font-weight:300;border-left:2px solid var(--gd);padding-left:1.4rem;}
-.courts-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--ld);}
+.courts-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--ld);}
 .cc{padding:2.5rem 2rem;border-right:1px solid var(--ld);border-top:3px solid transparent;transition:background .25s;}
 .cc:last-child{border-right:none;}
 .cc:hover{background:rgba(255,255,255,.03);}
@@ -776,7 +776,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
         <div class="ey" style="color:var(--gdl)"><span style="background:var(--gd);width:24px;height:2px;display:inline-block;margin-right:.8rem;"></span>Where We Play</div>
         <div class="courts-h2">Our<br><em>Courts</em></div>
       </div>
-      <p class="courts-copy">매주 일요일 새벽, 세곡을 기점으로 내곡, 장충, 양재 등 서울 곳곳의 코트에서 운동합니다.</p>
+      <p class="courts-copy">매주 일요일 새벽, 아차산을 기점으로 세곡, 내곡, 장충, 양재 등 서울 곳곳의 코트에서 운동합니다.</p>
     </div>
     <div class="courts-grid rv" style="transition-delay:.15s">
       <div class="cc main hov">
@@ -784,7 +784,14 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
         <div class="cc-name">세곡</div>
         <div class="cc-loc">세곡동 테니스코트 · 강남구</div>
         <div class="cc-info">다운더라인의 홈 코트. 매주 일요일 새벽 정기 매치가 열리는 주요 거점입니다.</div>
-        <div class="cc-time"><div class="ct-dot"></div><div class="ct-tx">매주 일요일 새벽</div></div>
+        <div class="cc-time"><div class="ct-dot"></div><div class="ct-tx">2026 상반기 정기</div></div>
+      </div>
+      <div class="cc main hov">
+        <div class="cc-badge">2nd Half Main</div>
+        <div class="cc-name">아차산</div>
+        <div class="cc-loc">아차산 테니스코트</div>
+        <div class="cc-info">2026년 하반기 메인 코트. 매주 일요일 새벽 정기 매치가 열립니다.</div>
+        <div class="cc-time"><div class="ct-dot"></div><div class="ct-tx">매주 일요일 06:00–10:00</div></div>
       </div>
       <div class="cc hov">
         <div class="cc-name">내곡</div>
@@ -1043,6 +1050,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
       <div class="ft-hd">Courts</div>
       <div class="ft-lks">
         <a href="#courts">세곡 (Home)</a>
+        <a href="#courts">아차산</a>
         <a href="#courts">내곡</a>
         <a href="#courts">장충</a>
         <a href="#courts">양재</a>
@@ -1131,7 +1139,7 @@ function homeBookingLabel(b){
   const range=homeParseTimeRange(b.time);
   const time=range?`${homePad(range.start)}-${homePad(range.end)}시`:String(b.time||'시간 미정');
   const court=b.court||'코트';
-  const no=b._default?'1번':homeDisplayCourtNo(b[HOME_COURT_NO_KEY]);
+  const no=homeDisplayCourtNo(b[HOME_COURT_NO_KEY]);
   const memo=String(b.memo||'').trim();
   const status=b.status==='취소'?'취소':(memo==='취소 예정'?'취소 예정':(memo==='미확정'?'미확정':''));
   return {time,court,detail:[no,status].filter(Boolean).join(' · ')};
@@ -1143,21 +1151,29 @@ function homeRenderBookingSummary(items,date){
   const visible=sorted.slice(0,3).map(homeBookingLabel);
   el.innerHTML=`<div class="hp-list">${visible.map(x=>`<div class="hp-row"><strong>${x.time}</strong><span>${x.court}${x.detail?' · '+x.detail:''}</span></div>`).join('')}</div>${sorted.length>3?`<div class="hp-more">+ ${sorted.length-3}개 예약 더 보기</div>`:`<div class="hp-more">${date.replace(/-/g,'.')} 예약 현황</div>`}`;
 }
+// booking.html의 getDateBookings()와 동일한 정기 예약 규칙 (변경 시 함께 수정)
+function homeDefaultBookings(date,real){
+  const defaults=[];
+  const covers=(court,from,to)=>real.some(b=>{
+    const r=homeParseTimeRange(b.time);
+    return b.court===court&&r&&r.start<to&&r.end>from;
+  });
+  if(date<'2026-07-01'&&!covers('세곡',6,7))
+    defaults.push({_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'});
+  if(date>='2026-07-12'&&!covers('아차산',6,10))
+    defaults.push({_default:true,court:'아차산',time:'06:00-10:00',status:'기본'});
+  return defaults;
+}
 async function homeLoadSundayBookings(){
   const date=homeNextSunday();
   try{
     const bookings=await homeAtGet('Booking');
     const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date);
-    const coversSegok=real.some(b=>{
-      const r=homeParseTimeRange(b.time);
-      return b.court==='세곡'&&r&&r.start<=6&&r.end>6;
-    });
-    const items=(date<'2026-07-01'&&!coversSegok)
-      ? [{_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'},...real]
-      : real;
+    const items=[...homeDefaultBookings(date,real),...real];
     homeRenderBookingSummary(items.length?items:[{court:'예약 없음',time:'-',memo:''}],date);
   }catch(e){
-    homeRenderBookingSummary([{_default:true,court:'세곡',time:'06:00-08:00',status:'기본',[HOME_COURT_NO_KEY]:'1'}],date);
+    const fallback=homeDefaultBookings(date,[]);
+    homeRenderBookingSummary(fallback.length?fallback:[{court:'예약 없음',time:'-',memo:''}],date);
   }
 }
 homeLoadSundayBookings();

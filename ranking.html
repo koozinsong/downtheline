@@ -343,9 +343,8 @@ function applyFilter(){
   if(eventFilter) filtered=filtered.filter(m=>m.event===eventFilter);
   if(from) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)>=from);
   if(to) filtered=filtered.filter(m=>String(m.date||'').substring(0,10)<=to);
-  let players=_players;
-  if(genderFilter) players=_players.filter(p=>p.gender===genderFilter);
-  const data=computeRankings(players, filtered, sortBy);
+  let data=computeRankings(_players, filtered, sortBy);
+  if(genderFilter) data=data.filter(s=>s.gender===genderFilter).map((s,i)=>({...s,rank:i+1}));
   render(data);
   renderPairRankings(filtered);
 }
