@@ -721,6 +721,8 @@ async function loadConfirmedSchedules() {
       cachedFetch('getPlayers')
     ]);
     const _femaleNames = new Set((playerRes||[]).filter(p=>p.gender==='female').map(p=>p.name));
+    // MVP 후보 등 집계용 멤버 판정 (게스트는 Players 미등록이라 자동 제외)
+    window._memberNames = new Set((playerRes||[]).map(p=>p.name));
 
     // 이벤트 드롭다운 채우기
     const evtSel = document.getElementById('sched-event');
@@ -980,7 +982,8 @@ function renderConfirmedList(list, allMatches, femaleNames) {
       // MVP 선정 UI
       const schedMatches = (allMatches||[]).filter(m => String(m.schedule_id) === String(s.id));
       const currentMvp = (schedMatches.find(m => m.mvp) || {}).mvp || '';
-      const participants = [...new Set(sched.flatMap(r => (r.matches||[]).flatMap(m => [...(m.t1||[]), ...(m.t2||[])])).filter(n => n && !String(n).startsWith('게스트')))];
+      // MVP 후보는 멤버만 (MVP는 랭킹 점수에 반영되므로 게스트 제외 — Players 등록 여부로 판정)
+      const participants = [...new Set(sched.flatMap(r => (r.matches||[]).flatMap(m => [...(m.t1||[]), ...(m.t2||[])])).filter(n => n && (!window._memberNames || window._memberNames.has(n))))];
       const mvpOptions = participants.map(n => `<option value="${n}" ${n===currentMvp?'selected':''}>${n}</option>`).join('');
       const mvpSection = participants.length ? `
         <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
@@ -1497,12 +1500,11 @@ function addGuest(gender) {
 function isGuest(name) { return _guests.has(name); }
 
 function renameGuest(oldName) {
-  const cur = oldName.replace(/^게스트/, '');
-  let input = prompt('게스트 이름을 입력하세요.\n(랭킹 집계 제외를 위해 "게스트" 접두어가 자동으로 붙습니다)', cur);
+  let input = prompt('게스트 이름을 입력하세요.', oldName);
   if (input === null) return;
   input = input.trim().replace(/[<>'"\\`]/g, '');
   if (!input) return;
-  const newName = input.startsWith('게스트') ? input : '게스트' + input;
+  const newName = input;
   if (newName === oldName) return;
   if (_allPlayers.some(p => p.name === newName)) { alert('이미 같은 이름이 있습니다.'); return; }
   _guests.delete(oldName); _guests.add(newName);

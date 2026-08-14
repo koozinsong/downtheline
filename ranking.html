@@ -258,9 +258,10 @@ function computeRankings(players, matches, sortBy) {
     const t1=[m.team1_p1,m.team1_p2],t2=[m.team2_p1,m.team2_p2];
     const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0,w1=s1>s2,draw=s1===s2;
     const schedKey=m.schedule_id||`${m.event||''}|${String(m.date||'').substring(0,10)}`;
-    [...t1,...t2].forEach(n=>{if(!n||n.startsWith('게스트'))return;if(!stats[n])stats[n]=mkStat(n);stats[n].played++;stats[n]._scheds.add(schedKey);});
-    t1.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].wins++;else stats[n].losses++;stats[n].gf+=s1;stats[n].ga+=s2;});
-    t2.forEach(n=>{if(!stats[n]||!n||n.startsWith('게스트'))return;if(draw)stats[n].draws++;else if(w1)stats[n].losses++;else stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
+    // Players 테이블 등록 멤버만 집계 — 게스트는 이름과 무관하게 자동 제외
+    [...t1,...t2].forEach(n=>{if(!n||!stats[n])return;stats[n].played++;stats[n]._scheds.add(schedKey);});
+    t1.forEach(n=>{if(!n||!stats[n])return;if(draw)stats[n].draws++;else if(w1)stats[n].wins++;else stats[n].losses++;stats[n].gf+=s1;stats[n].ga+=s2;});
+    t2.forEach(n=>{if(!n||!stats[n])return;if(draw)stats[n].draws++;else if(w1)stats[n].losses++;else stats[n].wins++;stats[n].gf+=s2;stats[n].ga+=s1;});
   });
   // MVP는 대회당 1회만 카운트
   const mvpBySched=new Map();
@@ -346,18 +347,14 @@ function applyFilter(){
 function computePairRankings(matches){
   const pairs={};
   const femaleSet=new Set((_players||[]).filter(p=>p.gender==='female').map(p=>p.name));
+  // 랭킹은 Players 테이블에 등록된 멤버만 집계 (게스트는 미등록이므로 자동 제외)
+  const memberSet=new Set((_players||[]).map(p=>p.name));
   matches.forEach(m=>{
     const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0,w1=s1>s2,draw=s1===s2;
-    const team=(p1,p2,won)=>{
-      if(!p1||!p2) return;
-      if(p1.startsWith('게스트')||p2.startsWith('게스트')) return;
-      const key=[p1,p2].sort().join('|');
-      if(!pairs[key]) pairs[key]={p1:[p1,p2].sort()[0],p2:[p1,p2].sort()[1],w:0,l:0,d:0,gf:0,ga:0,played:0};
-    };
     const schedKey=m.schedule_id||`${m.event||''}|${String(m.date||'').substring(0,10)}`;
     const addTeam=(p1,p2,ourScore,theirScore,won,drew)=>{
       if(!p1||!p2) return;
-      if(p1.startsWith('게스트')||p2.startsWith('게스트')) return;
+      if(!memberSet.has(p1)||!memberSet.has(p2)) return;
       const key=[p1,p2].sort().join('|');
       if(!pairs[key]) pairs[key]={p1:[p1,p2].sort()[0],p2:[p1,p2].sort()[1],w:0,l:0,d:0,gf:0,ga:0,played:0,_scheds:new Set()};
       pairs[key].played++;
