@@ -1776,9 +1776,9 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       [...t1,...t2].forEach(p => simO[p]++);
       const simOV = Object.values(simO);
       score += (Math.max(...simOV) - Math.min(...simOV)) * 100;
-      // 파트너/상대 반복 최소화
-      if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 15;
-      if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 15;
+      // 파트너/상대 반복 최소화 — 파트너 반복은 대기자 보너스(-20/인)보다 항상 무겁게
+      if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 60;
+      if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 60;
       t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 15; }));
       // 이전 대기자 우선
       if (prevResting.size > 0) {
@@ -1788,8 +1788,9 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       return score;
     }
     if (opts.partner) {
-      score += partnerCount[t1[0]][t1[1]] * 15;
-      score += partnerCount[t2[0]][t2[1]] * 15;
+      // 반복 1회당 60점 — 대기자 우선 보너스(-20/인, 최대 -80)에 묻히지 않도록
+      score += partnerCount[t1[0]][t1[1]] * 60;
+      score += partnerCount[t2[0]][t2[1]] * 60;
     }
     if (opts.opponent) {
       t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 15; }));
@@ -1956,23 +1957,25 @@ async function generate() {
     const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings);
     const counts = Object.values(result.playCount);
     const playDiff = Math.max(...counts) - Math.min(...counts);
-    // 파트너 균등 평가
-    const pCounts = [];
+    // 파트너 다양성 평가: 같은 페어의 최대 반복 횟수와 반복된 페어 수를 직접 최소화
+    // (기존의 "사용된 페어 간 편차" 방식은 같은 페어만 반복해도 균등하면 통과되는 맹점이 있었음)
     const ap = [...females, ...males];
+    let maxPartner = 0, repeatedPairs = 0;
     ap.forEach((p, i) => ap.slice(i+1).forEach(q => {
-      if (result.partnerCount[p] && result.partnerCount[p][q] > 0) pCounts.push(result.partnerCount[p][q]);
+      const c = (result.partnerCount[p] && result.partnerCount[p][q]) || 0;
+      if (c > maxPartner) maxPartner = c;
+      if (c >= 2) repeatedPairs++;
     }));
-    const partnerDiff = pCounts.length ? Math.max(...pCounts) - Math.min(...pCounts) : 0;
     // 대전 균등 평가
     const oCounts = [];
     ap.forEach((p, i) => ap.slice(i+1).forEach(q => {
       if (result.opponentCount[p] && result.opponentCount[p][q] > 0) oCounts.push(result.opponentCount[p][q]);
     }));
     const oppDiff = oCounts.length ? Math.max(...oCounts) - Math.min(...oCounts) : 0;
-    // 종합 점수: 출전 > 파트너 > 대전
-    const score = playDiff * 100 + partnerDiff * 5 + oppDiff * 3;
+    // 종합 점수: 출전 > 파트너 다양성 > 대전
+    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + oppDiff * 3;
     if (score < bestScore) { bestScore = score; best = result; }
-    if (playDiff <= 1 && partnerDiff <= 1 && oppDiff <= 1) break;
+    if (playDiff <= 1 && maxPartner <= 1 && oppDiff <= 1) break;
   }
   const { schedule, playCount, partnerCount, opponentCount } = best;
 
