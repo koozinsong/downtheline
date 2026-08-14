@@ -1449,7 +1449,7 @@ function renderSelectedPlayers() {
     const listEl = document.getElementById(gender + '-selected');
     listEl.innerHTML = selected.map((name, i) =>
       `<div class="selected-player">
-        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name">${name}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest</span>':''}</span></div>
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name"${isGuest(name)?` onclick="renameGuest('${name}')" style="cursor:pointer;" title="클릭해서 이름 변경"`:''}>${name}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}</span></div>
         <button class="sp-remove" onclick="removePlayer('${gender}','${name}')">×</button>
       </div>`
     ).join('');
@@ -1495,6 +1495,30 @@ function addGuest(gender) {
 }
 
 function isGuest(name) { return _guests.has(name); }
+
+function renameGuest(oldName) {
+  const cur = oldName.replace(/^게스트/, '');
+  let input = prompt('게스트 이름을 입력하세요.\n(랭킹 집계 제외를 위해 "게스트" 접두어가 자동으로 붙습니다)', cur);
+  if (input === null) return;
+  input = input.trim().replace(/[<>'"\\`]/g, '');
+  if (!input) return;
+  const newName = input.startsWith('게스트') ? input : '게스트' + input;
+  if (newName === oldName) return;
+  if (_allPlayers.some(p => p.name === newName)) { alert('이미 같은 이름이 있습니다.'); return; }
+  _guests.delete(oldName); _guests.add(newName);
+  _allPlayers.forEach(p => { if (p.name === oldName) p.name = newName; });
+  _selectedFemales = _selectedFemales.map(n => n === oldName ? newName : n);
+  _selectedMales = _selectedMales.map(n => n === oldName ? newName : n);
+  _teamA = _teamA.map(n => n === oldName ? newName : n);
+  _teamB = _teamB.map(n => n === oldName ? newName : n);
+  _pairs.forEach(pair => {
+    if (pair[0] === oldName) pair[0] = newName;
+    if (pair[1] === oldName) pair[1] = newName;
+  });
+  renderSelectedPlayers();
+  if (_mode === 'pair') renderPairs();
+  if (_mode === 'team') renderTeamPlayers();
+}
 
 function removePlayer(gender, name) {
   if (gender === 'female') _selectedFemales = _selectedFemales.filter(n => n !== name);
