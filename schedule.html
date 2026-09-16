@@ -1452,7 +1452,7 @@ function renderSelectedPlayers() {
     const listEl = document.getElementById(gender + '-selected');
     listEl.innerHTML = selected.map((name, i) =>
       `<div class="selected-player">
-        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name"${isGuest(name)?` onclick="renameGuest('${name}')" style="cursor:pointer;" title="클릭해서 이름 변경"`:''}>${name}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}</span></div>
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name"${isGuest(name)?` onclick="renameGuest('${name}')" style="cursor:pointer;" title="클릭해서 이름/NTRP 변경"`:''}>${name}${(()=>{const po=_allPlayers.find(p=>p.name===name);return po&&(hasNtrp(po)||po.ntrp!=null)?`<span style="font-size:.6rem;color:var(--g3);margin-left:.3rem;font-weight:700;">${rawNtrp(po).toFixed(1)}</span>`:'';})()}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}</span></div>
         <button class="sp-remove" onclick="removePlayer('${gender}','${name}')">×</button>
       </div>`
     ).join('');
@@ -1481,6 +1481,20 @@ function selectPlayer(gender) {
   if (_mode === 'pair') renderPairs();
 }
 
+// ── NTRP ──
+// Airtable Players의 NTRP 필드(숫자)를 사용, 미입력 시 3.0으로 간주
+// 팀 밸런스 비교 시 여성 NTRP는 -0.5 보정 (남녀 NTRP를 동일 실력으로 보지 않음)
+const DEFAULT_NTRP = 3.0;        // 멤버 NTRP 미입력 시 기본값
+const GUEST_DEFAULT_NTRP = 3.5;  // 게스트 기본값
+const FEMALE_NTRP_ADJ = -0.5;
+function rawNtrp(p) { const v = parseFloat(p.nTRP ?? p.ntrp); return isNaN(v) ? DEFAULT_NTRP : v; }
+function hasNtrp(p) { return !!p && (p.nTRP != null || p.ntrp != null); }
+function buildEffNtrp() {
+  const eff = {};
+  _allPlayers.forEach(p => { eff[p.name] = rawNtrp(p) + (p.gender === 'female' ? FEMALE_NTRP_ADJ : 0); });
+  return eff;
+}
+
 let _guestCount = { female: 0, male: 0 };
 let _guests = new Set(); // 게스트 이름 추적
 
@@ -1489,7 +1503,7 @@ function addGuest(gender) {
   const name = `게스트${gender === 'female' ? '여' : '남'}${_guestCount[gender]}`;
   _guests.add(name);
   // _allPlayers에도 추가
-  _allPlayers.push({ name, gender });
+  _allPlayers.push({ name, gender, ntrp: GUEST_DEFAULT_NTRP });
   const selected = gender === 'female' ? _selectedFemales : _selectedMales;
   selected.push(name);
   renderSelectedPlayers();
@@ -1503,10 +1517,16 @@ function renameGuest(oldName) {
   let input = prompt('게스트 이름을 입력하세요.', oldName);
   if (input === null) return;
   input = input.trim().replace(/[<>'"\\`]/g, '');
-  if (!input) return;
-  const newName = input;
-  if (newName === oldName) return;
-  if (_allPlayers.some(p => p.name === newName)) { alert('이미 같은 이름이 있습니다.'); return; }
+  let newName = oldName;
+  if (input && input !== oldName) {
+    if (_allPlayers.some(p => p.name === input)) { alert('이미 같은 이름이 있습니다.'); return; }
+    newName = input;
+  }
+  // NTRP 입력 (대진 밸런스에 사용)
+  const gp0 = _allPlayers.find(p => p.name === oldName);
+  const nv = prompt('게스트 NTRP를 입력하세요 (예: 2.5 / 3.0 / 3.5 / 4.0)', String((gp0 && gp0.ntrp) ?? GUEST_DEFAULT_NTRP));
+  if (nv !== null) { const f = parseFloat(nv); if (!isNaN(f) && f >= 1 && f <= 7 && gp0) gp0.ntrp = f; }
+  if (newName === oldName) { renderSelectedPlayers(); return; }
   _guests.delete(oldName); _guests.add(newName);
   _allPlayers.forEach(p => { if (p.name === oldName) p.name = newName; });
   _selectedFemales = _selectedFemales.map(n => n === oldName ? newName : n);
@@ -1629,7 +1649,7 @@ function computePlayerRankings(allMatches, maleList, femaleList) {
 }
 
 // ── Algorithm ──
-function generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings) {
+function generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp) {
   const allPlayers = [...females, ...males];
 
   const partnerCount  = {};
@@ -1680,8 +1700,9 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       }
     }
     if (formats.includes('open')) {
-      const regMales = males.filter(n => !_guests.has(n));
-      const regFemales = females.filter(n => !_guests.has(n));
+      // 게스트도 잡복 후보에 포함 — 출전 균등화가 게스트 출전을 보장하려면 후보에서 빠지면 안 됨
+      const regMales = males;
+      const regFemales = females;
       const mixPairs = [];
       for (let i = 0; i < regMales.length; i++)
         for (let j = 0; j < regFemales.length; j++)
@@ -1766,13 +1787,12 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   const consecPlay = {};
   allPlayers.forEach(p => consecPlay[p] = 0);
 
-  // 잡복 밸런스: 실제 랭킹 기반
-  const maleRank = {}; // 0=1위
-  const femaleRank = {};
-  const { malesSorted, femalesSorted } = rankings || { malesSorted: males, femalesSorted: females };
-  malesSorted.forEach((n,i) => maleRank[n] = i);
-  femalesSorted.forEach((n,i) => femaleRank[n] = i);
-  const mLen = malesSorted.length, fLen = femalesSorted.length;
+  // NTRP 팀 밸런스: effective 합(여성 -0.5 보정)의 차이를 페널티로
+  const teamBal = (t1, t2) => {
+    if (!effNtrp) return 0;
+    const g = n => effNtrp[n] != null ? effNtrp[n] : DEFAULT_NTRP;
+    return Math.abs(g(t1[0]) + g(t1[1]) - g(t2[0]) - g(t2[1]));
+  };
 
   function scoreMatch(m) {
     const { t1, t2 } = m;
@@ -1786,10 +1806,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       const mPlayer = mixTeam.find(n => males.includes(n));
       const fPlayer = mixTeam.find(n => females.includes(n));
       if (mPlayer && fPlayer) {
-        // 남+여 vs 남남 — 랭킹 밸런스, 우선
-        const mr = maleRank[mPlayer] || 0;
-        const fr = femaleRank[fPlayer] || 0;
-        score += (mr + fr) * 10;
+        // 남+여 vs 남남 — NTRP 밸런스는 아래 공통 항에서 처리
         if (openTypeToggle % 2 === 1) score += 20;
       } else {
         // 남남 vs 여여 — 후순위, 번갈아
@@ -1806,6 +1823,8 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 60;
       if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 60;
       t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 15; }));
+      // NTRP 팀 밸런스 (여성 -0.5 보정)
+      score += teamBal(t1, t2) * 35;
       // 이전 대기자 우선
       if (prevResting.size > 0) {
         const included = [...t1,...t2].filter(p => prevResting.has(p)).length;
@@ -1821,6 +1840,8 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
     if (opts.opponent) {
       t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 15; }));
     }
+    // NTRP 팀 밸런스 (여성 -0.5 보정): 실력 합이 비슷한 팀끼리 맞붙도록
+    score += teamBal(t1, t2) * 35;
     // 3연속 출전 방지
     if ([...t1,...t2].some(p => consecPlay[p] >= 2)) return 9999;
     // 출전 균등화 — 최우선: 차이를 최소화
@@ -1977,10 +1998,13 @@ async function generate() {
     } catch(e) {}
   }
 
-  // 최대 50회 시도, 출전 차이 1 이하 + 파트너 균등
+  // NTRP 맵 (여성 -0.5 보정된 effective 값)
+  const effNtrp = buildEffNtrp();
+
+  // 최대 50회 시도, 출전 차이 1 이하 + 파트너 균등 + NTRP 밸런스
   let best = null, bestScore = 99999;
   for (let attempt = 0; attempt < 50; attempt++) {
-    const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings);
+    const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp);
     const counts = Object.values(result.playCount);
     const playDiff = Math.max(...counts) - Math.min(...counts);
     // 파트너 다양성 평가: 같은 페어의 최대 반복 횟수와 반복된 페어 수를 직접 최소화
@@ -1998,10 +2022,17 @@ async function generate() {
       if (result.opponentCount[p] && result.opponentCount[p][q] > 0) oCounts.push(result.opponentCount[p][q]);
     }));
     const oppDiff = oCounts.length ? Math.max(...oCounts) - Math.min(...oCounts) : 0;
-    // 종합 점수: 출전 > 파트너 다양성 > 대전
-    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + oppDiff * 3;
+    // NTRP 밸런스 평가 (매치당 평균 팀 실력차)
+    let balSum = 0, balN = 0;
+    result.schedule.forEach(r => (r.matches||[]).forEach(m => {
+      const g = n => effNtrp[n] != null ? effNtrp[n] : DEFAULT_NTRP;
+      balSum += Math.abs(g(m.t1[0]) + g(m.t1[1]) - g(m.t2[0]) - g(m.t2[1])); balN++;
+    }));
+    const avgBal = balN ? balSum / balN : 0;
+    // 종합 점수: 출전 > 파트너 다양성 > NTRP 밸런스 > 대전
+    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + Math.round(avgBal * 20) + oppDiff * 3;
     if (score < bestScore) { bestScore = score; best = result; }
-    if (playDiff <= 1 && maxPartner <= 1 && oppDiff <= 1) break;
+    if (playDiff <= 1 && maxPartner <= 1 && oppDiff <= 1 && avgBal <= 0.5) break;
   }
   const { schedule, playCount, partnerCount, opponentCount } = best;
 
