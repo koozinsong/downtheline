@@ -337,6 +337,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
 <nav id="nav">
   <a class="nav-back" href="index.html">홈</a>
   <div class="nav-title">코트 예약</div>
+  <a href="#" onclick="hardRefresh();return false;" title="데이터 새로고침" aria-label="새로고침" style="margin-left:auto;font-size:1rem;font-weight:700;color:rgba(255,255,255,.85);text-decoration:none;border:1px solid rgba(255,255,255,.25);padding:.3rem .6rem;border-radius:999px;line-height:1;">⟳</a>
 </nav>
 
 <div class="wrap">
@@ -440,7 +441,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);color:var(--ink)
 
 <div class="toast" id="toast"></div>
 
-<script src="js/api.js?v=2"></script>
+<script src="js/api.js?v=3"></script>
 <script>
 let bookings=[], players=[];
 let viewYear, viewMonth; // 현재 보고 있는 월

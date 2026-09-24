@@ -190,7 +190,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
 <div class="wrap">
   <div style="display:flex;align-items:flex-end;gap:1rem;margin-bottom:.5rem;">
     <div class="page-title">Club<br><em>Ranking</em></div>
-    <button class="refresh-btn" onclick="load()">↻ 새로고침</button>
+    <button class="refresh-btn" onclick="hardRefresh()">↻ 새로고침</button>
   </div>
   <p class="page-sub">결과 입력 시 자동으로 업데이트됩니다. 승리 3점 + MVP 1점.</p>
 
@@ -248,7 +248,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
   </div>
 </div>
 
-<script src="js/api.js?v=2"></script>
+<script src="js/api.js?v=3"></script>
 <script>
 function computeRankings(players, matches, sortBy) {
   const stats={};

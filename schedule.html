@@ -326,6 +326,20 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
   div[style*="grid-template-columns:1fr 1fr 1fr 1fr"]{grid-template-columns:1fr!important;max-width:100%!important;}
   select,input,button{max-width:100%;}
 }
+
+/* 참가자 설정 모달 (설치형 웹앱에서는 prompt()가 동작하지 않아 자체 모달 사용) */
+.pedit-ov{position:fixed;inset:0;background:rgba(16,24,32,.45);display:none;align-items:center;justify-content:center;z-index:900;padding:1rem;}
+.pedit-ov.open{display:flex;}
+.pedit{background:var(--w);border-radius:16px;padding:1.4rem 1.5rem;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(16,24,32,.28);}
+.pedit h3{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:1rem;}
+.pedit-row{display:flex;align-items:center;gap:.55rem;margin-bottom:.75rem;}
+.pedit-row>label{font-size:.75rem;color:var(--sm);min-width:62px;font-weight:500;flex:0 0 auto;}
+.pedit-row input[type=text],.pedit-row select{flex:1;border:1px solid var(--ll);background:var(--iv);padding:.5rem .6rem;font-size:.9rem;font-family:inherit;border-radius:8px;min-width:0;}
+.pedit-err{font-size:.75rem;color:#c0392b;min-height:1.1rem;margin-bottom:.4rem;}
+.pedit-actions{display:flex;gap:.5rem;justify-content:flex-end;}
+.pedit-actions button{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:.55rem 1.15rem;border-radius:999px;border:1px solid var(--ll);background:#fff;cursor:pointer;}
+.pedit-actions .primary{background:var(--g);border-color:var(--g);color:#fff;}
+.nav-refresh{margin-left:auto;font-size:1rem;font-weight:700;color:#53636b;text-decoration:none;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.32rem .62rem;border-radius:999px;line-height:1;}
 </style>
 </head>
 <body>
@@ -336,6 +350,7 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
   <div class="nav-links">
     <a class="nav-link active" href="schedule.html">시합일정</a>
   </div>
+  <a class="nav-refresh" href="#" onclick="hardRefresh();return false;" title="데이터 새로고침" aria-label="새로고침">⟳</a>
 </nav>
 
 <div class="wrap">
@@ -581,7 +596,25 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
 
 </div> <!-- end wrap -->
 
-<script src="js/api.js?v=2"></script>
+<!-- 참가자 설정 모달 -->
+<div class="pedit-ov" id="pedit" onclick="if(event.target===this)closePlayerEditor()">
+  <div class="pedit">
+    <h3 id="pedit-title">참가자 설정</h3>
+    <div class="pedit-row" id="pedit-name-row"><label>이름</label><input type="text" id="pedit-name" maxlength="20"></div>
+    <div class="pedit-row" id="pedit-ntrp-row"><label>NTRP</label><select id="pedit-ntrp"></select></div>
+    <div class="pedit-row"><label>참석</label>
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--ink2);cursor:pointer;"><input type="checkbox" id="pedit-fullatt" onchange="peditToggleTime()">시합 전체 참석</label>
+    </div>
+    <div class="pedit-row" id="pedit-time-row"><label>입장~퇴장</label><select id="pedit-in"></select><span style="color:var(--sm);flex:0 0 auto;">~</span><select id="pedit-out"></select></div>
+    <div class="pedit-err" id="pedit-err"></div>
+    <div class="pedit-actions">
+      <button type="button" onclick="closePlayerEditor()">취소</button>
+      <button type="button" class="primary" onclick="savePlayerEditor()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js?v=3"></script>
 <script>
 let _lastScheduleData = null;
 
@@ -1507,21 +1540,7 @@ function availLabel(name) {
   const a = _avail[name];
   return a ? `${fmtHourShort(a.in)}-${fmtHourShort(a.out)}` : '전체';
 }
-function editAvail(name) {
-  const w = sessWindow();
-  const cur = _avail[name] ? `${fmtHourShort(_avail[name].in)}-${fmtHourShort(_avail[name].out)}` : `${w.start}-${w.end}`;
-  let v = prompt(`${name} 참석 시간을 입력하세요 (예: 7-9, 6:30-9).\n전체 참석이면 비워두고 확인.`, cur);
-  if (v === null) return;
-  v = v.trim();
-  if (!v) { delete _avail[name]; renderSelectedPlayers(); return; }
-  const m = v.match(/^(\d{1,2})(?:[:.](\d{1,2}))?\s*[-~]\s*(\d{1,2})(?:[:.](\d{1,2}))?$/);
-  if (!m) { alert('형식이 올바르지 않습니다. 예: 7-9 또는 6:30-9'); return; }
-  const inH = parseInt(m[1]) + (m[2] ? parseInt(m[2]) / 60 : 0);
-  const outH = parseInt(m[3]) + (m[4] ? parseInt(m[4]) / 60 : 0);
-  if (outH <= inH) { alert('퇴장 시간이 입장 시간보다 커야 합니다.'); return; }
-  _avail[name] = { in: inH, out: outH };
-  renderSelectedPlayers();
-}
+function editAvail(name) { openPlayerEditor(name); }
 
 // ── NTRP ──
 // Airtable Players의 NTRP 필드(숫자)를 사용, 미입력 시 3.0으로 간주
@@ -1555,20 +1574,77 @@ function addGuest(gender) {
 
 function isGuest(name) { return _guests.has(name); }
 
-function renameGuest(oldName) {
-  let input = prompt('게스트 이름을 입력하세요.', oldName);
-  if (input === null) return;
-  input = input.trim().replace(/[<>'"\\`]/g, '');
-  let newName = oldName;
-  if (input && input !== oldName) {
-    if (_allPlayers.some(p => p.name === input)) { alert('이미 같은 이름이 있습니다.'); return; }
-    newName = input;
+function renameGuest(name) { openPlayerEditor(name); }
+
+// ── 참가자 설정 모달 (게스트: 이름/NTRP/참석시간, 멤버: 참석시간) ──
+let _peditTarget = null;
+function peditFillSelects() {
+  const ntrpSel = document.getElementById('pedit-ntrp');
+  if (!ntrpSel.options.length) {
+    for (let v = 1.5; v <= 5.5; v += 0.5) ntrpSel.innerHTML += `<option value="${v}">${v.toFixed(1)}</option>`;
+    let opts = '';
+    for (let h = 5; h <= 14; h += 0.5) opts += `<option value="${h}">${fmtHourShort(h)}시</option>`;
+    document.getElementById('pedit-in').innerHTML = opts;
+    document.getElementById('pedit-out').innerHTML = opts;
   }
-  // NTRP 입력 (대진 밸런스에 사용)
-  const gp0 = _allPlayers.find(p => p.name === oldName);
-  const nv = prompt('게스트 NTRP를 입력하세요 (예: 2.5 / 3.0 / 3.5 / 4.0)', String((gp0 && gp0.ntrp) ?? GUEST_DEFAULT_NTRP));
-  if (nv !== null) { const f = parseFloat(nv); if (!isNaN(f) && f >= 1 && f <= 7 && gp0) gp0.ntrp = f; }
-  if (newName === oldName) { renderSelectedPlayers(); return; }
+}
+function peditToggleTime() {
+  document.getElementById('pedit-time-row').style.display = document.getElementById('pedit-fullatt').checked ? 'none' : '';
+}
+function openPlayerEditor(name) {
+  peditFillSelects();
+  _peditTarget = name;
+  const guest = isGuest(name);
+  document.getElementById('pedit-title').textContent = guest ? '게스트 설정' : `${name} · 참석 시간`;
+  document.getElementById('pedit-name-row').style.display = guest ? '' : 'none';
+  document.getElementById('pedit-ntrp-row').style.display = guest ? '' : 'none';
+  if (guest) {
+    document.getElementById('pedit-name').value = name;
+    const gp = _allPlayers.find(p => p.name === name);
+    document.getElementById('pedit-ntrp').value = String((gp && gp.ntrp) ?? GUEST_DEFAULT_NTRP);
+  }
+  const a = _avail[name], w = sessWindow();
+  document.getElementById('pedit-fullatt').checked = !a;
+  document.getElementById('pedit-in').value = String(a ? a.in : w.start);
+  document.getElementById('pedit-out').value = String(a ? a.out : w.end);
+  peditToggleTime();
+  document.getElementById('pedit-err').textContent = '';
+  document.getElementById('pedit').classList.add('open');
+}
+function closePlayerEditor() {
+  document.getElementById('pedit').classList.remove('open');
+  _peditTarget = null;
+}
+function savePlayerEditor() {
+  const name = _peditTarget;
+  if (!name) return;
+  const err = m => { document.getElementById('pedit-err').textContent = m; };
+  const guest = isGuest(name);
+  let newName = name;
+  if (guest) {
+    const v = document.getElementById('pedit-name').value.trim().replace(/[<>'"\\`]/g, '');
+    if (!v) { err('이름을 입력해주세요.'); return; }
+    if (v !== name && _allPlayers.some(p => p.name === v)) { err('이미 같은 이름이 있습니다.'); return; }
+    newName = v;
+    const f = parseFloat(document.getElementById('pedit-ntrp').value);
+    const gp = _allPlayers.find(p => p.name === name);
+    if (gp && !isNaN(f)) gp.ntrp = f;
+  }
+  if (document.getElementById('pedit-fullatt').checked) {
+    delete _avail[name];
+  } else {
+    const inH = parseFloat(document.getElementById('pedit-in').value);
+    const outH = parseFloat(document.getElementById('pedit-out').value);
+    if (!(outH > inH)) { err('퇴장 시간이 입장 시간보다 커야 합니다.'); return; }
+    _avail[name] = { in: inH, out: outH };
+  }
+  if (guest && newName !== name) applyGuestRename(name, newName);
+  closePlayerEditor();
+  renderSelectedPlayers();
+  if (_mode === 'pair') renderPairs();
+  if (_mode === 'team') renderTeamPlayers();
+}
+function applyGuestRename(oldName, newName) {
   _guests.delete(oldName); _guests.add(newName);
   if (_avail[oldName]) { _avail[newName] = _avail[oldName]; delete _avail[oldName]; }
   _allPlayers.forEach(p => { if (p.name === oldName) p.name = newName; });
@@ -1580,9 +1656,6 @@ function renameGuest(oldName) {
     if (pair[0] === oldName) pair[0] = newName;
     if (pair[1] === oldName) pair[1] = newName;
   });
-  renderSelectedPlayers();
-  if (_mode === 'pair') renderPairs();
-  if (_mode === 'team') renderTeamPlayers();
 }
 
 function removePlayer(gender, name) {

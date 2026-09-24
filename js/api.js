@@ -128,6 +128,13 @@ function isDefaultCancel(b) {
     r.start === rule.start && r.end === rule.end);
 }
 
+// ── 수동 새로고침 (설치형 웹앱에는 브라우저 새로고침 UI가 없음) ──
+// 로컬 데이터 캐시(dtl_*)를 비우고 페이지를 다시 불러온다
+function hardRefresh() {
+  try { Object.keys(localStorage).filter(k => k.startsWith('dtl_')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  location.reload();
+}
+
 // ── PWA 서비스 워커 등록 ──
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
