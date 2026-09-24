@@ -466,6 +466,16 @@ body{background:linear-gradient(180deg,#fbfbf7 0%,#e9f5f8 100%);}
           <span class="opt-label">라운드 수</span>
           <input class="opt-input" id="num-rounds" type="number" min="1" max="20" value="6">
         </div>
+        <div class="opt-group">
+          <span class="opt-label">시합 시간</span>
+          <select class="opt-select" id="sess-start">
+            <option value="5">5시</option><option value="6" selected>6시</option><option value="7">7시</option><option value="8">8시</option><option value="9">9시</option><option value="10">10시</option><option value="11">11시</option>
+          </select>
+          <span style="font-size:.78rem;color:var(--sm);">~</span>
+          <select class="opt-select" id="sess-end">
+            <option value="7">7시</option><option value="8">8시</option><option value="9">9시</option><option value="10" selected>10시</option><option value="11">11시</option><option value="12">12시</option><option value="13">13시</option><option value="14">14시</option>
+          </select>
+        </div>
       </div>
       <!-- Format multi-select -->
       <div style="margin-top:1rem;">
@@ -1452,7 +1462,7 @@ function renderSelectedPlayers() {
     const listEl = document.getElementById(gender + '-selected');
     listEl.innerHTML = selected.map((name, i) =>
       `<div class="selected-player">
-        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name"${isGuest(name)?` onclick="renameGuest('${name}')" style="cursor:pointer;" title="클릭해서 이름/NTRP 변경"`:''}>${name}${(()=>{const po=_allPlayers.find(p=>p.name===name);return po&&(hasNtrp(po)||po.ntrp!=null)?`<span style="font-size:.6rem;color:var(--g3);margin-left:.3rem;font-weight:700;">${rawNtrp(po).toFixed(1)}</span>`:'';})()}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}</span></div>
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="sp-name"${isGuest(name)?` onclick="renameGuest('${name}')" style="cursor:pointer;" title="클릭해서 이름/NTRP 변경"`:''}>${name}${isGuest(name)?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}</span><span onclick="editAvail('${name}')" style="font-size:.58rem;margin-left:.35rem;cursor:pointer;font-weight:700;color:${_avail[name]?'var(--gd)':'var(--sm2)'};" title="참석 시간(입장-퇴장) 설정">⏱ ${availLabel(name)}</span></div>
         <button class="sp-remove" onclick="removePlayer('${gender}','${name}')">×</button>
       </div>`
     ).join('');
@@ -1479,6 +1489,38 @@ function selectPlayer(gender) {
   dropdown.value = '';
   renderSelectedPlayers();
   if (_mode === 'pair') renderPairs();
+}
+
+// ── 참석 가능 시간 (입장/퇴장) ──
+let _avail = {}; // { name: {in:h, out:h} } — 미설정 시 시합 전체 시간 참석
+function sessWindow() {
+  return {
+    start: parseFloat(document.getElementById('sess-start').value),
+    end: parseFloat(document.getElementById('sess-end').value)
+  };
+}
+function fmtHourShort(h) {
+  const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  return mm ? `${hh}:${String(mm).padStart(2,'0')}` : String(hh);
+}
+function availLabel(name) {
+  const a = _avail[name];
+  return a ? `${fmtHourShort(a.in)}-${fmtHourShort(a.out)}` : '전체';
+}
+function editAvail(name) {
+  const w = sessWindow();
+  const cur = _avail[name] ? `${fmtHourShort(_avail[name].in)}-${fmtHourShort(_avail[name].out)}` : `${w.start}-${w.end}`;
+  let v = prompt(`${name} 참석 시간을 입력하세요 (예: 7-9, 6:30-9).\n전체 참석이면 비워두고 확인.`, cur);
+  if (v === null) return;
+  v = v.trim();
+  if (!v) { delete _avail[name]; renderSelectedPlayers(); return; }
+  const m = v.match(/^(\d{1,2})(?:[:.](\d{1,2}))?\s*[-~]\s*(\d{1,2})(?:[:.](\d{1,2}))?$/);
+  if (!m) { alert('형식이 올바르지 않습니다. 예: 7-9 또는 6:30-9'); return; }
+  const inH = parseInt(m[1]) + (m[2] ? parseInt(m[2]) / 60 : 0);
+  const outH = parseInt(m[3]) + (m[4] ? parseInt(m[4]) / 60 : 0);
+  if (outH <= inH) { alert('퇴장 시간이 입장 시간보다 커야 합니다.'); return; }
+  _avail[name] = { in: inH, out: outH };
+  renderSelectedPlayers();
 }
 
 // ── NTRP ──
@@ -1528,6 +1570,7 @@ function renameGuest(oldName) {
   if (nv !== null) { const f = parseFloat(nv); if (!isNaN(f) && f >= 1 && f <= 7 && gp0) gp0.ntrp = f; }
   if (newName === oldName) { renderSelectedPlayers(); return; }
   _guests.delete(oldName); _guests.add(newName);
+  if (_avail[oldName]) { _avail[newName] = _avail[oldName]; delete _avail[oldName]; }
   _allPlayers.forEach(p => { if (p.name === oldName) p.name = newName; });
   _selectedFemales = _selectedFemales.map(n => n === oldName ? newName : n);
   _selectedMales = _selectedMales.map(n => n === oldName ? newName : n);
@@ -1545,6 +1588,7 @@ function renameGuest(oldName) {
 function removePlayer(gender, name) {
   if (gender === 'female') _selectedFemales = _selectedFemales.filter(n => n !== name);
   else _selectedMales = _selectedMales.filter(n => n !== name);
+  delete _avail[name];
   // 게스트면 _allPlayers에서도 제거
   if (isGuest(name)) {
     _allPlayers = _allPlayers.filter(p => p.name !== name);
@@ -1649,7 +1693,7 @@ function computePlayerRankings(allMatches, maleList, femaleList) {
 }
 
 // ── Algorithm ──
-function generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp) {
+function generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp, sess) {
   const allPlayers = [...females, ...males];
 
   const partnerCount  = {};
@@ -1787,6 +1831,30 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   const consecPlay = {};
   allPlayers.forEach(p => consecPlay[p] = 0);
 
+  // ── 참석 시간 → 라운드 슬롯 매핑 ──
+  const slotLen = sess ? (sess.end - sess.start) / numRounds : 0;
+  const slotOf = r => sess ? { s: sess.start + slotLen * r, e: sess.start + slotLen * (r + 1) } : null;
+  const isPresent = (p, r) => {
+    if (!sess) return true;
+    const a = (sess.avail && sess.avail[p]) || { in: sess.start, out: sess.end };
+    const sl = slotOf(r), EPS = 1e-6;
+    return a.in <= sl.s + EPS && a.out >= sl.e - EPS;
+  };
+  const fmtHM = h => { const hh = Math.floor(h), mm = Math.round((h - hh) * 60); return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
+  const availRounds = {};
+  allPlayers.forEach(p => { availRounds[p] = 0; for (let r = 0; r < numRounds; r++) if (isPresent(p, r)) availRounds[p]++; });
+  const maxAvail = Math.max(1, ...allPlayers.map(p => availRounds[p]));
+  // 출전 공평성: 참석 가능 라운드 수 대비 출전 비율로 비교 (늦게 오거나 일찍 가는 사람도 비율 기준으로 공평)
+  const playRatioDiff = (t1, t2) => {
+    const ratios = [];
+    allPlayers.forEach(p => {
+      if (!availRounds[p]) return;
+      const inc = (t1.includes(p) || t2.includes(p)) ? 1 : 0;
+      ratios.push(((playCount[p] || 0) + inc) / availRounds[p]);
+    });
+    return ratios.length ? Math.max(...ratios) - Math.min(...ratios) : 0;
+  };
+
   // NTRP 팀 밸런스: effective 합(여성 -0.5 보정)의 차이를 페널티로
   const teamBal = (t1, t2) => {
     if (!effNtrp) return 0;
@@ -1813,16 +1881,12 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
         score += 5;
         if (openTypeToggle % 2 === 0) score += 20;
       }
-      // 출전 균등화 — 최우선
-      const simO = {};
-      allPlayers.forEach(p => simO[p] = playCount[p]||0);
-      [...t1,...t2].forEach(p => simO[p]++);
-      const simOV = Object.values(simO);
-      score += (Math.max(...simOV) - Math.min(...simOV)) * 100;
+      // 출전 균등화 — 최우선 (참석 가능 라운드 대비 비율)
+      score += playRatioDiff(t1, t2) * maxAvail * 100;
       // 파트너/상대 반복 최소화 — 파트너 반복은 대기자 보너스(-20/인)보다 항상 무겁게
       if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 60;
       if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 60;
-      t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 15; }));
+      t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 30; }));
       // NTRP 팀 밸런스 (여성 -0.5 보정)
       score += teamBal(t1, t2) * 35;
       // 이전 대기자 우선
@@ -1838,19 +1902,15 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       score += partnerCount[t2[0]][t2[1]] * 60;
     }
     if (opts.opponent) {
-      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 15; }));
+      // 같은 상대 반복 1회당 30점 — 상대 공평성 강화 (파트너 60점보다는 낮게)
+      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 30; }));
     }
     // NTRP 팀 밸런스 (여성 -0.5 보정): 실력 합이 비슷한 팀끼리 맞붙도록
     score += teamBal(t1, t2) * 35;
     // 3연속 출전 방지
     if ([...t1,...t2].some(p => consecPlay[p] >= 2)) return 9999;
-    // 출전 균등화 — 최우선: 차이를 최소화
-    const simCounts = {};
-    allPlayers.forEach(p => simCounts[p] = playCount[p]||0);
-    [...t1,...t2].forEach(p => simCounts[p]++);
-    const simVals = Object.values(simCounts);
-    const simDiff = Math.max(...simVals) - Math.min(...simVals);
-    score += simDiff * 100; // 차이가 클수록 큰 페널티 (최우선)
+    // 출전 균등화 — 최우선 (참석 가능 라운드 대비 비율: 늦게 온/일찍 가는 사람도 비율 기준 공평)
+    score += playRatioDiff(t1, t2) * maxAvail * 100;
 
     // 2연속 대기 방지 — 이전 대기자 우선 출전
     if (prevResting.size > 0) {
@@ -1874,19 +1934,21 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   // 잡복 타입 번갈아 사용: mixed(남+여vs남남) → same(남남vs여여) → mixed → ...
   let openTypeToggle = 0; // 0=mixed우선, 1=same우선
 
-  function pickMatch(pool) {
-    // 출전 최소인 선수를 반드시 포함하는 매치 우선
-    const counts = allPlayers.map(p => playCount[p]||0);
-    const minPlay = Math.min(...counts);
-    const mustPlay = allPlayers.filter(p => (playCount[p]||0) === minPlay);
+  function pickMatch(pool, round) {
+    // 이 라운드에 참석 중인 선수 4명으로만 구성된 매치 후보
+    const presentPool = pool.filter(m => [...m.t1, ...m.t2].every(p => isPresent(p, round)));
+    const present = allPlayers.filter(p => isPresent(p, round) && availRounds[p] > 0);
+    if (!present.length || !presentPool.length) return [];
+    // 출전 비율(출전/참석가능)이 가장 낮은 참석자를 반드시 포함
+    const ratioOf = p => (playCount[p] || 0) / availRounds[p];
+    const minRatio = Math.min(...present.map(ratioOf));
+    const mustPlay = present.filter(p => ratioOf(p) - minRatio < 1e-9);
 
-    // 1단계: mustPlay 선수를 포함하는 매치만 필터
-    let filtered = pool.filter(m => {
+    let filtered = presentPool.filter(m => {
       const pl = [...m.t1, ...m.t2];
       return mustPlay.some(p => pl.includes(p));
     });
-    // mustPlay 매치가 없으면 전체 풀 사용
-    if (!filtered.length) filtered = pool;
+    if (!filtered.length) filtered = presentPool;
 
     const scored = filtered.map(m => ({ m, s: scoreMatch(m) }));
     scored.sort((a,b) => a.s - b.s);
@@ -1900,9 +1962,9 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       selected.push(m);
       players.forEach(p => used.add(p));
     }
-    // 선택 못 했으면 전체 풀에서 재시도
+    // 선택 못 했으면 참석자 풀 전체에서 재시도
     if (!selected.length) {
-      const allScored = pool.map(m => ({ m, s: scoreMatch(m) }));
+      const allScored = presentPool.map(m => ({ m, s: scoreMatch(m) }));
       allScored.sort((a,b) => a.s - b.s);
       for (const { m } of allScored) {
         if (selected.length >= numCourts) break;
@@ -1918,17 +1980,20 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   // 잡복은 생성 후 교체 방식
 
   for (let round = 0; round < numRounds; round++) {
-    // 항상 혼복(메인) 매치에서 선택
-    let selected = pickMatch(hasOpen ? mainMatches : allMatches);
+    // 항상 혼복(메인) 매치에서 선택 (해당 라운드 참석자만)
+    let selected = pickMatch(hasOpen ? mainMatches : allMatches, round);
 
-    if (selected.length === 0 && allMatches.length > 0) {
+    if (selected.length === 0 && allMatches.length > 0 && !sess) {
       selected.push(allMatches[round % allMatches.length]);
     }
 
+    const present = allPlayers.filter(p => isPresent(p, round));
     const activePlayers = selected.flatMap(m => [...m.t1, ...m.t2]);
-    const resting = allPlayers.filter(p => !activePlayers.includes(p));
+    const resting = present.filter(p => !activePlayers.includes(p));
+    const absent = allPlayers.filter(p => !isPresent(p, round));
+    const sl = slotOf(round);
 
-    schedule.push({ round: round+1, matches: selected, resting });
+    schedule.push({ round: round+1, matches: selected, resting, absent, time: sl ? `${fmtHM(sl.s)}–${fmtHM(sl.e)}` : undefined });
     prevResting = new Set(resting);
 
     // 연속 출전 카운터 업데이트
@@ -1946,7 +2011,7 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
     });
   }
 
-  return { schedule, playCount, partnerCount, opponentCount };
+  return { schedule, playCount, partnerCount, opponentCount, availRounds, maxAvail };
 }
 
 // ── Generate & Render ──
@@ -2001,12 +2066,37 @@ async function generate() {
   // NTRP 맵 (여성 -0.5 보정된 effective 값)
   const effNtrp = buildEffNtrp();
 
-  // 최대 50회 시도, 출전 차이 1 이하 + 파트너 균등 + NTRP 밸런스
+  // 시합 시간 + 참석 가능 시간
+  const w = sessWindow();
+  if (!(w.end > w.start)) {
+    warn.textContent = '시합 종료 시간이 시작 시간보다 커야 합니다.';
+    warn.className = 'warn show'; return;
+  }
+  const availMap = {};
+  [...females, ...males].forEach(n => { if (_avail[n]) availMap[n] = _avail[n]; });
+  const sess = { start: w.start, end: w.end, avail: availMap };
+  {
+    // 어느 라운드에도 온전히 참석할 수 없는 선수 확인
+    const len = (w.end - w.start) / numRounds;
+    const zero = [...females, ...males].filter(n => {
+      const a = availMap[n] || { in: w.start, out: w.end };
+      for (let r = 0; r < numRounds; r++) {
+        if (a.in <= w.start + len * r + 1e-6 && a.out >= w.start + len * (r + 1) - 1e-6) return false;
+      }
+      return true;
+    });
+    if (zero.length) {
+      warn.textContent = `참석 가능한 라운드가 없는 선수: ${zero.join(', ')} — 참석 시간(⏱)을 조정하거나 명단에서 제외해주세요.`;
+      warn.className = 'warn show'; return;
+    }
+  }
+
+  // 최대 50회 시도: 출전 비율 균등 + 파트너 다양성 + NTRP 밸런스 + 상대 공평성
   let best = null, bestScore = 99999;
   for (let attempt = 0; attempt < 50; attempt++) {
-    const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp);
-    const counts = Object.values(result.playCount);
-    const playDiff = Math.max(...counts) - Math.min(...counts);
+    const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp, sess);
+    const pr = Object.keys(result.playCount).filter(p => result.availRounds[p] > 0).map(p => (result.playCount[p] || 0) / result.availRounds[p]);
+    const playDiff = pr.length ? (Math.max(...pr) - Math.min(...pr)) * result.maxAvail : 0;
     // 파트너 다양성 평가: 같은 페어의 최대 반복 횟수와 반복된 페어 수를 직접 최소화
     // (기존의 "사용된 페어 간 편차" 방식은 같은 페어만 반복해도 균등하면 통과되는 맹점이 있었음)
     const ap = [...females, ...males];
@@ -2016,12 +2106,14 @@ async function generate() {
       if (c > maxPartner) maxPartner = c;
       if (c >= 2) repeatedPairs++;
     }));
-    // 대전 균등 평가
-    const oCounts = [];
+    // 대전 공평성: 같은 상대 최대 반복 + 초과 반복 총량을 직접 최소화
+    // (기존 '사용된 상대 간 편차' 방식은 특정 상대에게 몰려도 통과되는 맹점이 있었음)
+    let maxOpp = 0, excessOpp = 0;
     ap.forEach((p, i) => ap.slice(i+1).forEach(q => {
-      if (result.opponentCount[p] && result.opponentCount[p][q] > 0) oCounts.push(result.opponentCount[p][q]);
+      const c = (result.opponentCount[p] && result.opponentCount[p][q]) || 0;
+      if (c > maxOpp) maxOpp = c;
+      if (c >= 2) excessOpp += c - 1;
     }));
-    const oppDiff = oCounts.length ? Math.max(...oCounts) - Math.min(...oCounts) : 0;
     // NTRP 밸런스 평가 (매치당 평균 팀 실력차)
     let balSum = 0, balN = 0;
     result.schedule.forEach(r => (r.matches||[]).forEach(m => {
@@ -2029,10 +2121,10 @@ async function generate() {
       balSum += Math.abs(g(m.t1[0]) + g(m.t1[1]) - g(m.t2[0]) - g(m.t2[1])); balN++;
     }));
     const avgBal = balN ? balSum / balN : 0;
-    // 종합 점수: 출전 > 파트너 다양성 > NTRP 밸런스 > 대전
-    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + Math.round(avgBal * 20) + oppDiff * 3;
+    // 종합 점수: 출전 비율 > 파트너 다양성 > 상대 공평성 > NTRP 밸런스
+    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + Math.max(0, maxOpp - 2) * 15 + excessOpp * 3 + Math.round(avgBal * 20);
     if (score < bestScore) { bestScore = score; best = result; }
-    if (playDiff <= 1 && maxPartner <= 1 && oppDiff <= 1 && avgBal <= 0.5) break;
+    if (playDiff <= 1.05 && maxPartner <= 1 && maxOpp <= 2 && avgBal <= 0.5) break;
   }
   const { schedule, playCount, partnerCount, opponentCount } = best;
 
@@ -2297,12 +2389,14 @@ function renderResult(schedule, allPlayers, females, males, playCount, partnerCo
   const fmtCls   = { mixed:'fb-mixed', mens:'fb-mens', womens:'fb-womens', open:'fb-open', team:'fb-mixed' };
 
   // Rounds
-  schedule.forEach(({ round, matches, resting }) => {
+  schedule.forEach(({ round, matches, resting, absent, time }) => {
     html += `<div class="round-block">
       <div class="round-head">
-        <div class="round-num">Round ${round}</div>
+        <div class="round-num">Round ${round}${time ? ` <span style="font-size:.62rem;color:var(--sm2);font-weight:600;letter-spacing:.5px;">${time}</span>` : ''}</div>
         ${resting.length ? `<div class="round-bye">대기: <span>${resting.join(', ')}</span></div>` : ''}
+        ${absent && absent.length ? `<div class="round-bye" style="opacity:.6;">부재: <span>${absent.join(', ')}</span></div>` : ''}
       </div>`;
+    if (!matches.length) html += `<div style="padding:.7rem 1rem;font-size:.78rem;color:var(--sm2);">참석 인원이 부족해 이 라운드는 편성되지 않았습니다.</div>`;
     matches.forEach((match, ci) => {
       const { t1, t2, fmt } = match;
       html += `<div class="match-row" style="grid-template-columns:1fr auto 1fr;">
