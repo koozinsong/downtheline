@@ -72,7 +72,7 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
   --gd:#ff7a59;--gdl:#f2c14e;--w:#ffffff;
   --ll:rgba(16,24,32,.09);
 }
-body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430px,72vw) auto no-repeat, url("images/autumn-field.svg") left -40px bottom -4px / min(400px,74vw) auto no-repeat, linear-gradient(180deg,#fdfaf3 0%,#f3e7cd 100%);}
+body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430px,72vw) auto no-repeat, url("images/autumn-field.svg") right -26px top 290px / 340px auto no-repeat, linear-gradient(180deg,#fdfaf3 0%,#f3e7cd 100%);}
 #nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;}
 .nav-back{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.42rem .72rem;border-radius:999px;letter-spacing:1.5px;}
 .nav-title{color:var(--ink);}
@@ -109,14 +109,9 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
 
 /* 모바일: 낙엽 배경 축소·상단 고정 (타이틀 가독성 확보) */
 @media(max-width:600px){
-  body{background-size:58vw auto,62vw auto,auto;background-position:right -26px top -12px,left -34px bottom -3px,0 0;}
+  body{background-size:58vw auto,52vw auto,auto;background-position:right -26px top -12px,right -14px top 150px,0 0;}
 }
 
-/* 하단 들녘 일러스트(억새·도토리·잠자리)가 콘텐츠에 가려지지 않도록 여백 확보 */
-body{padding-bottom:210px;}
-@media(max-width:600px){
-  body{padding-bottom:130px;}
-}
 </style>
 </head>
 <body>

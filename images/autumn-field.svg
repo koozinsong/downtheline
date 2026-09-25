@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 260" fill="none">
+  <!-- 바닥 그림자 -->
+  <g id="ground-shadow" fill="#8a5a2a">
+    <ellipse cx="170" cy="252" rx="155" ry="8" opacity=".1"/>
+    <ellipse cx="376" cy="255" rx="48" ry="5" opacity=".1"/>
+  </g>
   <!-- 억새 줄기들 -->
   <g stroke="#b98a4a" stroke-width="3" stroke-linecap="round">
     <path d="M60,258 C64,190 58,140 78,96"/>
