@@ -573,6 +573,12 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
   .act-num{font-size:3.2rem;top:.85rem;right:.9rem;}
 }
 
+/* Autumn strip (푸터 위 가을 들녘) */
+.autumn-strip{background:linear-gradient(180deg,#f2eee1 0%,#eaddc0 100%);padding:1.6rem 2rem 0;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;overflow:hidden;}
+.autumn-strip img{width:min(400px,72vw);display:block;}
+.autumn-strip .as-leaves{width:min(260px,40vw);opacity:.8;margin-bottom:1rem;}
+@media(max-width:600px){.autumn-strip .as-leaves{display:none;}}
+
 /* Global exchange banner */
 .notice-bar{position:absolute;top:64px;left:0;right:0;z-index:400;display:flex;align-items:center;justify-content:center;gap:.55rem;background:#101820;color:#f2c14e;padding:.6rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;transition:background .2s;}
 .notice-bar:hover{background:#1d2b36;}
@@ -1056,6 +1062,12 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
     <a href="mailto:downtheline2026@gmail.com?subject=[DTL] 가입/문의" class="btn-jw hov">이메일 문의</a>
     <a href="global.html" class="btn-jo hov">Global Exchange</a>
   </div>
+</div>
+
+<!-- AUTUMN STRIP -->
+<div class="autumn-strip" aria-hidden="true">
+  <img src="images/autumn-field.svg" alt="">
+  <img class="as-leaves" src="images/autumn-leaves.svg" alt="">
 </div>
 
 <!-- FOOTER -->
