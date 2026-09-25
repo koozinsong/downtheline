@@ -331,6 +331,11 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
   .modal{align-items:flex-end;padding:.5rem;}
   .modal-box{border-radius:22px 22px 16px 16px;max-height:92vh;}
 }
+
+/* 모바일: 낙엽 배경 축소·상단 고정 (타이틀 가독성 확보) */
+@media(max-width:600px){
+  body{background-size:58vw auto,auto;background-position:right -26px top -12px,0 0;}
+}
 </style>
 </head>
 <body>
