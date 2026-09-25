@@ -267,14 +267,14 @@ body{font-family:'Barlow','Noto Sans KR',sans-serif;background:var(--iv);color:v
 }
 /* v0.2 A theme: mobile-first operations */
 :root{
-  --g:#2b6f87;--g2:#245c70;--g3:#2b6f87;--glt:#9ac8d6;
-  --iv:#fdfaf3;--iv2:#f7efdf;--iv3:#eee0c7;
-  --ink:#101820;--ink2:#2d4654;--sm:#60707a;--sm2:#8b9aa2;
-  --gd:#ff7a59;--gdl:#f2c14e;--w:#ffffff;
-  --ll:rgba(16,24,32,.09);--ld:rgba(255,255,255,.08);
-  --female:#c9577f;--female-bg:#fdebf1;--male:#2b6f87;--male-bg:#e6f4f7;
+  --g:#a8511c;--g2:#8a3f13;--g3:#bd5d1e;--glt:#e3b489;
+  --iv:#fdf8ee;--iv2:#f8ecd5;--iv3:#f0ddba;
+  --ink:#2a1b10;--ink2:#4d3523;--sm:#7d6952;--sm2:#a8957b;
+  --gd:#c9880f;--gdl:#f2c14e;--w:#ffffff;
+  --ll:rgba(42,27,16,.1);--ld:rgba(255,255,255,.08);
+  --female:#c14a63;--female-bg:#fbe9ea;--male:#3a6b52;--male-bg:#e8f1e6;
 }
-body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430px,72vw) auto no-repeat, linear-gradient(180deg,#fdfaf3 0%,#f3e7cd 100%);}
+body{background:url("images/autumn-leaves.svg") right -24px top -16px / min(520px,86vw) auto no-repeat, url("images/autumn-leaves.svg") left -90px bottom -60px / 380px auto no-repeat, linear-gradient(180deg,#fdf8ee 0%,#eeD9af 100%);}
 #nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;}
 .nav-back{color:#53636b;background:#fff;border:1px solid rgba(16,24,32,.08);padding:.42rem .72rem;border-radius:999px;letter-spacing:1.5px;}
 .nav-title{color:var(--ink);}
@@ -284,7 +284,7 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
 .page-title{font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-.5px;}
 .page-title em{color:var(--g);}
 .page-sub{font-weight:400;margin-bottom:2rem;}
-.setup-card,.stat-card,.conf-card,.match-row{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(43,111,135,.07);overflow:hidden;}
+.setup-card,.stat-card,.conf-card,.match-row{background:rgba(255,255,255,.78);border:1px solid rgba(16,24,32,.08);border-radius:20px;box-shadow:0 14px 34px rgba(168,80,27,.09);overflow:hidden;}
 .setup-label,.stat-card-title,.conf-round-label,.conf-result-link{color:var(--g);}
 .setup-label::before{background:var(--g);}
 .player-row input,.opt-select,.opt-input,.inline-score{background:#fbfbf7;border-color:rgba(16,24,32,.1);border-radius:10px;}
@@ -343,7 +343,7 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
 
 /* 모바일: 낙엽 배경 축소·상단 고정 (타이틀 가독성 확보) */
 @media(max-width:600px){
-  body{background-size:58vw auto,auto;background-position:right -26px top -12px,0 0;}
+  body{background-size:64vw auto,52vw auto,auto;background-position:right -22px top -10px,left -60px bottom -46px,0 0;}
 }
 </style>
 </head>
