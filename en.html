@@ -20,7 +20,7 @@
   --ll:rgba(16,24,32,.09);
 }
 html{scroll-behavior:smooth;}
-body{font-family:'Barlow','Noto Sans KR',sans-serif;background:url("images/autumn-leaves.svg") right -30px top -20px / min(430px,72vw) auto no-repeat, linear-gradient(180deg,#fdfaf3 0%,#f3e7cd 100%);color:var(--ink);}
+body{font-family:'Barlow','Noto Sans KR',sans-serif;background:url("images/autumn-leaves.svg") right -30px top -20px / min(430px,72vw) auto no-repeat, url("images/autumn-field.svg") left -40px bottom -4px / min(400px,74vw) auto no-repeat, linear-gradient(180deg,#fdfaf3 0%,#f3e7cd 100%);color:var(--ink);}
 #nav{height:62px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(16,24,32,.07);padding:0 1.4rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
 .nav-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ink);}
 .nav-links{margin-left:auto;display:flex;gap:.5rem;}
@@ -67,7 +67,7 @@ footer a{color:var(--sm);}
 
 /* 모바일: 낙엽 배경 축소·상단 고정 (타이틀 가독성 확보) */
 @media(max-width:600px){
-  body{background-size:58vw auto,auto;background-position:right -26px top -12px,0 0;}
+  body{background-size:58vw auto,62vw auto,auto;background-position:right -26px top -12px,left -34px bottom -3px,0 0;}
 }
 </style>
 </head>

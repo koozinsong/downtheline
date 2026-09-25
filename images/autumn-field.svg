@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 260" fill="none">
+  <!-- 억새 줄기들 -->
+  <g stroke="#b98a4a" stroke-width="3" stroke-linecap="round">
+    <path d="M60,258 C64,190 58,140 78,96"/>
+    <path d="M110,258 C112,180 104,130 122,78"/>
+    <path d="M170,258 C168,196 176,150 160,112"/>
+    <path d="M225,258 C230,200 222,166 240,132"/>
+    <path d="M285,258 C282,210 292,180 280,156"/>
+  </g>
+  <!-- 억새 이삭 (플러피 헤드) -->
+  <g fill="#e2c99a">
+    <g transform="translate(78,92) rotate(-18)"><ellipse cx="0" cy="-16" rx="9" ry="24" opacity=".9"/><ellipse cx="-8" cy="-8" rx="6" ry="16" opacity=".65"/><ellipse cx="8" cy="-10" rx="6" ry="17" opacity=".65"/></g>
+    <g transform="translate(122,74) rotate(14)"><ellipse cx="0" cy="-17" rx="10" ry="26" opacity=".9"/><ellipse cx="-9" cy="-8" rx="6" ry="17" opacity=".6"/><ellipse cx="9" cy="-9" rx="6" ry="18" opacity=".6"/></g>
+    <g transform="translate(160,108) rotate(-10)" fill="#d9bd8a"><ellipse cx="0" cy="-15" rx="8" ry="22" opacity=".85"/><ellipse cx="-7" cy="-7" rx="5" ry="14" opacity=".55"/></g>
+    <g transform="translate(240,128) rotate(16)" fill="#d9bd8a"><ellipse cx="0" cy="-14" rx="8" ry="21" opacity=".85"/><ellipse cx="7" cy="-6" rx="5" ry="14" opacity=".55"/></g>
+    <g transform="translate(280,152) rotate(-8)" fill="#cfae74"><ellipse cx="0" cy="-12" rx="7" ry="18" opacity=".8"/></g>
+  </g>
+  <!-- 도토리 -->
+  <g transform="translate(360,238)">
+    <ellipse cx="0" cy="8" rx="13" ry="15" fill="#c98a4a"/>
+    <path d="M-14,-2 C-14,-12 14,-12 14,-2 C14,2 -14,2 -14,-2 Z" fill="#8a5a2a"/>
+    <path d="M0,-10 L0,-18" stroke="#6f4722" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(392,246) rotate(24)">
+    <ellipse cx="0" cy="7" rx="10" ry="12" fill="#b97a3e"/>
+    <path d="M-11,-1 C-11,-9 11,-9 11,-1 C11,2 -11,2 -11,-1 Z" fill="#7d4f24"/>
+  </g>
+  <!-- 고추잠자리 (억새 끝에) -->
+  <g transform="translate(122,44) rotate(-14)">
+    <ellipse cx="-14" cy="0" rx="13" ry="4.5" fill="#f6e3d3" opacity=".8" transform="rotate(-24)"/>
+    <ellipse cx="14" cy="0" rx="13" ry="4.5" fill="#f6e3d3" opacity=".8" transform="rotate(24)"/>
+    <ellipse cx="-17" cy="4" rx="11" ry="3.8" fill="#f2d8c4" opacity=".7" transform="rotate(-8)"/>
+    <ellipse cx="17" cy="4" rx="11" ry="3.8" fill="#f2d8c4" opacity=".7" transform="rotate(8)"/>
+    <path d="M0,-4 L0,26" stroke="#c0392b" stroke-width="4.4" stroke-linecap="round"/>
+    <path d="M0,12 L0,26" stroke="#a52f22" stroke-width="4.4" stroke-linecap="round" stroke-dasharray="3 2"/>
+    <circle cx="0" cy="-7" r="4.6" fill="#8f2b1f"/>
+  </g>
+</svg>
