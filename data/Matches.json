@@ -631,6 +631,21 @@
     "schedule_id": "recSiZbCaZCb5Tzto",
     "notes": "R6"
    }
+  },
+  {
+   "id": "recxpzy6Xdw3aGs5h",
+   "createdTime": "2026-09-27T06:27:18.362Z",
+   "fields": {
+    "team1_p1": "5른팔",
+    "team1_p2": "9단주",
+    "team2_p1": "Terra",
+    "team2_p2": "Young",
+    "score1": 6,
+    "score2": 2,
+    "date": "2026-09-27",
+    "schedule_id": "recSiZbCaZCb5Tzto",
+    "notes": "R5"
+   }
   }
  ]
 }
