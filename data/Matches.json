@@ -571,6 +571,21 @@
     "score2": 6,
     "notes": "R6"
    }
+  },
+  {
+   "id": "recDD3P3LzKSVyFVG",
+   "createdTime": "2026-09-27T06:02:25.491Z",
+   "fields": {
+    "team1_p1": "6근이",
+    "team1_p2": "9단주",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 3,
+    "score2": 6,
+    "date": "2026-09-27",
+    "schedule_id": "recSiZbCaZCb5Tzto",
+    "notes": "R1"
+   }
   }
  ]
 }
