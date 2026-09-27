@@ -326,7 +326,7 @@ function renderMatches(){
         ${g.matches.map(m=>{
           const s1=parseInt(m.score1)||0,s2=parseInt(m.score2)||0;
           const w1=s1>s2;
-          return `<div class="rg-match">
+          return `<div class="rg-match" id="rgm_${m.id}">
             <div class="rg-teams">${teamChips(m.team1_p1,m.team1_p2)}</div>
             <div class="rg-score">
               <input class="inline-score-sm" type="number" min="0" max="7" value="${s1}" id="rs1_${m.id}" data-orig="${s1}">
@@ -336,6 +336,7 @@ function renderMatches(){
             <div class="rg-teams">${teamChips(m.team2_p1,m.team2_p2)}</div>
             <div style="margin-left:auto;display:flex;gap:.3rem;">
               <button class="edit-btn" onclick="event.stopPropagation();updateScore('${m.id}')" style="font-size:.55rem;">저장</button>
+              <button class="edit-btn" onclick="event.stopPropagation();editResultPlayers('${m.id}')" style="font-size:.55rem;">선수</button>
               <button class="del-btn" onclick="event.stopPropagation();delMatch('${m.id}')" style="font-size:.55rem;">삭제</button>
             </div>
           </div>`;
@@ -404,6 +405,41 @@ async function delScheduleMatches(schedId, ids){
     renderMatches();
     toast(ids.length+'건 삭제됨','ok');
   }catch(e){toast('삭제 실패','err');}
+}
+
+// 잘못 입력된 참가 선수 수정 — 멤버 전원 + 같은 시합일에 등장한 게스트를 선택지로
+function editResultPlayers(id){
+  const m=matches.find(x=>x.id===id);
+  const row=document.getElementById('rgm_'+id);
+  if(!m||!row) return;
+  const key=x=>x.schedule_id||`${x.event||''}|${String(x.date||'').substring(0,10)}`;
+  const names=new Set(players.map(p=>p.name));
+  matches.filter(x=>key(x)===key(m)).forEach(x=>{
+    ['team1_p1','team1_p2','team2_p1','team2_p2'].forEach(k=>{ if(x[k]) names.add(x[k]); });
+  });
+  const sel=(fid,val)=>`<select class="inline-score-sm" id="${fid}" style="width:auto;min-width:64px;font-size:.7rem;font-weight:500;">${[...names].map(n=>`<option value="${escapeHtml(n)}" ${n===val?'selected':''}>${escapeHtml(n)}</option>`).join('')}</select>`;
+  const teams=row.querySelectorAll('.rg-teams');
+  teams[0].innerHTML=sel('ep1_'+id,m.team1_p1)+sel('ep2_'+id,m.team1_p2);
+  teams[1].innerHTML=sel('ep3_'+id,m.team2_p1)+sel('ep4_'+id,m.team2_p2);
+  row.querySelector('div[style*="margin-left"]').innerHTML=`
+    <button class="edit-btn" onclick="event.stopPropagation();saveResultPlayers('${id}')" style="font-size:.55rem;">확인</button>
+    <button class="del-btn" onclick="event.stopPropagation();renderMatches()" style="font-size:.55rem;">취소</button>`;
+}
+
+async function saveResultPlayers(id){
+  const v=f=>document.getElementById(f+'_'+id).value;
+  const t=[v('ep1'),v('ep2'),v('ep3'),v('ep4')];
+  if(new Set(t).size!==4){toast('같은 선수가 중복 선택되었습니다','err');return;}
+  try{
+    const res=await atUpdate('Matches',id,{team1_p1:t[0],team1_p2:t[1],team2_p1:t[2],team2_p2:t[3]});
+    if(res.success){
+      const m=matches.find(x=>x.id===id);
+      if(m){m.team1_p1=t[0];m.team1_p2=t[1];m.team2_p1=t[2];m.team2_p2=t[3];}
+      cacheDrop(['getMatches']);
+      renderMatches();
+      toast('선수 변경됨 ✓','ok');
+    } else toast('변경 실패','err');
+  }catch(e){toast('변경 실패','err');}
 }
 
 async function updateScore(id){
