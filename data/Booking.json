@@ -459,6 +459,20 @@
     "Time": "06:00-10:00",
     "Status": "취소"
    }
+  },
+  {
+   "id": "recExLn603yX0aGhw",
+   "createdTime": "2026-09-27T07:15:13.635Z",
+   "fields": {
+    "Date": "2026-10-04",
+    "Court": "내곡",
+    "Time": "06:00-12:00",
+    "Status": "추가",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Court Number": "4"
+   }
   }
  ]
 }
