@@ -1,0 +1,576 @@
+{
+ "records": [
+  {
+   "id": "recFdwIRAftKfdpQB",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "2쁜이",
+    "team1_p2": "6근이",
+    "team2_p1": "Young",
+    "team2_p2": "5른팔",
+    "score1": 3,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "recTnyXfFO6ssHBbo",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "9단주",
+    "team1_p2": "5른팔",
+    "team2_p1": "Young",
+    "team2_p2": "0국진",
+    "score1": 6,
+    "score2": 2,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "rec6u0a5z3fY30ebg",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "9단주",
+    "team1_p2": "6근이",
+    "team2_p1": "2쁜이",
+    "team2_p2": "0국진",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "recWkYRj85KXRYzq2",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "Young",
+    "team1_p2": "6근이",
+    "team2_p1": "9단주",
+    "team2_p2": "0국진",
+    "score1": 1,
+    "score2": 6,
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "rec7VxP4ft3ZTEPgD",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "2쁜이",
+    "team1_p2": "5른팔",
+    "team2_p1": "9단주",
+    "team2_p2": "0국진",
+    "score1": 6,
+    "score2": 3,
+    "notes": "R5"
+   }
+  },
+  {
+   "id": "recO9lI7155TQVGbF",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-05",
+    "event": "정기 매치",
+    "team1_p1": "2쁜이",
+    "team1_p2": "6근이",
+    "team2_p1": "Young",
+    "team2_p2": "5른팔",
+    "score1": 3,
+    "score2": 6,
+    "notes": "R6"
+   }
+  },
+  {
+   "id": "recjfk47GiiDF3wxJ",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "6근이",
+    "team1_p2": "9단주",
+    "team2_p1": "5른팔",
+    "team2_p2": "2쁜이",
+    "score1": 3,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "rec1LyfhE1UyngWal",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "5른팔",
+    "team1_p2": "9단주",
+    "team2_p1": "0국진",
+    "team2_p2": "Young",
+    "score1": 1,
+    "score2": 6,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "recuRA0Fo8gQjWvur",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 6,
+    "score2": 3,
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "recWoBFCLNhCcYJTv",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R6"
+   }
+  },
+  {
+   "id": "recVWgrG9ZbbfWHqX",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "5른팔",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "recbrFubJNkr6lwog",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "date": "2026-04-12",
+    "event": "아난티의 봄",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "Young",
+    "team2_p2": "5른팔",
+    "score1": 2,
+    "score2": 6,
+    "notes": "R5"
+   }
+  },
+  {
+   "id": "rechgXNS5fjxvbUWz",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recQmiQzPNqhbs6ZV",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "5른팔",
+    "team2_p2": "Young",
+    "score1": 6,
+    "score2": 4,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "reccexpl0icoyqB2S",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recQmiQzPNqhbs6ZV",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "9단주",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 2,
+    "score2": 6,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "rec76m8TVt2aT75pA",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recQmiQzPNqhbs6ZV",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "5른팔",
+    "team1_p2": "9단주",
+    "team2_p1": "0국진",
+    "team2_p2": "Young",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "rec62Fyv90j3xL1wI",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recQmiQzPNqhbs6ZV",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "5른팔",
+    "team2_p2": "2쁜이",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "recKk5DTWNEuT0d03",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recCLcnyLdBv0g2wW",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "0국진",
+    "team1_p2": "Young",
+    "team2_p1": "6근이",
+    "team2_p2": "5른팔",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "recvk7JStROktTpHk",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "rec0tfrZBgcGeLnPs",
+    "date": "2026-04-19",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "rec1FWDxBkaQR5Q22",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recKkE2RcLybtR9Hf",
+    "date": "2026-04-19",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "2쁜이",
+    "score1": 5,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "recLi9IYXb8lUUMmi",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recJp1hu1tGxG1jg9",
+    "date": "2026-04-26",
+    "event": "정기 매치",
+    "team1_p1": "5른팔",
+    "team1_p2": "2쁜이",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "recZbIsC4XIv4Wehv",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recJp1hu1tGxG1jg9",
+    "date": "2026-04-26",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "5른팔",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "rec9vdK1qzp5VN17b",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recJp1hu1tGxG1jg9",
+    "date": "2026-04-26",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "5른팔",
+    "team2_p2": "0국진",
+    "score1": 1,
+    "score2": 6,
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "recc4B6wQWDO8JPti",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "2쁜이",
+    "team1_p2": "0국진",
+    "team2_p1": "9단주",
+    "team2_p2": "5른팔",
+    "score1": 6,
+    "score2": 2,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "rec0wnRDbDjKKLEj4",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "5른팔",
+    "team1_p2": "9단주",
+    "team2_p1": "Young",
+    "team2_p2": "6근이",
+    "score1": 4,
+    "score2": 6,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "recvjhWMPE4hwPTaB",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "Young",
+    "team1_p2": "6근이",
+    "team2_p1": "2쁜이",
+    "team2_p2": "0국진",
+    "score1": 6,
+    "score2": 4,
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "rec4fCIFgoEGAgpw6",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "2쁜이",
+    "team1_p2": "0국진",
+    "team2_p1": "9단주",
+    "team2_p2": "5른팔",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "rechjMqmtwiPEtTkq",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "9단주",
+    "team1_p2": "5른팔",
+    "team2_p1": "Young",
+    "team2_p2": "6근이",
+    "score1": 6,
+    "score2": 2,
+    "notes": "R5"
+   }
+  },
+  {
+   "id": "recUnNk55VHSMezSz",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "2쁜이",
+    "team1_p2": "0국진",
+    "team2_p1": "Young",
+    "team2_p2": "6근이",
+    "score1": 6,
+    "score2": 2,
+    "notes": "R6"
+   }
+  },
+  {
+   "id": "recQuGpTzkbsE5o2S",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recEPxlOsQrKYAIZU",
+    "date": "2026-05-05",
+    "team1_p1": "2쁜이",
+    "team1_p2": "0국진",
+    "team2_p1": "9단주",
+    "team2_p2": "5른팔",
+    "score1": 6,
+    "score2": 2,
+    "notes": "R7"
+   }
+  },
+  {
+   "id": "rec45Zh922m5Opp5U",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "reczzI9jEdkyNXS9g",
+    "date": "2026-08-16",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 6,
+    "score2": 2,
+    "mvp": "Young",
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "recJJ4XsTAE5pNffj",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "reczzI9jEdkyNXS9g",
+    "date": "2026-08-16",
+    "event": "정기 매치",
+    "team1_p1": "5른팔",
+    "team1_p2": "2쁜이",
+    "team2_p1": "Terra",
+    "team2_p2": "Young",
+    "score1": 4,
+    "score2": 6,
+    "mvp": "Young",
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "recrPKYmtQO0POC0q",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "reczzI9jEdkyNXS9g",
+    "date": "2026-08-16",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 6,
+    "score2": 4,
+    "mvp": "Young",
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "recUf8D3hrJ1t2eSz",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "reczzI9jEdkyNXS9g",
+    "date": "2026-08-16",
+    "event": "정기 매치",
+    "team1_p1": "6근이",
+    "team1_p2": "0국진",
+    "team2_p1": "5른팔",
+    "team2_p2": "Terra",
+    "score1": 4,
+    "score2": 6,
+    "mvp": "Young",
+    "notes": "R4"
+   }
+  },
+  {
+   "id": "recBoBlnZuTl1eQ31",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recvYPRIQlMiyOSAh",
+    "date": "2026-09-13",
+    "team1_p1": "6근이",
+    "team1_p2": "2쁜이",
+    "team2_p1": "5른팔",
+    "team2_p2": "9단주",
+    "score1": 3,
+    "score2": 6,
+    "notes": "R3"
+   }
+  },
+  {
+   "id": "rec8ZA6l8K8ljIrqw",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recvYPRIQlMiyOSAh",
+    "date": "2026-09-13",
+    "team1_p1": "5른팔",
+    "team1_p2": "2쁜이",
+    "team2_p1": "0국진",
+    "team2_p2": "Young",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R1"
+   }
+  },
+  {
+   "id": "reczzRscTaroxX9Wo",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recvYPRIQlMiyOSAh",
+    "date": "2026-09-13",
+    "team1_p1": "6근이",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 5,
+    "score2": 5,
+    "notes": "R2"
+   }
+  },
+  {
+   "id": "recEFFkVMohb96TVr",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "schedule_id": "recvYPRIQlMiyOSAh",
+    "date": "2026-09-13",
+    "team1_p1": "6근이",
+    "team1_p2": "9단주",
+    "team2_p1": "5른팔",
+    "team2_p2": "2쁜이",
+    "score1": 3,
+    "score2": 6,
+    "notes": "R6"
+   }
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "records": [
+  {
+   "id": "recbNYrcxVyLyEAAN",
+   "createdTime": "2026-04-01T10:00:00.000Z",
+   "fields": {
+    "id": "e1",
+    "name": "아난티의 봄",
+    "date": "2026-04-12",
+    "location": "아난티 가평",
+    "status": "ongoing"
+   }
+  },
+  {
+   "id": "recwwNWVgnaZ3SACq",
+   "createdTime": "2026-04-01T10:00:00.000Z",
+   "fields": {
+    "id": "e2",
+    "name": "정기 매치",
+    "date": "2026-04-05",
+    "location": "세곡 테니스코트",
+    "status": "completed"
+   }
+  }
+ ]
+}

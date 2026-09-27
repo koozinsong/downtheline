@@ -1,0 +1,454 @@
+{
+ "records": [
+  {
+   "id": "recieAXEJDg4DTrFl",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-05-10",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "08:00-10:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "reciMHNUUZOOu41Jl",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-05-17",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "09:00-10:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recV6coaQu0ayiWdy",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-05-24",
+    "Court": "기타",
+    "Court Number": "7",
+    "Time": "06:00-08:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본",
+    "Memo": "88"
+   }
+  },
+  {
+   "id": "recPEGZKEhAmjgcBy",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-07",
+    "Court": "양재",
+    "Court Number": "실내c",
+    "Time": "08:00-09:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recHEpXhb7u5u0OoW",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-07",
+    "Court": "양재",
+    "Court Number": "7",
+    "Time": "08:00-10:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recALyl9MDiFCrFbH",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-21",
+    "Court": "양재",
+    "Court Number": "4",
+    "Time": "08:00-10:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recF0BhksjMLqAm1m",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-21",
+    "Court": "양재",
+    "Court Number": "5",
+    "Time": "09:00-10:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recqxmR9Qk1xcyAhu",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-14",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "08:00-09:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recmAVrBGHVS49CeP",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-21",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "08:00-11:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본",
+    "Memo": "취소 예정"
+   }
+  },
+  {
+   "id": "recNMxlHEOgqVjb6P",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-28",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "08:00-10:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본",
+    "Memo": "미확정"
+   }
+  },
+  {
+   "id": "recpMJYugyexTyvde",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-28",
+    "Court": "내곡",
+    "Court Number": "4",
+    "Time": "08:00-09:00",
+    "Who": [
+     "recvakSqNuc0FaQpG"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recdiLIcykvckENHO",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-06-28",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "10:00-12:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본",
+    "Memo": "취소 예정"
+   }
+  },
+  {
+   "id": "recNAGW9vSOfkcowD",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-05",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "06:00-09:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본",
+    "Memo": "인조잔디"
+   }
+  },
+  {
+   "id": "rec6MY2hC63QByOw1",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-05",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "09:00-11:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본",
+    "Memo": "인조잔디"
+   }
+  },
+  {
+   "id": "recxC3bqeozOFmKl4",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-05",
+    "Court": "내곡",
+    "Court Number": "3",
+    "Time": "08:00-09:00",
+    "Who": [
+     "recvakSqNuc0FaQpG"
+    ],
+    "Status": "기본",
+    "Memo": "하드"
+   }
+  },
+  {
+   "id": "recWnMHodIGPHg3Rs",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-12",
+    "Court": "내곡",
+    "Court Number": "6",
+    "Time": "06:00-08:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recldxgh5qN1o3VzP",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-12",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "09:00-12:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "rec6nJLMUPoE84Kjw",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-17",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "10:00-13:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본",
+    "Memo": "금요일"
+   }
+  },
+  {
+   "id": "recyiovgo1rMZNlDF",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-19",
+    "Court": "내곡",
+    "Court Number": "7",
+    "Time": "09:00-11:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recYE50liYglFscQK",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-12",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "rec40H78red8rIbKf",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-17",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "금요일"
+   }
+  },
+  {
+   "id": "recCe4HzJpOEzgKtp",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-19",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "rec1pmtJvtq9idXlj",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-05",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "recjnUPDUF3TO9bQX",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-07-26",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "recUYvwJJXkK1UU8k",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-02",
+    "Court": "아차산",
+    "Court Number": "3",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "recZlVpJLClwNkm0o",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-09",
+    "Court": "아차산",
+    "Court Number": "3",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "recNUlxXUoMUYviBc",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-16",
+    "Court": "아차산",
+    "Court Number": "3",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "클럽 정기"
+   }
+  },
+  {
+   "id": "recfemIv6dgaEeMz6",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-23",
+    "Court": "아차산",
+    "Court Number": "3",
+    "Time": "07:00-11:00",
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recugBfroJfau9wYG",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-09-27",
+    "Court": "양재",
+    "Time": "06:00-08:00",
+    "Who": [
+     "rec5xAS6fCopQwo3L"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "recXSuA7qyMrQ8I0T",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-09-27",
+    "Court": "양재",
+    "Time": "06:00-10:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본"
+   }
+  },
+  {
+   "id": "rec2zwhVlYaVb8xrw",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-09-27",
+    "Court": "양재",
+    "Time": "06:00-09:00",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ],
+    "Status": "기본",
+    "Memo": "실내"
+   }
+  },
+  {
+   "id": "reccP3F4eVfRaL1B8",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-09-27",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "취소"
+   }
+  },
+  {
+   "id": "recx5sGkMVhEpiK6b",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-30",
+    "Court": "기타",
+    "Time": "06:00-08:00",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ],
+    "Status": "기본",
+    "Memo": "중앙여고"
+   }
+  },
+  {
+   "id": "recUnWpo7nR52t5eM",
+   "createdTime": "2026-09-27T00:00:00.000Z",
+   "fields": {
+    "Date": "2026-08-30",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "취소"
+   }
+  }
+ ]
+}
