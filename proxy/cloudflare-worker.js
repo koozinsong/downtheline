@@ -84,8 +84,9 @@ export default {
     }
 
     // ── GET 엣지 캐싱: Airtable 월 API 한도 보호 ──
-    // 120초 이내 동일 요청은 캐시로 응답 (업스트림 호출 0), 실패/429 시 최대 7일 된 캐시라도 서빙
-    const FRESH_MS = 120 * 1000;
+    // 10분 이내 동일 요청은 캐시로 응답 (업스트림 호출 0), 실패/429 시 최대 7일 된 캐시라도 서빙
+    // 쓰기(POST/PATCH/DELETE) 발생 시 해당 테이블 캐시를 즉시 비우므로 신선도 문제 없음
+    const FRESH_MS = 10 * 60 * 1000;
     if (request.method === 'GET') {
       const cache = caches.default;
       const cacheKey = new Request(upstream.toString(), { method: 'GET' });
@@ -118,6 +119,11 @@ export default {
 
     const res = await fetch(upstream, init);
     const body = await res.text();
+    // 쓰기 성공 시 해당 테이블의 목록 캐시 무효화 (다음 조회는 최신 데이터)
+    if (res.ok) {
+      const listUrl = `https://api.airtable.com/v0/${env.AIRTABLE_BASE}/${encodeURIComponent(table)}`;
+      await caches.default.delete(new Request(listUrl, { method: 'GET' }));
+    }
     return new Response(body, {
       status: res.status,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
