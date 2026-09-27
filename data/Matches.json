@@ -586,6 +586,21 @@
     "schedule_id": "recSiZbCaZCb5Tzto",
     "notes": "R1"
    }
+  },
+  {
+   "id": "recbKZC0weW37xOod",
+   "createdTime": "2026-09-27T06:02:28.406Z",
+   "fields": {
+    "team1_p1": "5른팔",
+    "team1_p2": "Young",
+    "team2_p1": "0국진",
+    "team2_p2": "9단주",
+    "score1": 5,
+    "score2": 5,
+    "date": "2026-09-27",
+    "schedule_id": "recSiZbCaZCb5Tzto",
+    "notes": "R2"
+   }
   }
  ]
 }
