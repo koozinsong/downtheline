@@ -88,10 +88,15 @@ async function cachedFetch(action, onFresh) {
 function pad(n) { return String(n).padStart(2, '0'); }
 function todayKST() { return new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).split(' ')[0]; }
 function nextSundayKST() {
-  const [y, m, d] = todayKST().split('-').map(Number);
+  const [date, time] = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).split(' ');
+  const [y, m, d] = date.split('-').map(Number);
+  const hour = parseInt(time.split(':')[0], 10);
   const dt = new Date(Date.UTC(y, m - 1, d));
   const day = dt.getUTCDay();
-  dt.setUTCDate(dt.getUTCDate() + (day === 0 ? 0 : 7 - day));
+  let add = day === 0 ? 0 : 7 - day;
+  // 일요일 정오 이후에는 오전 경기가 끝났으므로 다음 주 일요일을 가리킴
+  if (day === 0 && hour >= 12) add = 7;
+  dt.setUTCDate(dt.getUTCDate() + add);
   return dt.toISOString().split('T')[0];
 }
 function parseTimeRange(t) {
