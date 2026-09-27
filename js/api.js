@@ -152,6 +152,35 @@ function hardRefresh() {
   location.reload();
 }
 
+// ── PWA 안전 확인창/알림 ──
+// 설치형 웹앱(iOS 홈 화면 등)에서는 confirm()/alert()가 동작하지 않으므로 자체 UI 사용
+function uiConfirm(message) {
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(16,24,32,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;';
+    ov.innerHTML = `<div style="background:#fff;border-radius:16px;padding:1.3rem 1.4rem;max-width:340px;width:100%;box-shadow:0 24px 60px rgba(16,24,32,.28);">
+      <div style="font-size:.92rem;color:#101820;line-height:1.65;white-space:pre-line;">${escapeHtml(message)}</div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.15rem;">
+        <button data-r="0" style="font-size:.78rem;font-weight:700;padding:.5rem 1.1rem;border-radius:999px;border:1px solid rgba(16,24,32,.15);background:#fff;cursor:pointer;">취소</button>
+        <button data-r="1" style="font-size:.78rem;font-weight:700;padding:.5rem 1.1rem;border-radius:999px;border:none;background:#101820;color:#fff;cursor:pointer;">확인</button>
+      </div></div>`;
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (b) { ov.remove(); resolve(b.dataset.r === '1'); }
+      else if (e.target === ov) { ov.remove(); resolve(false); }
+    });
+    document.body.appendChild(ov);
+  });
+}
+function uiAlert(message) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);z-index:9999;background:#101820;color:#fff;font-size:.82rem;padding:.6rem 1.1rem;border-radius:999px;max-width:88vw;box-shadow:0 10px 30px rgba(16,24,32,.3);white-space:pre-line;text-align:center;';
+  t.textContent = String(message);
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+window.alert = uiAlert; // 기존 alert 호출 전부 PWA 안전 알림으로
+
 // ── PWA 서비스 워커 등록 ──
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

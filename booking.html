@@ -447,7 +447,7 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
 
 <div class="toast" id="toast"></div>
 
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=5"></script>
 <script>
 let bookings=[], players=[];
 let viewYear, viewMonth; // 현재 보고 있는 월
@@ -774,7 +774,7 @@ function renderDayList(){
 }
 
 async function cancelDefaultBooking(court,time){
-  if(!confirm(`이 날 기본 ${court}(${time}) 예약을 취소할까요?`)) return;
+  if (!(await uiConfirm(`이 날 기본 ${court}(${time}) 예약을 취소할까요?`))) return;
   const data={
     Date:selectedDate,
     Court:court,
@@ -827,7 +827,7 @@ async function saveBooking(){
   if(!hours.length){toast('시간을 선택해주세요','err');return;}
   // 비연속 선택 시 안내 (min~max 범위로 처리)
   if(hours[hours.length-1]-hours[0]+1!==hours.length){
-    if(!confirm('선택한 시간이 연속되지 않습니다. '+pad(hours[0])+':00 ~ '+pad(hours[hours.length-1]+1)+':00 으로 저장할까요?')) return;
+    if (!(await uiConfirm('선택한 시간이 연속되지 않습니다. '+pad(hours[0])+':00 ~ '+pad(hours[hours.length-1]+1)+':00 으로 저장할까요?'))) return;
   }
   const data={
     Date:selectedDate,
@@ -856,7 +856,7 @@ async function saveBooking(){
 }
 
 async function delBooking(id){
-  if(!confirm('이 예약을 삭제할까요?')) return;
+  if (!(await uiConfirm('이 예약을 삭제할까요?'))) return;
   try{
     await atDelete('Booking',id);
     bookings=bookings.filter(b=>b.id!==id);

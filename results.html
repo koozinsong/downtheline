@@ -219,7 +219,7 @@ body{background:url("images/autumn-leaves.svg") right -30px top -20px / min(430p
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=5"></script>
 <script>
 let players=[],events=[],matches=[];
 
@@ -397,7 +397,7 @@ function buildRankTable(matchList){
 }
 
 async function delScheduleMatches(schedId, ids){
-  if(!confirm('이 일정의 모든 경기 기록을 삭제할까요?')) return;
+  if (!(await uiConfirm('이 일정의 모든 경기 기록을 삭제할까요?'))) return;
   try{
     await Promise.all(ids.map(id=>atDelete('Matches',id)));
     cacheDrop(['getMatches']);
@@ -462,7 +462,7 @@ async function updateScore(id){
 }
 
 async function delMatch(id){
-  if(!confirm('이 경기 결과를 삭제할까요?')) return;
+  if (!(await uiConfirm('이 경기 결과를 삭제할까요?'))) return;
   try{
     const res=await atDelete('Matches',id);
     if(res.success){

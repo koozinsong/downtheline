@@ -620,7 +620,7 @@ body{background:url("images/autumn-leaves.svg") right -24px top -16px / min(520p
   </div>
 </div>
 
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=5"></script>
 <script>
 let _lastScheduleData = null;
 
@@ -1196,7 +1196,7 @@ async function saveMVP(schedId) {
 }
 
 async function finishSchedule(schedId) {
-  if (!confirm('이 일정을 완료 처리할까요?\n(경기 기록은 유지됩니다)')) return;
+  if (!(await uiConfirm('이 일정을 완료 처리할까요?\n(경기 기록은 유지됩니다)'))) return;
   try {
     await atDelete('Schedules', schedId);
     cacheDrop(['getMatches','getSchedules','getPlayers']);
@@ -1280,7 +1280,7 @@ function restoreInlineScores(saved) {
 }
 
 async function removeMatchFromSchedule(schedId, ri, mi) {
-  if (!confirm('이 매치를 삭제할까요?')) return;
+  if (!(await uiConfirm('이 매치를 삭제할까요?'))) return;
   const savedScores = saveInlineScores();
   try {
     // Airtable Match 레코드도 삭제
@@ -1348,7 +1348,7 @@ async function saveAllScores(schedId) {
   if (hasError) { alert('스코어를 확인해주세요.\n- 양쪽 모두 입력 (0~7)'); return; }
   if (!toSave.length) { alert('변경된 스코어가 없습니다.'); return; }
 
-  if (!confirm(`${toSave.length}건의 결과를 저장할까요?`)) return;
+  if (!(await uiConfirm(`${toSave.length}건의 결과를 저장할까요?`))) return;
 
   const btn = document.querySelector(`.conf-body[id$="${schedId}"] .confirm-btn`);
   if (btn) { btn.textContent = '저장 중...'; btn.disabled = true; }
@@ -1385,7 +1385,7 @@ async function saveAllScores(schedId) {
 }
 
 async function clearMatches(schedId) {
-  if (!confirm('이 일정의 경기 스코어를 모두 초기화할까요?\n(일정은 유지됩니다)')) return;
+  if (!(await uiConfirm('이 일정의 경기 스코어를 모두 초기화할까요?\n(일정은 유지됩니다)'))) return;
   try {
     const [allMatches, allScheds] = await Promise.all([
       atGet('Matches'), atGet('Schedules')
@@ -1427,7 +1427,7 @@ async function clearMatches(schedId) {
 }
 
 async function delSchedule(id) {
-  if (!confirm('이 일정을 삭제할까요?')) return;
+  if (!(await uiConfirm('이 일정을 삭제할까요?'))) return;
   try {
     await atDelete('Schedules', id);
     _skipCache = true;
@@ -2242,7 +2242,7 @@ async function generate() {
 }
 
 // ── 팀전 일정 생성 ──
-function generateTeamMode() {
+async function generateTeamMode() {
   const warn = document.getElementById('warn-msg');
   const numCourts = parseInt(document.getElementById('num-courts').value);
   const numRounds = parseInt(document.getElementById('num-rounds').value);
@@ -2261,7 +2261,7 @@ function generateTeamMode() {
   const aF = _teamA.filter(n => femaleNames.has(n)).length;
   const bF = _teamB.filter(n => femaleNames.has(n)).length;
   if (Math.abs(aF - bF) > 1) {
-    if (!confirm(`성비가 다릅니다. (A팀 여${aF}명, B팀 여${bF}명)\n그래도 진행할까요?`)) return;
+    if (!(await uiConfirm(`성비가 다릅니다. (A팀 여${aF}명, B팀 여${bF}명)\n그래도 진행할까요?`))) return;
   }
 
   const allPlayers = [..._teamA, ..._teamB];
