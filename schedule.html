@@ -777,14 +777,9 @@ async function loadConfirmedSchedules() {
     const evtSel = document.getElementById('sched-event');
     if (evtSel) {
       evtSel.innerHTML = '<option value="">선택 안함</option>';
-      // 다가올 일요일 계산 (KST 기준)
-      const _today = new Date().toLocaleString('sv-SE', {timeZone:'Asia/Seoul'}).split(' ')[0];
-      const [_y,_m,_d] = _today.split('-').map(Number);
-      const _utcDate = new Date(Date.UTC(_y, _m-1, _d));
-      const _kstDay = _utcDate.getUTCDay(); // KST 날짜의 요일
-      const _dayOff = _kstDay === 0 ? 0 : 7 - _kstDay;
-      _utcDate.setUTCDate(_utcDate.getUTCDate() + _dayOff);
-      const _nextSunStr = _utcDate.toISOString().split('T')[0];
+      // 다가올 일요일 — 공용 로직 사용 (일요일 정오 이후엔 다음 주 일요일)
+      const _today = todayKST();
+      const _nextSunStr = nextSundayKST();
       (eventRes||[]).forEach(ev => {
         const isRegular = ev.name && ev.name.includes('정기');
         const date = isRegular ? _nextSunStr : ev.date;
