@@ -83,6 +83,39 @@ export default {
       init.body = await request.text();
     }
 
+    // ── GET 엣지 캐싱: Airtable 월 API 한도 보호 ──
+    // 120초 이내 동일 요청은 캐시로 응답 (업스트림 호출 0), 실패/429 시 최대 7일 된 캐시라도 서빙
+    const FRESH_MS = 120 * 1000;
+    if (request.method === 'GET') {
+      const cache = caches.default;
+      const cacheKey = new Request(upstream.toString(), { method: 'GET' });
+      const hit = await cache.match(cacheKey);
+      const age = hit ? Date.now() - Number(hit.headers.get('X-Fetched-At') || 0) : Infinity;
+      if (hit && age < FRESH_MS) {
+        const body = await hit.text();
+        return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json', 'X-DTL-Cache': 'fresh', ...corsHeaders } });
+      }
+      let res;
+      try { res = await fetch(upstream, init); } catch (e) { res = null; }
+      if (res && res.ok) {
+        const body = await res.text();
+        const stored = new Response(body, { status: 200, headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=604800',
+          'X-Fetched-At': String(Date.now()),
+        }});
+        await cache.put(cacheKey, stored);
+        return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json', 'X-DTL-Cache': 'miss', ...corsHeaders } });
+      }
+      // 업스트림 실패(429 한도 초과 등): 오래된 캐시라도 서빙
+      if (hit) {
+        const body = await hit.text();
+        return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json', 'X-DTL-Cache': 'stale', ...corsHeaders } });
+      }
+      const errBody = res ? await res.text() : JSON.stringify({ error: 'upstream unreachable' });
+      return new Response(errBody, { status: res ? res.status : 502, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
     const res = await fetch(upstream, init);
     const body = await res.text();
     return new Response(body, {

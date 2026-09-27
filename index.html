@@ -1109,7 +1109,7 @@ footer{background:#101820;border-top-color:var(--dawn-yellow);}
   </div>
 </footer>
 
-<script src="js/api.js?v=3"></script>
+<script src="js/api.js?v=4"></script>
 <script>
 const cur=document.getElementById('cur');
 let mx=0,my=0,cx=0,cy=0;
@@ -1159,7 +1159,7 @@ function homeRenderBookingSummary(items,date){
 async function homeLoadSundayBookings(){
   const date=nextSundayKST();
   try{
-    const bookings=await atGet('Booking');
+    const bookings=await cachedFetch('getBookings');
     const real=bookings.filter(b=>String(b.date||'').substring(0,10)===date);
     const items=[...defaultBookingsFor(date,real),...real.filter(b=>!isDefaultCancel(b))];
     homeRenderBookingSummary(items.length?items:[{court:'예약 없음',time:'-',memo:''}],date);

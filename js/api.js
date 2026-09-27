@@ -21,6 +21,7 @@ async function atGet(table) {
   do {
     const url = `${AT}/${encodeURIComponent(table)}${offset ? '?offset=' + offset : ''}`;
     const r = await fetch(url, { headers: AT_H });
+    if (r.status === 429) { const e = new Error('AIRTABLE_LIMIT'); e.limit = true; throw e; }
     const d = await r.json();
     all.push(...(d.records || []).map(rec => {
       const o = { id: rec.id, createdTime: rec.createdTime };
@@ -54,6 +55,17 @@ const _tbl = { getPlayers: 'Players', getEvents: 'Events', getMatches: 'Matches'
 function cacheGet(k) { try { const r = localStorage.getItem('dtl_' + CACHE_VER + '_' + k); if (!r) return null; const { data, ts } = JSON.parse(r); return Date.now() - ts > CACHE_TTL ? null : data; } catch (e) { return null; } }
 function cacheSet(k, d) { try { localStorage.setItem('dtl_' + CACHE_VER + '_' + k, JSON.stringify({ data: d, ts: Date.now() })); } catch (e) {} }
 function cacheDrop(keys) { keys.forEach(k => localStorage.removeItem('dtl_' + CACHE_VER + '_' + k)); }
+// TTL 무시하고 마지막 저장분 반환 (API 한도 초과 시 비상 폴백용)
+function cacheGetStale(k) { try { const r = localStorage.getItem('dtl_' + CACHE_VER + '_' + k); if (!r) return null; return JSON.parse(r).data; } catch (e) { return null; } }
+let _usingStaleData = false;
+function notifyStaleData() {
+  if (_usingStaleData || !document.body) return;
+  _usingStaleData = true;
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:999;background:#8a3f13;color:#fff;font-size:.78rem;padding:.55rem 1rem;text-align:center;font-family:inherit;';
+  bar.textContent = 'Airtable 월 API 한도 초과 — 마지막으로 불러온 데이터를 표시 중입니다 (매월 1일 리셋, 저장 불가)';
+  document.body.appendChild(bar);
+}
 // 캐시가 있으면 즉시 반환하되, 백그라운드 fetch 결과가 다르면 onFresh(data)로 알림
 async function cachedFetch(action, onFresh) {
   const cached = _skipCache ? null : cacheGet(action);
@@ -64,7 +76,12 @@ async function cachedFetch(action, onFresh) {
     fetched.then(d => { if (onFresh && JSON.stringify(d) !== JSON.stringify(cached)) onFresh(d); }).catch(() => {});
     return cached;
   }
-  return fetched;
+  // 한도 초과(429) 등 실패 시: 만료된 캐시라도 있으면 그것으로 표시
+  return fetched.catch(err => {
+    const stale = cacheGetStale(action);
+    if (stale) { notifyStaleData(); return stale; }
+    throw err;
+  });
 }
 
 // ── 공통 유틸 ──
