@@ -616,6 +616,21 @@
     "schedule_id": "recSiZbCaZCb5Tzto",
     "notes": "R3"
    }
+  },
+  {
+   "id": "rec8JP9puFcSh22qN",
+   "createdTime": "2026-09-27T06:06:46.225Z",
+   "fields": {
+    "team1_p1": "6근이",
+    "team1_p2": "Terra",
+    "team2_p1": "5른팔",
+    "team2_p2": "0국진",
+    "score1": 2,
+    "score2": 6,
+    "date": "2026-09-27",
+    "schedule_id": "recSiZbCaZCb5Tzto",
+    "notes": "R6"
+   }
   }
  ]
 }
