@@ -460,6 +460,21 @@
     ],
     "Court Number": "4"
    }
+  },
+  {
+   "id": "reccYEUN61oKxtlJv",
+   "createdTime": "2026-10-01T00:15:05.490Z",
+   "fields": {
+    "Date": "2026-11-08",
+    "Court": "양재",
+    "Court Number": "7",
+    "Time": "06:00-09:00",
+    "Status": "기본",
+    "Memo": "인조잔디",
+    "Who": [
+     "recvakSqNuc0FaQpG"
+    ]
+   }
   }
  ]
 }
