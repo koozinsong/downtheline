@@ -445,6 +445,7 @@ body{background:url("images/autumn-leaves.svg") right -24px top -16px / min(520p
         <span style="font-size:.72rem;color:var(--sm);font-weight:500;">게스트:</span>
         <button class="add-btn" onclick="addGuest('female')" style="width:auto;font-size:.6rem;padding:.3rem .7rem;">+ 여자 게스트</button>
         <button class="add-btn" onclick="addGuest('male')" style="width:auto;font-size:.6rem;padding:.3rem .7rem;">+ 남자 게스트</button>
+        <button class="add-btn" onclick="resetSetup()" style="width:auto;font-size:.6rem;padding:.3rem .7rem;margin-left:auto;" title="저장된 참가자/설정 초기화">↺ 초기화</button>
       </div>
       <!-- Team mode UI -->
       <div class="player-grid" id="team-grid" style="display:none;">
@@ -1489,11 +1490,73 @@ let _allPlayers = []; // Airtable에서 불러온 전체 선수
 let _selectedFemales = []; // 선택된 여자 선수 이름 배열
 let _selectedMales = [];   // 선택된 남자 선수 이름 배열
 
+// ── 참가자/설정 자동 저장 (대진과 분리, 이 기기에 유지) ──
+// 선수 선택·게스트·참석 시간·시합 시간·포맷·조건을 저장해 재생성 시 다시 입력할 필요 없음
+const SETUP_KEY = 'dtl_setup_v1';
+function saveSetup() {
+  try {
+    localStorage.setItem(SETUP_KEY, JSON.stringify({
+      f: _selectedFemales, m: _selectedMales,
+      guests: _allPlayers.filter(p => _guests.has(p.name)).map(p => ({ name: p.name, gender: p.gender, ntrp: p.ntrp })),
+      avail: _avail,
+      sessStart: document.getElementById('sess-start').value,
+      sessEnd: document.getElementById('sess-end').value,
+      courts: document.getElementById('num-courts').value,
+      rounds: document.getElementById('num-rounds').value,
+      formats: getSelectedFormats(),
+      conds: ['cond-partner','cond-opponent','cond-rest','cond-gender'].filter(id => isActive(id)),
+    }));
+  } catch (e) {}
+}
+function restoreSetup() {
+  let st; try { st = JSON.parse(localStorage.getItem(SETUP_KEY) || 'null'); } catch (e) { return false; }
+  if (!st) return false;
+  (st.guests || []).forEach(g => {
+    if (g && g.name && !_allPlayers.some(p => p.name === g.name)) {
+      _allPlayers.push({ name: g.name, gender: g.gender, ntrp: g.ntrp });
+      _guests.add(g.name);
+      const num = (g.name.match(/^게스트(?:여|남)(\d+)$/) || [])[1];
+      if (num) _guestCount[g.gender] = Math.max(_guestCount[g.gender] || 0, parseInt(num));
+    }
+  });
+  const names = new Set(_allPlayers.map(p => p.name));
+  if (Array.isArray(st.f)) _selectedFemales = st.f.filter(n => names.has(n));
+  if (Array.isArray(st.m)) _selectedMales = st.m.filter(n => names.has(n));
+  _avail = {};
+  Object.entries(st.avail || {}).forEach(([n, a]) => { if (names.has(n) && a && a.in != null && a.out != null) _avail[n] = a; });
+  if (st.sessStart) document.getElementById('sess-start').value = st.sessStart;
+  if (st.sessEnd) document.getElementById('sess-end').value = st.sessEnd;
+  if (st.courts) document.getElementById('num-courts').value = st.courts;
+  if (st.rounds) document.getElementById('num-rounds').value = st.rounds;
+  if (Array.isArray(st.formats) && st.formats.length) {
+    ['mixed','mens','womens','open'].forEach(f => {
+      const el = document.getElementById('fmt-' + f);
+      if (el) el.classList.toggle('active', st.formats.includes(f));
+    });
+  }
+  if (Array.isArray(st.conds)) {
+    ['cond-partner','cond-opponent','cond-rest','cond-gender'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', st.conds.includes(id));
+    });
+  }
+  return true;
+}
+async function resetSetup() {
+  if (!(await uiConfirm('저장된 참가자/설정을 초기화하고 기본 상태로 되돌릴까요?'))) return;
+  try { localStorage.removeItem(SETUP_KEY); } catch (e) {}
+  location.reload();
+}
+['num-courts','num-rounds','sess-start','sess-end'].forEach(id => {
+  document.addEventListener('change', e => { if (e.target && e.target.id === id) saveSetup(); });
+});
+
 function initPlayerDropdowns(players) {
   _allPlayers = players.sort((a, b) => a.name.localeCompare(b.name));
   // 기본으로 전체 선택 (이름순)
   _selectedFemales = _allPlayers.filter(p => p.gender === 'female').map(p => p.name);
   _selectedMales = _allPlayers.filter(p => p.gender === 'male').map(p => p.name);
+  restoreSetup(); // 저장된 참가자/설정이 있으면 복원
   document.getElementById('player-loading').style.display = 'none';
   document.getElementById('player-grid').style.display = '';
   renderSelectedPlayers();
@@ -1512,6 +1575,7 @@ function renderSelectedPlayers() {
     updateDropdown(gender);
   });
   checkAvailability();
+  saveSetup();
 }
 
 function updateDropdown(gender) {
@@ -1692,7 +1756,7 @@ function getPlayers(gender) {
   return gender === 'female' ? [..._selectedFemales] : [..._selectedMales];
 }
 
-function toggleCond(el) { el.classList.toggle('active'); }
+function toggleCond(el) { el.classList.toggle('active'); saveSetup(); }
 function isActive(id) { return document.getElementById(id).classList.contains('active'); }
 
 // ── Format toggle & validation ──
@@ -1703,6 +1767,7 @@ function toggleFmt(el, fmt) {
   if (getSelectedFormats().length === 0) {
     el.classList.add('active'); // 마지막 하나는 해제 불가
   }
+  saveSetup();
 }
 
 function getSelectedFormats() {
