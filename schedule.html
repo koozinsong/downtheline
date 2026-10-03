@@ -1907,8 +1907,12 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
 
   const allMatches = getAllMatches();
 
-  // 포맷 우선순위: open(잡복)은 다른 포맷보다 낮은 우선순위
-  const fmtPenalty = { mixed:0, mens:0, womens:0, open:5 };
+  // 포맷 우선순위: 여복·남복이 가능하면 우선, 그다음 혼복, 잡복은 마지막
+  // (출전 균등 100/파트너 60/상대 30보다 낮아 '가능할 때만' 우선됨)
+  const fmtPenalty = { mens:0, womens:0, mixed:12, open:25 };
+
+  // 동성 복식은 세션당 1게임 정도만 — 사용 횟수 추적
+  const sameGenderUsed = { mens: 0, womens: 0 };
 
   // 연속 출전 추적: 최근 연속 출전 횟수
   const consecPlay = {};
@@ -1927,14 +1931,13 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
   const availRounds = {};
   allPlayers.forEach(p => { availRounds[p] = 0; for (let r = 0; r < numRounds; r++) if (isPresent(p, r)) availRounds[p]++; });
   const maxAvail = Math.max(1, ...allPlayers.map(p => availRounds[p]));
-  // 출전 공평성: 참석 가능 라운드 수 대비 출전 비율로 비교 (늦게 오거나 일찍 가는 사람도 비율 기준으로 공평)
+  // 짧게 참석하는 선수(참석 가능 라운드가 최대보다 적음) — 있는 동안 최대한 출전 배려
+  const isShort = p => availRounds[p] > 0 && availRounds[p] < maxAvail;
+  // 출전 공평성: 풀타임 참석자끼리 출전 비율 균등 (짧은 참석자는 아래 배려 보너스로 별도 처리)
   const playRatioDiff = (t1, t2) => {
-    const ratios = [];
-    allPlayers.forEach(p => {
-      if (!availRounds[p]) return;
-      const inc = (t1.includes(p) || t2.includes(p)) ? 1 : 0;
-      ratios.push(((playCount[p] || 0) + inc) / availRounds[p]);
-    });
+    const fulls = allPlayers.filter(p => availRounds[p] > 0 && !isShort(p));
+    const base = fulls.length >= 2 ? fulls : allPlayers.filter(p => availRounds[p] > 0);
+    const ratios = base.map(p => (((playCount[p] || 0) + ((t1.includes(p) || t2.includes(p)) ? 1 : 0)) / availRounds[p]));
     return ratios.length ? Math.max(...ratios) - Math.min(...ratios) : 0;
   };
 
@@ -1949,6 +1952,11 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
     const { t1, t2 } = m;
     let score = Math.random() * 5;
     score += (fmtPenalty[m.fmt] || 0);
+    // 동성 복식은 1게임이면 충분 — 이미 배정됐으면 후순위
+    if (m.fmt === 'mens' && sameGenderUsed.mens >= 1) score += 25;
+    if (m.fmt === 'womens' && sameGenderUsed.womens >= 1) score += 25;
+    // 짧게 참석하는 선수는 있는 동안 최대한 출전하도록 포함 보너스
+    [...t1, ...t2].forEach(p => { if (isShort(p)) score -= (maxAvail - availRounds[p]) * 8; });
 
     // 잡복: 랭킹 밸런스만 (파트너/상대 반복 조건 무시)
     if (m.fmt === 'open') {
@@ -1969,7 +1977,11 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       // 파트너/상대 반복 최소화 — 파트너 반복은 대기자 보너스(-20/인)보다 항상 무겁게
       if (partnerCount[t1[0]] && partnerCount[t1[0]][t1[1]]) score += partnerCount[t1[0]][t1[1]] * 60;
       if (partnerCount[t2[0]] && partnerCount[t2[0]][t2[1]]) score += partnerCount[t2[0]][t2[1]] * 60;
-      t1.forEach(p => t2.forEach(q => { if (opponentCount[p] && opponentCount[p][q]) score += opponentCount[p][q] * 30; }));
+      t1.forEach(p => t2.forEach(q => {
+        const c = (opponentCount[p] && opponentCount[p][q]) || 0;
+        score += c * 30;
+        if (c >= 2) score += 45; // 같은 상대 3번째 만남은 가급적 회피 (파트너 다양성 60보다는 약하게)
+      }));
       // NTRP 팀 밸런스 (여성 -0.5 보정)
       score += teamBal(t1, t2) * 35;
       // 이전 대기자 우선
@@ -1985,13 +1997,17 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       score += partnerCount[t2[0]][t2[1]] * 60;
     }
     if (opts.opponent) {
-      // 같은 상대 반복 1회당 30점 — 상대 공평성 강화 (파트너 60점보다는 낮게)
-      t1.forEach(p => t2.forEach(q => { score += opponentCount[p][q] * 30; }));
+      // 같은 상대 반복 1회당 30점, 3번째 만남부터는 +120 (가급적 회피)
+      t1.forEach(p => t2.forEach(q => {
+        const c = opponentCount[p][q] || 0;
+        score += c * 30;
+        if (c >= 2) score += 45;
+      }));
     }
     // NTRP 팀 밸런스 (여성 -0.5 보정): 실력 합이 비슷한 팀끼리 맞붙도록
     score += teamBal(t1, t2) * 35;
     // 3연속 출전 방지
-    if ([...t1,...t2].some(p => consecPlay[p] >= 2)) return 9999;
+    if ([...t1,...t2].some(p => consecPlay[p] >= 2 && !isShort(p))) return 9999;
     // 출전 균등화 — 최우선 (참석 가능 라운드 대비 비율: 늦게 온/일찍 가는 사람도 비율 기준 공평)
     score += playRatioDiff(t1, t2) * maxAvail * 100;
 
@@ -2022,16 +2038,28 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
     const presentPool = pool.filter(m => [...m.t1, ...m.t2].every(p => isPresent(p, round)));
     const present = allPlayers.filter(p => isPresent(p, round) && availRounds[p] > 0);
     if (!present.length || !presentPool.length) return [];
-    // 출전 비율(출전/참석가능)이 가장 낮은 참석자를 반드시 포함
+    // 풀타임 중 출전 비율 최저인 선수 + 아직 다 못 뛴 짧은 참석자를 반드시 포함
     const ratioOf = p => (playCount[p] || 0) / availRounds[p];
-    const minRatio = Math.min(...present.map(ratioOf));
-    const mustPlay = present.filter(p => ratioOf(p) - minRatio < 1e-9);
+    const fulls = present.filter(p => !isShort(p));
+    const base = fulls.length ? fulls : present;
+    const minRatio = Math.min(...base.map(ratioOf));
+    const mustPlay = [...new Set([
+      ...base.filter(p => ratioOf(p) - minRatio < 1e-9),
+      ...present.filter(p => isShort(p) && (playCount[p] || 0) < availRounds[p])
+    ])];
 
     let filtered = presentPool.filter(m => {
       const pl = [...m.t1, ...m.t2];
       return mustPlay.some(p => pl.includes(p));
     });
     if (!filtered.length) filtered = presentPool;
+
+    // 여복·남복 1게임 우선: 아직 배정 안 된 동성 포맷 중 파트너 반복·상대 과반복 없는 매치가 있으면 우선
+    const sameOk = filtered.filter(m => ((m.fmt === 'mens' && sameGenderUsed.mens === 0) || (m.fmt === 'womens' && sameGenderUsed.womens === 0))
+      && !(partnerCount[m.t1[0]] && partnerCount[m.t1[0]][m.t1[1]])
+      && !(partnerCount[m.t2[0]] && partnerCount[m.t2[0]][m.t2[1]])
+      && m.t1.every(p => m.t2.every(q => ((opponentCount[p] && opponentCount[p][q]) || 0) < 2)));
+    if (sameOk.length) filtered = sameOk;
 
     const scored = filtered.map(m => ({ m, s: scoreMatch(m) }));
     scored.sort((a,b) => a.s - b.s);
@@ -2086,6 +2114,10 @@ function generateSchedule(females, males, numCourts, numRounds, opts, formats, r
       else consecPlay[p] = 0; // 쉬면 리셋
     });
 
+    selected.forEach(m => {
+      if (m.fmt === 'mens') sameGenderUsed.mens++;
+      if (m.fmt === 'womens') sameGenderUsed.womens++;
+    });
     selected.forEach(({ t1, t2 }) => {
       partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
       partnerCount[t2[0]][t2[1]]++; partnerCount[t2[1]][t2[0]]++;
@@ -2178,8 +2210,13 @@ async function generate() {
   let best = null, bestScore = 99999;
   for (let attempt = 0; attempt < 50; attempt++) {
     const result = generateSchedule(females, males, numCourts, numRounds, opts, formats, rankings, effNtrp, sess);
-    const pr = Object.keys(result.playCount).filter(p => result.availRounds[p] > 0).map(p => (result.playCount[p] || 0) / result.availRounds[p]);
+    const prKeys = Object.keys(result.playCount).filter(p => result.availRounds[p] > 0);
+    const fullKeys = prKeys.filter(p => result.availRounds[p] >= result.maxAvail);
+    const pr = (fullKeys.length >= 2 ? fullKeys : prKeys).map(p => (result.playCount[p] || 0) / result.availRounds[p]);
     const playDiff = pr.length ? (Math.max(...pr) - Math.min(...pr)) * result.maxAvail : 0;
+    // 짧은 참석자 배려: 참석 가능한데 못 뛴 라운드 수 (0이 목표)
+    const shortMiss = prKeys.filter(p => result.availRounds[p] < result.maxAvail)
+      .reduce((a, p) => a + Math.max(0, result.availRounds[p] - (result.playCount[p] || 0)), 0);
     // 파트너 다양성 평가: 같은 페어의 최대 반복 횟수와 반복된 페어 수를 직접 최소화
     // (기존의 "사용된 페어 간 편차" 방식은 같은 페어만 반복해도 균등하면 통과되는 맹점이 있었음)
     const ap = [...females, ...males];
@@ -2205,9 +2242,10 @@ async function generate() {
     }));
     const avgBal = balN ? balSum / balN : 0;
     // 종합 점수: 출전 비율 > 파트너 다양성 > 상대 공평성 > NTRP 밸런스
-    const score = playDiff * 100 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + Math.max(0, maxOpp - 2) * 15 + excessOpp * 3 + Math.round(avgBal * 20);
+    const score = playDiff * 100 + shortMiss * 15 + Math.max(0, maxPartner - 1) * 50 + repeatedPairs * 10 + Math.max(0, maxOpp - 2) * 15 + excessOpp * 3 + Math.round(avgBal * 20);
     if (score < bestScore) { bestScore = score; best = result; }
-    if (playDiff <= 1.05 && maxPartner <= 1 && maxOpp <= 2 && avgBal <= 0.5) break;
+    const oppTarget = (formats.includes('mens') || formats.includes('womens')) ? 3 : 2;
+    if (playDiff <= 1.05 && maxPartner <= 1 && maxOpp <= oppTarget && avgBal <= 0.5 && shortMiss === 0) break;
   }
   const { schedule, playCount, partnerCount, opponentCount } = best;
 
