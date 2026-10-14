@@ -817,24 +817,34 @@ async function loadConfirmedSchedules() {
 function renderConfirmedList(list, allMatches, femaleNames) {
   const _fn = new Set(femaleNames || []);
   // 게스트 성별 보정 (표시 전용, 저장 데이터는 수정하지 않음):
-  // ① schedule_json에 기록된 guests 성별 맵 ② 여복=전원 여성 ③ 혼복=팀에 남자 멤버가 있으면 파트너는 여성
+  // ① schedule_json에 기록된 guests 성별 맵 ② 남복=전원 남성, 여복=전원 여성
+  // ③ 혼복=한 명의 성별을 알면 파트너는 반대 성별 — 확정이 늘 때까지 반복 전파
   {
     const members = window._memberNames || new Set();
-    const isMaleMember = n => members.has(n) && !_fn.has(n);
+    const known = new Map(); // name → 'male' | 'female'
+    members.forEach(n => known.set(n, _fn.has(n) ? 'female' : 'male'));
     (list || []).forEach(sr => {
       let sj; try { sj = JSON.parse(sr.schedule_json || '{}'); } catch (e) { sj = {}; }
-      Object.entries(sj.guests || {}).forEach(([n, g]) => { if (g === 'female') _fn.add(n); });
+      Object.entries(sj.guests || {}).forEach(([n, g]) => { if (!known.has(n) && (g === 'female' || g === 'male')) known.set(n, g); });
       const rounds = Array.isArray(sj) ? sj : (sj.rounds || []);
+      const teams = [];
       rounds.forEach(r => (r.matches || []).forEach(m => {
-        const teams = [m.t1 || [], m.t2 || []];
-        if (m.fmt === 'womens') teams.flat().forEach(n => { if (n) _fn.add(n); });
-        if (m.fmt === 'mixed') teams.forEach(t => {
-          if (t.length !== 2) return;
-          const [a, b] = t;
-          if (a && b && isMaleMember(a) && !members.has(b)) _fn.add(b);
-          if (a && b && isMaleMember(b) && !members.has(a)) _fn.add(a);
+        [m.t1 || [], m.t2 || []].forEach(t => {
+          if (m.fmt === 'mens') t.forEach(n => { if (n && !known.has(n)) known.set(n, 'male'); });
+          if (m.fmt === 'womens') t.forEach(n => { if (n && !known.has(n)) known.set(n, 'female'); });
+          if (m.fmt === 'mixed' && t.length === 2 && t[0] && t[1]) teams.push(t);
         });
       }));
+      for (let pass = 0, changed = true; changed && pass < 6; pass++) {
+        changed = false;
+        teams.forEach(([a, b]) => {
+          if (known.has(a) === known.has(b)) return;
+          const [u, k] = known.has(a) ? [b, a] : [a, b];
+          known.set(u, known.get(k) === 'male' ? 'female' : 'male');
+          changed = true;
+        });
+      }
+      known.forEach((g, n) => { if (g === 'female') _fn.add(n); });
     });
   }
   const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${escapeHtml(name)}</span>`;
