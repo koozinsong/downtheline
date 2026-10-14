@@ -815,7 +815,28 @@ async function loadConfirmedSchedules() {
 }
 
 function renderConfirmedList(list, allMatches, femaleNames) {
-  const _fn = femaleNames || new Set();
+  const _fn = new Set(femaleNames || []);
+  // 게스트 성별 보정 (표시 전용, 저장 데이터는 수정하지 않음):
+  // ① schedule_json에 기록된 guests 성별 맵 ② 여복=전원 여성 ③ 혼복=팀에 남자 멤버가 있으면 파트너는 여성
+  {
+    const members = window._memberNames || new Set();
+    const isMaleMember = n => members.has(n) && !_fn.has(n);
+    (list || []).forEach(sr => {
+      let sj; try { sj = JSON.parse(sr.schedule_json || '{}'); } catch (e) { sj = {}; }
+      Object.entries(sj.guests || {}).forEach(([n, g]) => { if (g === 'female') _fn.add(n); });
+      const rounds = Array.isArray(sj) ? sj : (sj.rounds || []);
+      rounds.forEach(r => (r.matches || []).forEach(m => {
+        const teams = [m.t1 || [], m.t2 || []];
+        if (m.fmt === 'womens') teams.flat().forEach(n => { if (n) _fn.add(n); });
+        if (m.fmt === 'mixed') teams.forEach(t => {
+          if (t.length !== 2) return;
+          const [a, b] = t;
+          if (a && b && isMaleMember(a) && !members.has(b)) _fn.add(b);
+          if (a && b && isMaleMember(b) && !members.has(a)) _fn.add(a);
+        });
+      }));
+    });
+  }
   const pChip = name => `<span class="player-chip ${_fn.has(name)?'p-f':'p-m'}" style="font-size:.72rem;">${escapeHtml(name)}</span>`;
   const sortFemaleFirst = arr => [...arr].sort((a,b) => (_fn.has(b)?1:0) - (_fn.has(a)?1:0));
   const el = document.getElementById('confirmed-list');
@@ -1457,7 +1478,8 @@ async function confirmSchedule() {
       name, date: date || null, event,
       rounds: numRounds,
       formats: formats.join(','),
-      schedule_json: JSON.stringify({ rounds: schedule, teamA: teamA||[], teamB: teamB||[], pairs: pairs||[], mode: mode||'individual' })
+      schedule_json: JSON.stringify({ rounds: schedule, teamA: teamA||[], teamB: teamB||[], pairs: pairs||[], mode: mode||'individual',
+        guests: Object.fromEntries(_allPlayers.filter(p => _guests.has(p.name)).map(p => [p.name, p.gender])) })
     });
     if (res.success) {
       _skipCache = true;
