@@ -724,8 +724,9 @@ function renderTeamPlayers() {
     listEl.innerHTML = selected.map((name, i) => {
       const p = _allPlayers.find(x => x.name === name);
       const cls = p && p.gender === 'female' ? 'p-f' : 'p-m';
+      const guest = isGuest(name);
       return `<div class="selected-player">
-        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="player-chip ${cls}" style="font-size:.78rem;">${name}</span></div>
+        <div class="sp-info"><span class="sp-num">${i + 1}</span><span class="player-chip ${cls}" style="font-size:.78rem;${guest?'cursor:pointer;':''}"${guest?` onclick="renameGuest('${name}')" title="클릭해서 이름/NTRP 변경"`:''}>${name}</span>${guest?'<span style="font-size:.55rem;color:var(--sm2);margin-left:.3rem;">guest ✏️</span>':''}<span onclick="editAvail('${name}')" style="font-size:.58rem;margin-left:.35rem;cursor:pointer;font-weight:700;color:${_avail[name]?'var(--gd)':'var(--sm2)'};" title="참석 시간(입장-퇴장) 설정">⏱ ${availLabel(name)}</span></div>
         <button class="sp-remove" onclick="removeTeamPlayer('${team}','${name}')">×</button>
       </div>`;
     }).join('');
@@ -2403,6 +2404,27 @@ async function generateTeamMode() {
     warn.className = 'warn show'; return;
   }
 
+  // 참석 시간(⏱) 반영 — 개인전과 동일하게 라운드 슬롯 기준으로 출전 가능 여부 판정
+  const w = sessWindow();
+  if (!(w.end > w.start)) {
+    warn.textContent = '시합 종료 시간이 시작 시간보다 커야 합니다.';
+    warn.className = 'warn show'; return;
+  }
+  const slotLen = (w.end - w.start) / numRounds;
+  const slotOf = r => ({ s: w.start + slotLen * r, e: w.start + slotLen * (r + 1) });
+  const isPresent = (p, r) => {
+    const a = _avail[p]; if (!a) return true;
+    const sl = slotOf(r); return a.in <= sl.s + 1e-6 && a.out >= sl.e - 1e-6;
+  };
+  const fmtHM = h => { const hh = Math.floor(h), mm = Math.round((h - hh) * 60); return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
+  {
+    const zero = allPlayers.filter(p => { for (let r = 0; r < numRounds; r++) if (isPresent(p, r)) return false; return true; });
+    if (zero.length) {
+      warn.textContent = `참석 가능한 라운드가 없는 선수: ${zero.join(', ')} — 참석 시간(⏱)을 조정하거나 명단에서 제외해주세요.`;
+      warn.className = 'warn show'; return;
+    }
+  }
+
   // 팀A에서 2명, 팀B에서 2명 조합 생성 (포맷에 맞게)
   function pairs(arr) {
     const p = [];
@@ -2454,7 +2476,9 @@ async function generateTeamMode() {
 
   const schedule = [];
   for (let round = 0; round < numRounds; round++) {
-    const scored = allMatches.map(m => {
+    // 이 라운드에 전원 참석 가능한 매치만 후보로
+    const presentMatches = allMatches.filter(m => [...m.t1, ...m.t2].every(p => isPresent(p, round)));
+    const scored = presentMatches.map(m => {
       const players = [...m.t1, ...m.t2];
       let score = Math.random() * 0.5 + players.reduce((s, p) => s + (playCount[p] || 0) * 2, 0);
       const k1 = [...m.t1].sort().join(','), k2 = [...m.t2].sort().join(',');
@@ -2472,14 +2496,17 @@ async function generateTeamMode() {
       selected.push(m);
       players.forEach(p => used.add(p));
     }
-    if (selected.length === 0 && allMatches.length > 0) {
-      selected.push(allMatches[round % allMatches.length]);
+    if (selected.length === 0 && presentMatches.length > 0) {
+      selected.push(presentMatches[round % presentMatches.length]);
     }
 
     const activePlayers = selected.flatMap(m => [...m.t1, ...m.t2]);
-    const resting = allPlayers.filter(p => !activePlayers.includes(p));
+    const present = allPlayers.filter(p => isPresent(p, round));
+    const resting = present.filter(p => !activePlayers.includes(p));
+    const absent = allPlayers.filter(p => !isPresent(p, round));
+    const sl = slotOf(round);
 
-    schedule.push({ round: round + 1, matches: selected, resting });
+    schedule.push({ round: round + 1, matches: selected, resting, absent, time: `${fmtHM(sl.s)}–${fmtHM(sl.e)}` });
 
     selected.forEach(m => {
       [...m.t1, ...m.t2].forEach(p => playCount[p] = (playCount[p] || 0) + 1);
