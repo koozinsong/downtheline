@@ -466,6 +466,7 @@ body{background:url("images/autumn-leaves.svg") right -24px top -16px / min(520p
             <option value="">+ 선수 추가</option>
           </select>
         </div>
+        <button class="add-btn" onclick="autoDraftTeams()" style="grid-column:1/-1;font-size:.62rem;padding:.4rem;" title="인원수·성비·실력 균형으로 팀을 다시 편성합니다">⚖ 자동 재편성</button>
       </div>
       <!-- Pair mode UI -->
       <div id="pair-grid" style="display:none;">
@@ -648,41 +649,47 @@ async function setMode(mode) {
     renderPairs();
   }
   if (mode === 'team' && _teamA.length === 0 && _teamB.length === 0) {
-    // 랭킹 기반 밸런스 분배 + 성비 동일
+    await autoDraftTeams();
+  }
+  checkAvailability();
+}
+
+// 팀 자동 편성 — 인원수·성비·실력(NTRP, 승점 랭킹 보조)을 함께 균형
+async function autoDraftTeams() {
+  const eff = buildEffNtrp();
+  // 승점 랭킹을 보조 신호로 (NTRP가 모두 같아도 실력 균형이 동작하도록)
+  const rankIdx = {};
+  try {
     const females = _allPlayers.filter(p => p.gender === 'female' && !_guests.has(p.name)).map(p => p.name);
     const males = _allPlayers.filter(p => p.gender === 'male' && !_guests.has(p.name)).map(p => p.name);
-    const guestF = _allPlayers.filter(p => p.gender === 'female' && _guests.has(p.name)).map(p => p.name);
-    const guestM = _allPlayers.filter(p => p.gender === 'male' && _guests.has(p.name)).map(p => p.name);
-
-    // 랭킹 가져오기
-    let mSorted = males, fSorted = females;
-    try {
-      const allMatchData = await cachedFetch('getMatches');
-      const rk = computePlayerRankings(allMatchData, males, females);
-      mSorted = rk.malesSorted;
-      fSorted = rk.femalesSorted;
-    } catch(e) {}
-
-    // 스네이크 드래프트 + 랜덤 시드 (같은 순위면 셔플)
-    _teamA = []; _teamB = [];
-    // 랜덤으로 A/B 시작 방향 결정
-    let startA = Math.random() > 0.5;
-    function snakeDraft(sorted) {
-      sorted.forEach((n, i) => {
-        const pos = i % 4;
-        const toA = startA ? (pos === 0 || pos === 3) : (pos === 1 || pos === 2);
-        (toA ? _teamA : _teamB).push(n);
-      });
+    const rk = computePlayerRankings(await cachedFetch('getMatches'), males, females);
+    rk.femalesSorted.forEach((n, i) => rankIdx[n] = i);
+    rk.malesSorted.forEach((n, i) => rankIdx[n] = i);
+  } catch (e) {}
+  const skill = n => (eff[n] ?? 3) - ((rankIdx[n] ?? 2) * 0.01);
+  _teamA = []; _teamB = [];
+  const sum = { A: 0, B: 0 };
+  const put = (side, n) => { (side === 'A' ? _teamA : _teamB).push(n); sum[side] += skill(n); };
+  ['female', 'male'].forEach(g => {
+    // 게스트 포함, 실력 내림차순 (동률은 랜덤 순서)
+    const group = _allPlayers.filter(p => p.gender === g)
+      .map(p => ({ n: p.name, s: skill(p.name) + Math.random() * 1e-6 }))
+      .sort((a, b) => b.s - a.s).map(x => x.n);
+    // 같은 성별 2명씩 묶어 강한 쪽을 합계가 낮은 팀에 → 실력·성비 동시 균형
+    for (let i = 0; i + 1 < group.length; i += 2) {
+      const weak = sum.A <= sum.B ? 'A' : 'B';
+      put(weak, group[i]);
+      put(weak === 'A' ? 'B' : 'A', group[i + 1]);
     }
-    snakeDraft(fSorted);
-    snakeDraft(mSorted);
-    // 게스트는 랜덤 분배
-    [...guestF, ...guestM].sort(() => Math.random() - 0.5).forEach((n, i) => {
-      (i % 2 === 0 ? _teamA : _teamB).push(n);
-    });
-
-    renderTeamPlayers();
-  }
+    // 홀수 인원이면 남는 한 명은 인원이 적은 팀으로 (같으면 합계 낮은 팀)
+    if (group.length % 2) {
+      const side = _teamA.length !== _teamB.length
+        ? (_teamA.length < _teamB.length ? 'A' : 'B')
+        : (sum.A <= sum.B ? 'A' : 'B');
+      put(side, group[group.length - 1]);
+    }
+  });
+  renderTeamPlayers();
   checkAvailability();
 }
 
