@@ -1811,22 +1811,39 @@ function getSelectedFormats() {
 
 // 인원 수 변경 시에만 호출 — toggle 시엔 호출하지 않음
 function checkAvailability() {
-  const females = getPlayers('female');
-  const males   = getPlayers('male');
-  const fLen = females.length, mLen = males.length;
-
-  const rules = {
-    mixed:  fLen >= 2 && mLen >= 2,
-    mens:   mLen >= 4,
-    womens: fLen >= 4,
-    open:   fLen + mLen >= 4
-  };
-  const reasons = {
-    mixed:  '여2+남2 이상',
-    mens:   '남자 4명 이상',
-    womens: '여자 4명 이상',
-    open:   '총 4명 이상'
-  };
+  let rules, reasons;
+  if (_mode === 'team') {
+    // 팀전: 개인전 참가자 목록이 아니라 양 팀 명단 기준으로 판정
+    const isF = n => { const p = _allPlayers.find(x => x.name === n); return !!p && p.gender === 'female'; };
+    const cnt = t => ({ f: t.filter(isF).length, m: t.filter(n => !isF(n)).length });
+    const a = cnt(_teamA), b = cnt(_teamB);
+    rules = {
+      mixed:  a.f >= 1 && a.m >= 1 && b.f >= 1 && b.m >= 1,
+      mens:   a.m >= 2 && b.m >= 2,
+      womens: a.f >= 2 && b.f >= 2,
+      open:   _teamA.length >= 2 && _teamB.length >= 2
+    };
+    reasons = {
+      mixed:  '각 팀 남1+여1 이상',
+      mens:   '각 팀 남2 이상',
+      womens: '각 팀 여2 이상',
+      open:   '각 팀 2명 이상'
+    };
+  } else {
+    const fLen = getPlayers('female').length, mLen = getPlayers('male').length;
+    rules = {
+      mixed:  fLen >= 2 && mLen >= 2,
+      mens:   mLen >= 4,
+      womens: fLen >= 4,
+      open:   fLen + mLen >= 4
+    };
+    reasons = {
+      mixed:  '여2+남2 이상',
+      mens:   '남자 4명 이상',
+      womens: '여자 4명 이상',
+      open:   '총 4명 이상'
+    };
+  }
 
   const unavail = [];
   ['mixed','mens','womens','open'].forEach(f => {
