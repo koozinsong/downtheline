@@ -1132,8 +1132,6 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           </div>
         </div>
         <div class="conf-body open" id="conf-body-${s.id}">
-          ${teamSummary}
-          ${pairSummary}
           ${matchRows}
           <div style="margin-top:.8rem;padding-top:.6rem;border-top:1px dashed rgba(78,122,90,.2);text-align:center;">
             <button class="add-btn" onclick="showAddMatchForm('${s.id}')" style="font-size:.62rem;padding:.35rem .8rem;">+ 매치 추가</button>
@@ -1148,6 +1146,8 @@ function renderConfirmedList(list, allMatches, femaleNames) {
             <button class="confirm-btn" onclick="addMatchToSchedule('${s.id}')" style="width:100%;font-size:.62rem;padding:.35rem;">추가</button>
           </div>
           ${statsSection}
+          ${teamSummary}
+          ${pairSummary}
           ${scoreTable}
           ${mvpSection}
           <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--ll);text-align:center;">
