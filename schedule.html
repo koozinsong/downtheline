@@ -968,7 +968,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           playerStats[p].pts = playerStats[p].w * 3 + playerStats[p].d;
         });
       }));
-      const scoreTableRows = Object.entries(playerStats)
+      const makeScoreRows = entries => entries
         .sort((a,b) => b[1].pts - a[1].pts || (b[1].gf-b[1].ga) - (a[1].gf-a[1].ga))
         .map(([name, st], i) => `<tr>
           <td style="padding:.4rem .6rem;font-weight:600;">${i+1}</td>
@@ -981,6 +981,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           <td style="padding:.4rem .6rem;text-align:center;font-weight:600;color:${st.gf-st.ga>0?'var(--g)':'var(--sm2)'};">${st.gf-st.ga>0?'+':''}${st.gf-st.ga}</td>
           <td style="padding:.4rem .6rem;text-align:center;font-weight:700;color:var(--g);">${st.pts}</td>
         </tr>`).join('');
+      const scoreTableRows = makeScoreRows(Object.entries(playerStats));
       // 팀전 요약
       let teamSummary = '';
       if (isTeamMode && savedTeamA.length && savedTeamB.length) {
@@ -1091,11 +1092,7 @@ function renderConfirmedList(list, allMatches, femaleNames) {
           </div>
         </div>` : '';
 
-      const scoreTable = scoreTableRows ? `
-        <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);margin-bottom:.5rem;">개인 스코어</div>
-          <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
-            <tr style="background:var(--iv2);">
+      const scoreHead = `<tr style="background:var(--iv2);">
               <th style="padding:.4rem .6rem;text-align:left;">#</th>
               <th style="padding:.4rem .6rem;text-align:left;">선수</th>
               <th style="padding:.4rem .6rem;text-align:center;">승</th>
@@ -1105,10 +1102,30 @@ function renderConfirmedList(list, allMatches, femaleNames) {
               <th style="padding:.4rem .6rem;text-align:center;">실점</th>
               <th style="padding:.4rem .6rem;text-align:center;">득실차</th>
               <th style="padding:.4rem .6rem;text-align:center;">승점</th>
-            </tr>
-            ${scoreTableRows}
-          </table>
-        </div>` : '';
+            </tr>`;
+      const scoreSection = (label, badgeBg, rows) => `
+        <div style="margin-top:1rem;border-top:1px solid var(--ll);padding-top:1rem;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g3);margin-bottom:.5rem;">${badgeBg?`<span style="background:${badgeBg};color:var(--w);padding:.12rem .45rem;margin-right:.4rem;">${label.charAt(0)}</span>`:''}${label}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:.8rem;">${scoreHead}${rows}</table>
+        </div>`;
+      let scoreTable = '';
+      if (scoreTableRows) {
+        if (isTeamMode) {
+          // 소속은 대진표의 좌/우(팀1=A, 팀2=B)로 판정 — 이름이 명단과 어긋나도 안전
+          const sideOf = {};
+          sched.forEach(r => (r.matches||[]).forEach(m => {
+            (m.t1||[]).forEach(p => { if (p && !sideOf[p]) sideOf[p] = 'A'; });
+            (m.t2||[]).forEach(p => { if (p && !sideOf[p]) sideOf[p] = 'B'; });
+          }));
+          const entries = Object.entries(playerStats);
+          const rowsA = makeScoreRows(entries.filter(([n]) => sideOf[n] !== 'B'));
+          const rowsB = makeScoreRows(entries.filter(([n]) => sideOf[n] === 'B'));
+          scoreTable = (rowsA ? scoreSection('A팀 개인 스코어', 'var(--g)', rowsA) : '')
+                     + (rowsB ? scoreSection('B팀 개인 스코어', 'var(--gd)', rowsB) : '');
+        } else {
+          scoreTable = scoreSection('개인 스코어', '', scoreTableRows);
+        }
+      }
 
       const progress = `${doneMatches}/${totalMatches} 경기 완료`;
 
