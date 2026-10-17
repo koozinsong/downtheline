@@ -650,6 +650,22 @@
     "notes": "R5",
     "mvp": "2쁜이"
    }
+  },
+  {
+   "id": "recuPCoqRvBmnNf0B",
+   "createdTime": "2026-10-17T22:50:02.799Z",
+   "fields": {
+    "team1_p1": "9단주",
+    "team1_p2": "6근이",
+    "team2_p1": "서0",
+    "team2_p2": "수학3",
+    "score1": 5,
+    "score2": 5,
+    "event": "정기 매치",
+    "date": "2026-10-18",
+    "schedule_id": "recxa5A1VwF540y49",
+    "notes": "R1"
+   }
   }
  ]
 }
