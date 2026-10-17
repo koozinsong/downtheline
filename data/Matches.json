@@ -698,6 +698,22 @@
     "schedule_id": "recxa5A1VwF540y49",
     "notes": "R5"
    }
+  },
+  {
+   "id": "recmJXxOYXT61LfAx",
+   "createdTime": "2026-10-17T23:37:37.653Z",
+   "fields": {
+    "team1_p1": "9단주",
+    "team1_p2": "2쁜이",
+    "team2_p1": "서0",
+    "team2_p2": "미정언2",
+    "score1": 5,
+    "score2": 5,
+    "event": "정기 매치",
+    "date": "2026-10-18",
+    "schedule_id": "recxa5A1VwF540y49",
+    "notes": "R4"
+   }
   }
  ]
 }
