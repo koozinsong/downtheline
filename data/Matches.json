@@ -682,6 +682,22 @@
     "schedule_id": "recxa5A1VwF540y49",
     "notes": "R1"
    }
+  },
+  {
+   "id": "recsD9JqTb9yNoknn",
+   "createdTime": "2026-10-17T23:36:34.075Z",
+   "fields": {
+    "team1_p1": "6근이",
+    "team1_p2": "0국진",
+    "team2_p1": "7erra",
+    "team2_p2": "수학3",
+    "score1": 6,
+    "score2": 4,
+    "event": "정기 매치",
+    "date": "2026-10-18",
+    "schedule_id": "recxa5A1VwF540y49",
+    "notes": "R5"
+   }
   }
  ]
 }
