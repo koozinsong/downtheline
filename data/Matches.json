@@ -746,6 +746,22 @@
     "schedule_id": "recxa5A1VwF540y49",
     "notes": "R5"
    }
+  },
+  {
+   "id": "recMUeXKB277wZVYt",
+   "createdTime": "2026-10-18T00:40:34.762Z",
+   "fields": {
+    "team1_p1": "0국진",
+    "team1_p2": "2쁜이",
+    "team2_p1": "미정언2",
+    "team2_p2": "수학3",
+    "score1": 6,
+    "score2": 3,
+    "event": "정기 매치",
+    "date": "2026-10-18",
+    "schedule_id": "recxa5A1VwF540y49",
+    "notes": "R3"
+   }
   }
  ]
 }
