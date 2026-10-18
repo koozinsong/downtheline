@@ -762,6 +762,22 @@
     "schedule_id": "recxa5A1VwF540y49",
     "notes": "R3"
    }
+  },
+  {
+   "id": "rec8dNpfVCTwJMlHv",
+   "createdTime": "2026-10-18T00:51:36.319Z",
+   "fields": {
+    "team1_p1": "5른팔",
+    "team1_p2": "6근이",
+    "team2_p1": "0균",
+    "team2_p2": "7erra",
+    "score1": 5,
+    "score2": 6,
+    "event": "정기 매치",
+    "date": "2026-10-18",
+    "schedule_id": "recxa5A1VwF540y49",
+    "notes": "R2"
+   }
   }
  ]
 }
