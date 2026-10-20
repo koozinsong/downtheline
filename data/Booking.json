@@ -550,7 +550,10 @@
     "Court Number": "8",
     "Time": "09:00-12:00",
     "Status": "기본",
-    "Memo": "잔디 · 다운"
+    "Memo": "잔디",
+    "Who": [
+     "recfeE12tEKebhm9Z"
+    ]
    }
   }
  ]
