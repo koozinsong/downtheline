@@ -496,6 +496,17 @@
     "Status": "기본",
     "Memo": "미확정"
    }
+  },
+  {
+   "id": "recpnwn2sqdDnjimP",
+   "createdTime": "2026-10-20T08:18:21.251Z",
+   "fields": {
+    "Date": "2026-11-15",
+    "Court": "아차산",
+    "Time": "06:00-10:00",
+    "Status": "기본",
+    "Memo": "미확정"
+   }
   }
  ]
 }
