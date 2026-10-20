@@ -525,6 +525,18 @@
     "Time": "06:00-10:00",
     "Status": "취소"
    }
+  },
+  {
+   "id": "recCAOket5HmRORW6",
+   "createdTime": "2026-10-20T08:29:04.068Z",
+   "fields": {
+    "Date": "2026-11-08",
+    "Court": "양재",
+    "Court Number": "A",
+    "Time": "08:00-09:00",
+    "Status": "추가",
+    "Memo": "실내 · 지선"
+   }
   }
  ]
 }
