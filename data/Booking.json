@@ -537,6 +537,18 @@
     "Status": "추가",
     "Memo": "실내 · 지선"
    }
+  },
+  {
+   "id": "reccWa4gQw5Lhmx2Y",
+   "createdTime": "2026-10-20T08:29:06.506Z",
+   "fields": {
+    "Date": "2026-11-22",
+    "Court": "내곡",
+    "Court Number": "8",
+    "Time": "09:00-12:00",
+    "Status": "기본",
+    "Memo": "잔디 · 다운"
+   }
   }
  ]
 }
