@@ -535,7 +535,10 @@
     "Court Number": "A",
     "Time": "08:00-09:00",
     "Status": "추가",
-    "Memo": "실내 · 지선"
+    "Memo": "실내",
+    "Who": [
+     "recmSC0tsYgHupruC"
+    ]
    }
   },
   {
