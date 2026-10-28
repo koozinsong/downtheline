@@ -1,7 +1,7 @@
 /* DTL 서비스 워커 — 정적 자산 캐시 + 오프라인 폴백
  * 데이터(Airtable)는 크로스 오리진이라 캐시하지 않음 (항상 네트워크)
  */
-const CACHE = 'dtl-v4';
+const CACHE = 'dtl-v5';
 const ASSETS = [
   './',
   'index.html',
@@ -15,12 +15,13 @@ const ASSETS = [
   'travel.html',
   'js/api.js',
   'manifest.json',
-  'favicon.svg',
-  'apple-touch-icon.svg',
+  'apple-touch-icon.png',
   'icon-192.png',
   'icon-512.png',
   'images/autumn-leaves.svg',
   'images/autumn-field.svg',
+  'images/logo-wide.webp',
+  'images/logo-emblem.webp',
 ];
 
 self.addEventListener('install', e => {
